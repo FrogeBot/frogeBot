@@ -105,6 +105,8 @@ function loadFont(path) {
 }
 
 const { createCanvas, loadImage, registerFont } = require('canvas')
+const { fillTextWithTwemoji } = require('node-canvas-with-twemoji');
+
 registerFont(__dirname+'/../fonts/RobotoBlack.otf', { family: 'Roboto' })
 
 function canvasText(text, fontSize, fontFamily, width) {
@@ -124,40 +126,41 @@ function canvasText(text, fontSize, fontFamily, width) {
     })
 }
 
-function printAtWordWrap( context , text, x, y, lineHeight, fitWidth)
-{
-    fitWidth = fitWidth || 0;
-    
-    if (fitWidth <= 0)
-    {
-        context.fillText( text, x, y );
-        return 1;
-    }
-    var words = text.split(' ');
-    var currentLine = 0;
-    var idx = 1;
-    while (words.length > 0 && idx <= words.length)
-    {
-        var str = words.slice(0,idx).join(' ');
-        var w = context.measureText(str).width;
-        if ( w > fitWidth )
+function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
+    return new Promise(async (resolve, reject) => {
+        fitWidth = fitWidth || 0;
+        
+        if (fitWidth <= 0)
         {
-            if (idx==1)
-            {
-                idx=2;
-            }
-            context.fillText( words.slice(0,idx-1).join(' '), x, y + (lineHeight*currentLine) );
-            currentLine++;
-            words = words.splice(idx-1);
-            idx = 1;
+            await fillTextWithTwemoji(context, text, x, y, { emojiTopMarginPercent: -0.75} );
+            resolve(1);
         }
-        else
-        {idx++;}
-    }
-    if  (idx > 0)
-        context.fillText( words.join(' '), x, y + (lineHeight*currentLine) );
+        var words = text.split(' ');
+        var currentLine = 0;
+        var idx = 1;
+        while (words.length > 0 && idx <= words.length)
+        {
+            var str = words.slice(0,idx).join(' ');
+            var w = context.measureText(str).width;
+            if ( w > fitWidth )
+            {
+                if (idx==1)
+                {
+                    idx=2;
+                }
+                await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: -0.75} );
+                currentLine++;
+                words = words.splice(idx-1);
+                idx = 1;
+            }
+            else
+            {idx++;}
+        }
+        if  (idx > 0)
+        await fillTextWithTwemoji(context, words.join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: -0.75} );
 
-    return currentLine+1;
+        resolve(currentLine+1);
+    });
 }
 
 

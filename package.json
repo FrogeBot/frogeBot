@@ -10,10 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "canvas": "^2.6.1",
-    "cwebp": "^2.0.5",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "jimp": "^0.16.1",
+    "node-canvas-with-twemoji": "^0.1.6",
     "webp-converter": "^2.3.1"
   }
 }

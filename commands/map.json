@@ -8,5 +8,6 @@
     "fisheye": "image/fisheye.js",
     "invert": "image/invert.js",
     "greyscale": "image/greyscale.js",
-    "jpeg": "image/jpeg.js"
+    "jpeg": "image/jpeg.js",
+    "caption": "image/caption.js"
 }

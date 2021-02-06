@@ -9,11 +9,13 @@ let { exec } = require("../../modules/image.js")
 
 async function cmdFunc(msg, args) {
     try {
+        let procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
         msg.channel.startTyping()
         let img = await exec(await findImage(msg), [ ["posterize", [8]], ["pixelate", [4]] ]);
         const attachment = new MessageAttachment(img);
         msg.channel.stopTyping()
         msg.channel.send(attachment)
+        procMsg.delete();
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

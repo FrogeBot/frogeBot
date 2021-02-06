@@ -9,12 +9,16 @@ client.on('ready', () => {
 
 const { parseMsg, isCmd, getCmdFunc } = require("./modules/parse.js")
 
+const { Worker } = require('worker_threads')
+
 client.on('message', async msg => {
     if(!await isCmd(msg) || msg.author.bot) return
 
     let parsed = await parseMsg(msg); // 0: Prefix, 1: Command, 2: Args string
     let cmdFunc = await getCmdFunc(parsed[1]);
-    cmdFunc(msg, parsed[2])
+    setImmediate(async () => {
+        cmdFunc(msg, parsed[2])
+    });
 });
 
 client.login(process.env.TOKEN);

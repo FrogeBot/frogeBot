@@ -8,5 +8,6 @@
     "fisheye": "Applies a fisheye effect to an image (usage: `fisheye [amount]`)",
     "invert": "Inverts an image",
     "greyscale": "Applies a greyscale filter to the image",
-    "jpeg": "JPEG-ifies an image"
+    "jpeg": "JPEG-ifies an image",
+    "caption": "Adds a caption to an image"
 }

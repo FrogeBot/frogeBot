@@ -132,7 +132,7 @@ function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
         
         if (fitWidth <= 0)
         {
-            await fillTextWithTwemoji(context, text, x, y, { emojiTopMarginPercent: -0.75} );
+            await fillTextWithTwemoji(context, text, x, y, { emojiTopMarginPercent: 0.1} );
             resolve(1);
         }
         var words = text.split(' ');
@@ -148,7 +148,7 @@ function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
                 {
                     idx=2;
                 }
-                await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: -0.75} );
+                await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.1} );
                 currentLine++;
                 words = words.splice(idx-1);
                 idx = 1;
@@ -157,7 +157,7 @@ function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
             {idx++;}
         }
         if  (idx > 0)
-        await fillTextWithTwemoji(context, words.join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: -0.75} );
+        await fillTextWithTwemoji(context, words.join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.1} );
 
         resolve(currentLine+1);
     });

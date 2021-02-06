@@ -1,0 +1,12 @@
+{
+    "help": "Shows the list of commands",
+    "avatar": "Shows the avatar of the mentioned user",
+    "pixelate": "Pixelates the supplied image (usage: `pixelate [amount]`)",
+    "blur": "Blurs the supplied image (usage: `blur [amount]`)",
+    "fliph": "Flips an image horizontally",
+    "flipv": "Flips an image vertically",
+    "fisheye": "Applies a fisheye effect to an image (usage: `fisheye [amount]`)",
+    "invert": "Inverts an image",
+    "greyscale": "Applies a greyscale filter to the image",
+    "jpeg": "JPEG-ifies an image"
+}

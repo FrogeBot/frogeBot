@@ -1,0 +1,12 @@
+{
+    "help": "misc/help.js",
+    "avatar": "misc/avatar.js",
+    "pixelate": "image/pixelate.js",
+    "fliph": "image/fliph.js",
+    "flipv": "image/flipv.js",
+    "blur": "image/blur.js",
+    "fisheye": "image/fisheye.js",
+    "invert": "image/invert.js",
+    "greyscale": "image/greyscale.js",
+    "jpeg": "image/jpeg.js"
+}

@@ -7,7 +7,7 @@ function isCmd(msg) {
     return new Promise((resolve, reject) => {
         let hasPrefix = msg.content.startsWith("+") || msg.content.startsWith("<@"+msg.client.id+">")
         if(hasPrefix) {
-            let prefix = msg.content.startsWith(process.env.prefix) ? process.env.prefix : (msg.content.startsWith("<@"+msg.client.id+">") ? "<@"+msg.client.id+"> " : null)
+            let prefix = msg.content.startsWith(process.env.CMD_PREFIX) ? process.env.CMD_PREFIX : (msg.content.startsWith("<@"+msg.client.id+">") ? "<@"+msg.client.id+"> " : null)
             let cmd = msg.content.substr(prefix.length).split(" ")[0];
             if(cmdMap.hasOwnProperty(cmd)) {
                 resolve(true)
@@ -26,7 +26,7 @@ function parseMsg(msg) {
     return new Promise((resolve, reject) => {
         let hasPrefix = msg.content.startsWith("+") || msg.content.startsWith("<@"+msg.client.id+">")
         if(hasPrefix) {
-            let prefix = msg.content.startsWith(process.env.prefix) ? process.env.prefix : (msg.content.startsWith("<@"+msg.client.id+">") ? "<@"+msg.client.id+"> " : null)
+            let prefix = msg.content.startsWith(process.env.CMD_PREFIX) ? process.env.CMD_PREFIX : (msg.content.startsWith("<@"+msg.client.id+">") ? "<@"+msg.client.id+"> " : null)
             let cmd = msg.content.substr(prefix.length).split(" ")[0];
             if(cmdMap.hasOwnProperty(cmd)) {
                 let args = msg.content.substr(prefix.length + cmd.length + 1)

@@ -14,7 +14,7 @@ async function cmdFunc(msg, args) {
         let imgFG = await readURL(await findImage(msg));
         let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.1), "Roboto", Math.round(imgFG.bitmap.width*0.8))
         let textImg = await readBuffer(textCanvas[0]);
-        let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.1);
+        let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
         let img = await execNewImage(imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', [ ["composite", [imgFG, 0, offset]], ["composite", [textImg, Math.round(imgFG.bitmap.width*0.1), Math.round(imgFG.bitmap.width*0.05)]] ]);
         const attachment = new MessageAttachment(img);
         msg.channel.stopTyping()

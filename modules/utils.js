@@ -8,7 +8,7 @@ function findImage(msg) {
                 let imgUrl = msg.embeds[0].url
                 resolve(imgUrl)
             } else {
-                // Add channel searching (go back 20 or 25 messages)
+                // Channel searching (go back 20 or 25 messages)
                 let messages = await msg.channel.messages.fetch({ limit: 25 })
                 let attachmentMessages = messages.map(message => {
                     let attachmentURL = undefined

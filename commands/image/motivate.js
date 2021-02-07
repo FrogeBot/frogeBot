@@ -21,7 +21,7 @@ async function cmdFunc(msg, args) {
         let width = Math.round(height * 4/3)
         
         let scaleFactor = 0.75;
-        if(height < 2000 && width < 2000) scaleFactor = 1;
+        if(height < 1024 && width < 1024) scaleFactor = 1;
 
         let rectCanvas = await canvasRect(Math.round(imgFG.bitmap.width*1.05), Math.round(imgFG.bitmap.height+imgFG.bitmap.width*0.05), "white", Math.round(imgFG.bitmap.width*0.005), "black")
 

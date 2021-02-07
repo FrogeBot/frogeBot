@@ -17,7 +17,7 @@ async function cmdFunc(msg, args) {
         let imgFG = await readURL(await findImage(msg));
 
         
-        let height = Math.round(imgFG.bitmap.height*1.2);
+        let height = Math.round(imgFG.bitmap.height+imgFG.bitmap.width*0.05);
         let width = ( height * 4/3 > imgFG.bitmap.width*1.2 ) ? Math.round(height * 4/3) : Math.round(imgFG.bitmap.width*1.2);
         
         let scaleFactor = 0.75;
@@ -29,14 +29,14 @@ async function cmdFunc(msg, args) {
 
         let textCanvas2 = await canvasText(args.split("|").slice(1).join("|").trim(), Math.round(width*0.07*scaleFactor), "Times New Roman", Math.round(width*0.9*scaleFactor), "center", 1.5, "white")
 
-        let offset = textCanvas[1]/scaleFactor+textCanvas2[1]/scaleFactor+Math.round(imgFG.bitmap.width*0.075);
+        let offset = textCanvas[1]/scaleFactor+textCanvas2[1]/scaleFactor + width*0.05;
 
         let img = await execNewImage(width, height+offset, "#000000", [
-            ["composite", [rectCanvas, Math.round(width/2-imgFG.bitmap.width/2 - Math.round(imgFG.bitmap.width*0.025)), Math.round(width*0.05 - Math.round(imgFG.bitmap.width*0.025))]],
+            ["composite", [rectCanvas, Math.round(width/2-imgFG.bitmap.width/2 - Math.round(imgFG.bitmap.width*0.025)), Math.round(width*0.05 - imgFG.bitmap.width*0.025)]],
             ["composite", [await imgFG.getBufferAsync(Jimp.AUTO), Math.round(width/2-imgFG.bitmap.width/2), Math.round(width*0.05)]],
             ["scale", [scaleFactor]],
-            ["composite", [textCanvas[0], Math.round(width*0.05*scaleFactor), height*scaleFactor]],
-            ["composite", [textCanvas2[0], Math.round(width*0.05*scaleFactor), height*scaleFactor+textCanvas[1]]]
+            ["composite", [textCanvas[0], Math.round(width*0.05*scaleFactor), Math.round(height*scaleFactor + width*0.05 - imgFG.bitmap.width*0.025)]],
+            ["composite", [textCanvas2[0], Math.round(width*0.05*scaleFactor), Math.round(height*scaleFactor + width*0.05 - imgFG.bitmap.width*0.025)+textCanvas[1]]]
         ]).catch(e => {
             throw e
         });

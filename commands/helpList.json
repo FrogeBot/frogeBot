@@ -10,5 +10,6 @@
     "greyscale": "Applies a greyscale filter to the image",
     "jpeg": "JPEG-ifies an image",
     "caption": "Adds a caption to an image",
-    "caption2": "Adds a caption of an alternate style to an image"
+    "caption2": "Adds a caption of an alternate style to an image",
+    "motivate": "Adds a demotivational poster caption to an image (Line separation = `|` )"
 }

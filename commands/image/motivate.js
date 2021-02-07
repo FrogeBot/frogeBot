@@ -29,7 +29,7 @@ async function cmdFunc(msg, args) {
 
         let textCanvas2 = await canvasText(args.split("|").slice(1).join("|").trim(), Math.round(width*0.05*scaleFactor), "Times New Roman", Math.round(width*0.9*scaleFactor), "center", 1.5, "white")
 
-        let offsetScaled = textCanvas[1]/scaleFactor+textCanvas2[1]/scaleFactor+Math.round(imgFG.bitmap.width*0.075);
+        let offset = textCanvas[1]/scaleFactor+textCanvas2[1]/scaleFactor+Math.round(imgFG.bitmap.width*0.075);
 
         let img = await execNewImage(width, height+offset, "#000000", [
             ["composite", [rectCanvas, Math.round(width/2-imgFG.bitmap.width/2 - Math.round(imgFG.bitmap.width*0.025)), Math.round(imgFG.bitmap.height*0.05) - Math.round(imgFG.bitmap.width*0.025)]],

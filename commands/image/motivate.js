@@ -18,25 +18,25 @@ async function cmdFunc(msg, args) {
 
         
         let height = Math.round(imgFG.bitmap.height*1.2);
-        let width = Math.round(height * 4/3)
+        let width = ( height * 4/3 > imgFG.bitmap.width*1.2 ) ? Math.round(height * 4/3) : Math.round(imgFG.bitmap.width*1.2);
         
         let scaleFactor = 0.75;
         if(height < 1024 && width < 1024) scaleFactor = 1;
 
         let rectCanvas = await canvasRect(Math.round(imgFG.bitmap.width*1.05), Math.round(imgFG.bitmap.height+imgFG.bitmap.width*0.05), "white", Math.round(imgFG.bitmap.width*0.005), "black")
 
-        let textCanvas = await canvasText(args.split("|")[0].trim(), Math.round(width*0.075*scaleFactor), "Times New Roman", Math.round(width*0.9*scaleFactor), "center", 1.5, "white")
+        let textCanvas = await canvasText(args.split("|")[0].trim(), Math.round(width*0.1*scaleFactor), "Times New Roman", Math.round(width*0.9*scaleFactor), "center", 1.5, "white")
 
-        let textCanvas2 = await canvasText(args.split("|").slice(1).join("|").trim(), Math.round(width*0.05*scaleFactor), "Times New Roman", Math.round(width*0.9*scaleFactor), "center", 1.5, "white")
+        let textCanvas2 = await canvasText(args.split("|").slice(1).join("|").trim(), Math.round(width*0.07*scaleFactor), "Times New Roman", Math.round(width*0.9*scaleFactor), "center", 1.5, "white")
 
         let offset = textCanvas[1]/scaleFactor+textCanvas2[1]/scaleFactor+Math.round(imgFG.bitmap.width*0.075);
 
         let img = await execNewImage(width, height+offset, "#000000", [
-            ["composite", [rectCanvas, Math.round(width/2-imgFG.bitmap.width/2 - Math.round(imgFG.bitmap.width*0.025)), Math.round(imgFG.bitmap.height*0.05) - Math.round(imgFG.bitmap.width*0.025)]],
-            ["composite", [await imgFG.getBufferAsync(Jimp.AUTO), Math.round(width/2-imgFG.bitmap.width/2), Math.round(imgFG.bitmap.height*0.05)]],
+            ["composite", [rectCanvas, Math.round(width/2-imgFG.bitmap.width/2 - Math.round(imgFG.bitmap.width*0.025)), Math.round(width*0.05 - Math.round(imgFG.bitmap.width*0.025))]],
+            ["composite", [await imgFG.getBufferAsync(Jimp.AUTO), Math.round(width/2-imgFG.bitmap.width/2), Math.round(width*0.05)]],
             ["scale", [scaleFactor]],
-            ["composite", [textCanvas[0], Math.round(width*0.05*scaleFactor), Math.round(imgFG.bitmap.height*scaleFactor)+Math.round(imgFG.bitmap.width*0.1*scaleFactor)]],
-            ["composite", [textCanvas2[0], Math.round(width*0.05*scaleFactor), Math.round(imgFG.bitmap.height*scaleFactor)+Math.round(imgFG.bitmap.width*0.175*scaleFactor)+textCanvas[1]]]
+            ["composite", [textCanvas[0], Math.round(width*0.05*scaleFactor), height*scaleFactor]],
+            ["composite", [textCanvas2[0], Math.round(width*0.05*scaleFactor), height*scaleFactor+textCanvas[1]]]
         ]).catch(e => {
             throw e
         });

@@ -34,45 +34,78 @@ function readBuffer(buffer) {
     });
 }
 
+const { Worker } = require('worker_threads');
+
+
+function createNewImage(w, h, bg) {
+    return new Promise(async (resolve, reject) => {
+        setImmediate(async () => {
+            // Create image from specified parameters
+            new Jimp(w, h, bg, async (err, img) => {
+                if(err) {
+                    reject()
+                } else {
+                    resolve(img) // Resolve image
+                }
+            })
+        });
+    })
+}
+
 function exec(imgUrl, list) {
     return new Promise(async (resolve, reject) => {
-        // Get image from URL
-        readURL(imgUrl).then(async img => {
-            for(let i = 0; i < list.length; i++) { // Loop through actions in list
-                img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
-            }
-            resolve(img.getBufferAsync(Jimp.AUTO)) // Resolve image
-        }).catch(reject)
+        let worker = new Worker(__dirname+"/image-worker.js")
+        worker.postMessage({ imgUrl, list })
+
+        worker.on('message', (img) => {
+            if(img == null) reject()
+            resolve(Buffer.from(img))
+        });
     })
 }
 
 function execNewImage(w, h, bg, list) {
     return new Promise(async (resolve, reject) => {
-        // Create image from specified parameters
-        new Jimp(w, h, bg, async (err, img) => {
-            if(err) {
-                reject()
-            } else {
-                for(let i = 0; i < list.length; i++) { // Loop through actions in list
-                    img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
+        setImmediate(async () => {
+            let img = await createNewImage(w, h, bg)
+            let buffer = await img.getBufferAsync(Jimp.AUTO)
+
+            let worker = new Worker(__dirname+"/image-worker.js")
+            worker.postMessage({ buffer, list })
+
+            worker.on('message', (img) => {
+                if(img === null) {
+                    reject()
+                } else {
+                    resolve(Buffer.from(img))
                 }
-                resolve(img.getBufferAsync(Jimp.AUTO)) // Resolve image
+            });
+            /*
+            for(let i = 0; i < list.length; i++) { // Loop through actions in list
+                img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
             }
-        })
+            resolve(img.getBufferAsync(Jimp.AUTO)) // Resolve image
+            */
+        });
     })
 }
 
 function performMethod(img, method, params) {
     return new Promise(async (resolve, reject) => {
         try {
-            let newImg = img;
-            if(img[method]) { // If native jimp method
-                newImg = await img[method](...params) // Run method function on image
-            } else { // If custom method or undefined method
-                newImg = await customMethod(img, method, params) // Attempt to run method function on image
+            for (let i = 0; i < params.length; i++) {
+                if(typeof params[i] == "object") {
+                    params[i] = await readBuffer(Buffer.from(params[i]));
+                }  
             }
-            resolve(newImg); // Resolve image
+            if(img[method]) { // If native jimp method
+                img = await img[method](...params) // Run method function on image
+            } else { // If custom method or undefined method
+                img = await customMethod(img, method, params) // Attempt to run method function on image
+            }
+            resolve(img); // Resolve image
         } catch(e) {
+            console.log(e)
             reject(e)
         }
     })
@@ -114,71 +147,6 @@ function loadFont(path) {
     });
 }
 
-const { createCanvas, loadImage, registerFont } = require('canvas')
-const { fillTextWithTwemoji } = require('node-canvas-with-twemoji-and-discord-emoji');
-
-// Fonts
-registerFont(__dirname+'/../fonts/RobotoBlack.otf', { family: 'Roboto' })
-
-function canvasText(text, fontSize, fontFamily, width, align = "center", lineSpacing = 1.5) {
-    return new Promise(async (resolve, reject) => {
-        // Init canvas
-        let maxHeight = 16384
-        const canvas = createCanvas(width, maxHeight)
-        const ctx = canvas.getContext('2d')
-        
-        // Text styling
-        ctx.textAlign = align;
-        ctx.font = fontSize+"px "+fontFamily
-
-        let startX = 0;
-        if(align == "center") startX = width/2
-
-        let lineHeight = lineSpacing*fontSize // Calculate line height
-
-        let lines = await printAtWordWrap(ctx, text, startX, fontSize, lineHeight, width); // Print text on canvas, returns number of lines
-
-        resolve([await canvas.toBuffer(), (lineHeight*lines > maxHeight ? maxHeight : lineHeight*lines)]) // Resolve canvas image buffer and used height
-    })
-}
-
-function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
-    return new Promise(async (resolve, reject) => {
-        fitWidth = fitWidth || 0;
-        
-        if (fitWidth <= 0)
-        {
-            await fillTextWithTwemoji(context, text, x, y, { emojiTopMarginPercent: 0.1} ); // Fills text using Twemoji support
-            resolve(0);
-        }
-        var words = text.split(' ');
-        var currentLine = 0; // Resolve number of lines
-        var idx = 1;
-        while (words.length > 0 && idx <= words.length)
-        {
-            var str = words.slice(0,idx).join(' ');
-            var w = context.measureText(str.replace(/(<a?:.+:[0-9]+>)/gi, "🤡")).width; // Measure text, replacing discord custom emojis with the clown emoji
-            if ( w > fitWidth )
-            {
-                if (idx==1)
-                {
-                    idx=2;
-                }
-                await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.1} ); // Fills text using Twemoji support
-                currentLine++;
-                words = words.splice(idx-1);
-                idx = 1;
-            }
-            else
-            {idx++;}
-        }
-        if  (idx > 0)
-        await fillTextWithTwemoji(context, words.join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.1} ); // Fills text using Twemoji support
-
-        resolve(currentLine+1); // Resolve number of lines
-    });
-}
-
 // Exports
 module.exports = {
     exec,
@@ -188,5 +156,6 @@ module.exports = {
     measureText,
     measureTextHeight,
     loadFont,
-    canvasText
+    performMethod,
+    customMethod
 }

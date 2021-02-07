@@ -9,11 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "base64url": "^3.0.1",
     "canvas": "^2.6.1",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "jimp": "^0.16.1",
     "node-canvas-with-twemoji-and-discord-emoji": "^1.1.8",
+    "node-serialize": "0.0.4",
+    "serialize-javascript": "^5.0.1",
     "webp-converter": "^2.3.1"
   }
 }

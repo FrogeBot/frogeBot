@@ -1,28 +1,27 @@
 function findImage(msg) {
     return new Promise(async (resolve, reject) => {
         try {
-            if(msg.attachments.size > 0) {
+            if(msg.attachments.size > 0) { // If message has image attachment
                 let imgUrl = await msg.attachments.first()
-                resolve(imgUrl.proxyURL)
-            } else if(msg.embeds[0] && msg.embeds[0].type == "image") {
+                resolve(imgUrl.proxyURL) // Resolve image URL
+            } else if(msg.embeds[0] && msg.embeds[0].type == "image") { // If message has image embed
                 let imgUrl = msg.embeds[0].url
-                resolve(imgUrl)
-            } else {
-                // Channel searching (go back 20 or 25 messages)
+                resolve(imgUrl) // Resolve image URL
+            } else { // Channel searching (25 messages)
                 let messages = await msg.channel.messages.fetch({ limit: 25 })
                 let attachmentMessages = messages.map(message => {
                     let attachmentURL = undefined
                     if(message.attachments.first()) {
-                        attachmentURL = message.attachments.first().proxyURL;
+                        attachmentURL = message.attachments.first().proxyURL; // If message has image attachment set as URL
                     } else {
                         if(message.embeds[0] && message.embeds[0].type == "image") {
-                            attachmentURL = message.embeds[0].url
+                            attachmentURL = message.embeds[0].url // If message has image embed set as URL
                         }
                     }
-                    if(attachmentURL) return attachmentURL
-                }).filter(a => a != undefined);
+                    if(attachmentURL) return attachmentURL // Return image URL for each message
+                }).filter(a => a != undefined); // Filter out messages with no image
                 if(attachmentMessages[0]) {
-                    resolve(attachmentMessages[0])
+                    resolve(attachmentMessages[0]) // Resolve image URL
                 } else {
                     reject()
                 }
@@ -33,6 +32,7 @@ function findImage(msg) {
     })
 }
 
+// Exports
 module.exports = {
     findImage
 }

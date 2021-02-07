@@ -15,11 +15,10 @@ async function cmdFunc(msg, args) {
         msg.channel.startTyping()
         let imgFG = await readURL(await findImage(msg));
         let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.05), "Arial", Math.round(imgFG.bitmap.width*0.9), "left")
-        let textImg = await readBuffer(textCanvas[0]);
         let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
         let img = await execNewImage(imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', [
-            ["composite", [imgFG, 0, 0]],
-            ["composite", [textImg, Math.round(imgFG.bitmap.width*0.05), imgFG.bitmap.height+Math.round(imgFG.bitmap.width*0.05)]]
+            ["composite", [await imgFG.getBufferAsync(Jimp.AUTO), 0, 0]],
+            ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.05), imgFG.bitmap.height+Math.round(imgFG.bitmap.width*0.05)]]
         ]);
         const attachment = new MessageAttachment(img);
         msg.channel.stopTyping()

@@ -84,6 +84,8 @@ function canvasRect(width, height, strokeStyle = "white", strokeWidth = 4, fillS
         ctx.fillStyle = strokeStyle
         ctx.fill();
 
+        ctx.clearRect(strokeWidth, strokeWidth, width-strokeWidth*2, height-strokeWidth*2);
+
         ctx.beginPath();
         ctx.rect(strokeWidth, strokeWidth, width-strokeWidth*2, height-strokeWidth*2);
         ctx.fillStyle = fillStyle

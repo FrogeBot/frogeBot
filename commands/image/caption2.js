@@ -6,7 +6,7 @@ let { findImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { execNewImage, readURL, readBuffer } = require("../../modules/image.js")
+let { exec, readURL, readBuffer } = require("../../modules/image.js")
 let { canvasText } = require("../../modules/canvas.js")
 
 async function cmdFunc(msg, args) {

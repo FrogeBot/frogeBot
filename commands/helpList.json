@@ -11,5 +11,8 @@
     "jpeg": "JPEG-ifies an image",
     "caption": "Adds a caption to an image",
     "caption2": "Adds a caption of an alternate style to an image",
-    "motivate": "Adds a demotivational poster caption to an image (Line separation = `|` )"
+    "motivate": "Adds a demotivational poster caption to an image (Line separation = `|` )",
+    "evenframes": "Returns a GIF image with only its even frames, preserving the speed of the GIF.",
+    "speed": "Doubles the speed of a GIF",
+    "slow": "Halves the speed of a GIF"
 }

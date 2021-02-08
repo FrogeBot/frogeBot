@@ -13,7 +13,7 @@ parentPort.once('message', async (msg) => {
         try {
             let frames = [];
             gifFrames({ url: imgUrl, frames: 0 }).then(function (firstFrameData) {
-                gifFrames({ url: imgUrl, frames: 'all', cumulative: (firstFrameData[0].frameInfo.disposal == 1) }).then(async function (frameData) {
+                gifFrames({ url: imgUrl, frames: '0-29', cumulative: (firstFrameData[0].frameInfo.disposal == 1) }).then(async function (frameData) {
                     async function cb () {
                         const codec = new GifCodec();
                         codec.encodeGif(frames.filter(f => f != undefined)).then(gif => {

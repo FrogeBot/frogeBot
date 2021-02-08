@@ -13,14 +13,18 @@ async function cmdFunc(msg, args) {
     try {
         let procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
         msg.channel.startTyping()
+        
+        let imageUrl = await findImage(msg)
+        let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
+        
         let imgFG = await readURL(await findImage(msg));
         let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.05), "Arial", Math.round(imgFG.bitmap.width*0.9), "left")
         let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
-        let img = await execNewImage(imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', [
-            ["composite", [await imgFG.getBufferAsync(Jimp.AUTO), 0, 0]],
+        let img = await exec(imageUrl, [
+            ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', 0, 0]],
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.05), imgFG.bitmap.height+Math.round(imgFG.bitmap.width*0.05)]]
         ]);
-        const attachment = new MessageAttachment(img);
+        const attachment = new MessageAttachment(img, "image."+extension);
         msg.channel.stopTyping()
         msg.channel.send(attachment)
         procMsg.delete();

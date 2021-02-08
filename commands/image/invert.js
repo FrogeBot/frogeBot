@@ -11,8 +11,12 @@ async function cmdFunc(msg, args) {
     try {
         let procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
         msg.channel.startTyping()
-        let img = await exec(await findImage(msg), [ ["invert", []] ]);
-        const attachment = new MessageAttachment(img);
+        
+        let imageUrl = await findImage(msg)
+        let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
+        
+        let img = await exec(imageUrl, [ ["invert", []] ]);
+        const attachment = new MessageAttachment(img, "image."+extension);
         msg.channel.stopTyping()
         msg.channel.send(attachment)
         procMsg.delete();

@@ -6,22 +6,25 @@ let { findImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { execNewImage, readURL, readBuffer } = require("../../modules/image.js")
+let { exec, readURL, readBuffer } = require("../../modules/image.js")
 let { canvasText } = require("../../modules/canvas.js")
 
 async function cmdFunc(msg, args) {
     try {
         let procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
         msg.channel.startTyping()
+        
+        let imageUrl = await findImage(msg)
+        let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
+        
         let imgFG = await readURL(await findImage(msg));
         let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.1), "Roboto", Math.round(imgFG.bitmap.width*0.8))
-        let textImg = await readBuffer(textCanvas[0]);
         let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
-        let img = await execNewImage(imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', [
-            ["composite", [await imgFG.getBufferAsync(Jimp.AUTO), 0, offset]],
+        let img = await exec(imageUrl, [
+            ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', 0, offset]],
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.1), Math.round(imgFG.bitmap.width*0.05)]]
         ]);
-        const attachment = new MessageAttachment(img);
+        const attachment = new MessageAttachment(img, "image."+extension);
         msg.channel.stopTyping()
         msg.channel.send(attachment)
         procMsg.delete();

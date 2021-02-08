@@ -52,41 +52,33 @@ function createNewImage(w, h, bg) {
     })
 }
 
+const { GifFrame, GifUtil, GifCodec } = require('gifwrap');
+var gifFrames = require('gif-frames');
+
 function exec(imgUrl, list) {
     return new Promise(async (resolve, reject) => {
-        let worker = new Worker(__dirname+"/image-worker.js")
-        worker.postMessage({ imgUrl, list })
-
-        worker.on('message', (img) => {
-            if(img == null) reject()
-            resolve(Buffer.from(img))
-        });
-    })
-}
-
-function execNewImage(w, h, bg, list) {
-    return new Promise(async (resolve, reject) => {
-        setImmediate(async () => {
-            let img = await createNewImage(w, h, bg)
-            let buffer = await img.getBufferAsync(Jimp.AUTO)
-
+        if(imgUrl.match(/(\.gif)/gi)) {
+            try {
+                let worker = new Worker(__dirname+"/gif-worker.js")
+                worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1 })
+    
+                worker.on('message', async (img) => {
+                    if(img == null) reject()
+                    resolve(Buffer.from(img))
+                });
+            } catch(e) {
+                console.log(e)
+                reject(e)
+            }
+        } else {
             let worker = new Worker(__dirname+"/image-worker.js")
-            worker.postMessage({ buffer, list })
+            worker.postMessage({ imgUrl, list })
 
             worker.on('message', (img) => {
-                if(img === null) {
-                    reject()
-                } else {
-                    resolve(Buffer.from(img))
-                }
+                if(img == null) reject()
+                resolve(Buffer.from(img))
             });
-            /*
-            for(let i = 0; i < list.length; i++) { // Loop through actions in list
-                img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
-            }
-            resolve(img.getBufferAsync(Jimp.AUTO)) // Resolve image
-            */
-        });
+        }
     })
 }
 
@@ -121,8 +113,14 @@ function customMethod(img, method, params) {
                 let w = Math.round(params[0]*img.bitmap.width)
                 let h = Math.round(params[0]*img.bitmap.height)
                 newImg = await img.crop(x, y, w, h)
+                resolve(newImg); // Resolve image
             }
-            resolve(newImg); // Resolve image
+            if(method == "addBackground") { // Adds colour background
+                new Jimp(params[0], params[1], params[2], async (err, bgImg) => {
+                    newImg = await bgImg.composite(img, params[3], params[4])
+                    resolve(newImg); // Resolve image
+                });
+            }
         } catch(e) {
             reject(e)
         }
@@ -150,7 +148,6 @@ function loadFont(path) {
 // Exports
 module.exports = {
     exec,
-    execNewImage,
     readURL,
     readBuffer,
     measureText,

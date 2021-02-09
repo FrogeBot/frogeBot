@@ -38,7 +38,38 @@ function findImage(msg) {
     })
 }
 
+const timeVals = {
+    second: 1000,
+    minute: 60000,
+    hour: 3600000,
+    day: 86400000
+}
+function formatDuration(millis) {
+    let str = [];
+    switch(true) {
+        case millis >= timeVals.day:
+            str.push(Math.floor(millis/timeVals.day) + "d")
+            millis = millis%timeVals.day
+        case millis >= timeVals.hour:
+            str.push(Math.floor(millis/timeVals.hour) + "h")
+            millis = millis%timeVals.hour
+        case millis >= timeVals.minute:
+            str.push(Math.floor(millis/timeVals.minute) + "m")
+            millis = millis%timeVals.minute
+        default:
+            str.push(millis/timeVals.second + "s")
+        
+    }
+    return str.join(" ")
+}
+
+function clamp(input, min, max) {
+    return Math.min(Math.max(input, min), max);
+};
+
 // Exports
 module.exports = {
-    findImage
+    findImage,
+    formatDuration,
+    clamp
 }

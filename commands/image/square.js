@@ -5,7 +5,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { exec } = require("../../modules/image.js")
+let { exec, readURL } = require("../../modules/image.js")
 
 async function cmdFunc(msg, args) {
     try {
@@ -13,10 +13,13 @@ async function cmdFunc(msg, args) {
         msg.channel.startTyping()
         
         let imageUrl = await findImage(msg)
-        let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
+        let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
+        
+        let img = await readURL(imageUrl);
+        let size = (img.bitmap.height >= img.bitmap.width) ? img.bitmap.width : img.bitmap.height;
 
-        let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 10;
-        let img = await exec(imageUrl, [ ["quality", [r]] ]);
+        img = await exec(imageUrl, [ ["cover", [size, size]] ]);
+
         const attachment = new MessageAttachment(img, "image."+extension);
         msg.channel.stopTyping()
         msg.channel.send(attachment)

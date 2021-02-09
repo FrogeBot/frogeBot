@@ -2,7 +2,7 @@ const { createCanvas, loadImage, registerFont } = require('canvas')
 const { fillTextWithTwemoji } = require('node-canvas-with-twemoji-and-discord-emoji');
 
 // Fonts
-registerFont(__dirname+'/../fonts/RobotoBlack.otf', { family: 'Roboto' })
+registerFont(__dirname+'/../fonts/RobotoBlack.ttf', { family: 'Roboto' })
 
 function canvasText(text, fontSize, fontFamily, width, align = "center", lineSpacing = 1.5, fillStyle = "black") {
     return new Promise(async (resolve, reject) => {

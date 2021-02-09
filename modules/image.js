@@ -3,10 +3,12 @@ const webp = require('webp-converter');
 const http = require('https');
 const fs = require('fs');
 
+var mime = require('mime-types')
+
 function readURL(imgUrl) {
     return new Promise(async (resolve, reject) => {
         // Check if .webp, requires additional handling
-        if(imgUrl.match(/(\.webp)/gi)) {
+        if((await mime.lookup(imgUrl.split("?")[0])) === "image/webp") {
             // Get .webp image
             const file = fs.createWriteStream(__dirname+"/tmp.webp");
             const request = http.get(imgUrl, async function(response) {
@@ -15,12 +17,31 @@ function readURL(imgUrl) {
                 let img = await Jimp.read(__dirname+'/tmp.png'); // Read tmp.png for jimp
                 fs.unlink(__dirname+"/tmp.webp", () => {}); // Remove tmp.webp
                 fs.unlink(__dirname+"/tmp.png", () => {}); // Remove tmp.png
-                resolve(img); // Resolve image converted to image/png
+
+                maxSize = Number(process.env.MAX_IMG_SIZE);
+                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
+                    await img.resize(maxSize, Jimp.AUTO);
+                    resolve(img); // Resolve image limited to max size and converted to image/png
+                } else if(img.bitmap.height > maxSize) {
+                    await img.resize(Jimp.AUTO, maxSize);
+                    resolve(img); // Resolve image limited to max size and converted to image/png
+                } else {
+                    resolve(img) // Resolve image converted to image/png
+                }
             });
         } else {
             // Read image type supported by jimp
             Jimp.read(imgUrl).then(async img => {
-                resolve(img) // Resolve image
+                maxSize = Number(process.env.MAX_IMG_SIZE);
+                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
+                    await img.resize(maxSize, Jimp.AUTO);
+                    resolve(img); // Resolve image limited to max size
+                } else if(img.bitmap.height > maxSize) {
+                    await img.resize(Jimp.AUTO, maxSize);
+                    resolve(img); // Resolve image limited to max size
+                } else {
+                    resolve(img) // Resolve image
+                }
             });
         }
     });
@@ -52,12 +73,9 @@ function createNewImage(w, h, bg) {
     })
 }
 
-const { GifFrame, GifUtil, GifCodec } = require('gifwrap');
-var gifFrames = require('gif-frames');
-
 function exec(imgUrl, list) {
     return new Promise(async (resolve, reject) => {
-        if(imgUrl.match(/(\.gif)/gi)) {
+        if((await mime.lookup(imgUrl.split("?")[0])) === "image/gif") {
             try {
                 let worker = new Worker(__dirname+"/gif-worker.js")
                 worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1 })
@@ -116,10 +134,9 @@ function customMethod(img, method, params) {
                 resolve(newImg); // Resolve image
             }
             if(method == "addBackground") { // Adds colour background
-                new Jimp(params[0], params[1], params[2], async (err, bgImg) => {
-                    newImg = await bgImg.composite(img, params[3], params[4])
-                    resolve(newImg); // Resolve image
-                });
+                let bgImg = await createNewImage(params[0], params[1], params[2]);
+                newImg = await bgImg.composite(img, params[3], params[4])
+                resolve(newImg); // Resolve image
             }
         } catch(e) {
             reject(e)

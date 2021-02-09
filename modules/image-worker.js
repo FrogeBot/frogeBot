@@ -1,6 +1,6 @@
 const { isMainThread, parentPort } = require('worker_threads');
-var Jimp = require('jimp');
-let { readURL, performMethod, readBuffer } = require("./image.js")
+var gm = require('gm');
+let { readURL, performMethod, readBuffer, gmToBuffer } = require("./image.js")
 
 
 parentPort.once('message', async (msg) => {
@@ -9,31 +9,34 @@ parentPort.once('message', async (msg) => {
             let list = msg.list;
             if(msg.imgUrl) {
                 let imgUrl = msg.imgUrl;
-                // Get image from URL
-                readURL(imgUrl).then(async img => {
-                    for(let i = 0; i < list.length; i++) { // Loop through actions in list
-                        img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
-                    }
-                    parentPort.postMessage(await img.getBufferAsync(Jimp.AUTO)) // Resolve image
-                }).catch((e) => {
-                    //console.log(e)
-                    parentPort.postMessage(null)
+                let img = gm(await readURL(imgUrl))
+                for(let i = 0; i < list.length; i++) { // Loop through actions in list
+                    img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
+                }
+                img.format({bufferStream: true}, function (err, format) {
+                    this.toBuffer(format, function (err, buffer) {
+                        if (!err) {
+                            parentPort.postMessage(buffer) // Resolve image
+                        } else console.log(err)
+                    });
                 })
             } else if(msg.buffer) {
                 let buffer = Buffer.from(msg.buffer);
                 // Get image from buffer
-                readBuffer(buffer).then(async img => {
-                    for(let i = 0; i < list.length; i++) { // Loop through actions in list
-                        img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
-                    }
-                    parentPort.postMessage(await img.getBufferAsync(Jimp.AUTO)) // Resolve image
-                }).catch((e) => {
-                    //console.log(e)
-                    parentPort.postMessage(null)
+                let img = gm(buffer)
+                for(let i = 0; i < list.length; i++) { // Loop through actions in list
+                    img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
+                }
+                img.format({bufferStream: true}, function (err, format) {
+                    this.toBuffer(format, function (err, buffer) {
+                        if (!err) {
+                            parentPort.postMessage(buffer) // Resolve image
+                        } else console.log(err)
+                    });
                 })
             }
         } catch(e) {
-            //console.log(e)
+            console.log(e)
             parentPort.postMessage(null)
         }
     }

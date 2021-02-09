@@ -76,7 +76,7 @@ async function cmdFunc(msg, args, startTime) {
         msg.channel.stopTyping()
         procMsg.delete();
     } catch(e) {
-        //console.log(e)
+        console.log(e)
         msg.channel.stopTyping()
         msg.channel.send({
             embed: {

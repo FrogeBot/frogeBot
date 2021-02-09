@@ -2,11 +2,27 @@ var Jimp = require('jimp');
 const webp = require('webp-converter');
 const http = require('https');
 const fs = require('fs');
+const gm = require('gm')
+const request = require('request')
 
 var mime = require('mime-types')
 
+function gmToBuffer(gm) {
+    return new Promise(async (resolve, reject) => {
+        gm.format({bufferStream: true}, function (err, format) {
+            this.toBuffer(format, function (err, buffer) {
+                if (!err) {
+                    resolve(buffer);
+                } else reject(err)
+            });
+        })
+    });
+}
+
 function readURL(imgUrl) {
     return new Promise(async (resolve, reject) => {
+        resolve(await gmToBuffer(gm(request(imgUrl)).resize(process.env.MAX_IMG_SIZE, process.env.MAX_IMG_SIZE)))
+        /*
         // Check if .webp, requires additional handling
         if((await mime.lookup(imgUrl.split("?")[0])) === "image/webp") {
             // Get .webp image
@@ -38,6 +54,7 @@ function readURL(imgUrl) {
                 }
             }).catch(reject)
         }
+        */
     });
 }
 function readBuffer(buffer) {
@@ -48,9 +65,6 @@ function readBuffer(buffer) {
         }).catch(reject)
     });
 }
-
-const { Worker } = require('worker_threads');
-
 
 function createNewImage(w, h, bg) {
     return new Promise(async (resolve, reject) => {
@@ -66,6 +80,8 @@ function createNewImage(w, h, bg) {
         });
     })
 }
+
+const { Worker } = require('worker_threads');
 
 function exec(imgUrl, list) {
     return new Promise(async (resolve, reject) => {
@@ -94,22 +110,44 @@ function exec(imgUrl, list) {
     })
 }
 
+function execGM(imgUrl, list) {
+    return new Promise(async (resolve, reject) => {
+        if((await mime.lookup(imgUrl.split("?")[0])) === "image/gif") {
+            try {
+                let worker = new Worker(__dirname+"/gif-worker.js")
+                worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1 })
+    
+                worker.on('message', async (img) => {
+                    if(img == null) reject()
+                    resolve(Buffer.from(img))
+                });
+            } catch(e) {
+                console.log(e)
+                reject(e)
+            }
+        } else {
+            let worker = new Worker(__dirname+"/image-worker.js")
+            worker.postMessage({ imgUrl, list })
+
+            worker.on('message', (img) => {
+                if(img == null) reject()
+                else resolve(Buffer.from(img))
+            });
+        }
+    })
+}
+
 function performMethod(img, method, params) {
     return new Promise(async (resolve, reject) => {
         try {
-            for (let i = 0; i < params.length; i++) {
-                if(typeof params[i] == "object") {
-                    params[i] = await readBuffer(Buffer.from(params[i]));
-                }  
-            }
-            if(img[method]) { // If native jimp method
+            if(img[method]) { // If native method
                 img = await img[method](...params) // Run method function on image
             } else { // If custom method or undefined method
                 img = await customMethod(img, method, params) // Attempt to run method function on image
             }
             resolve(img); // Resolve image
         } catch(e) {
-            //console.log(e)
+            console.log(e)
             reject(e)
         }
     })
@@ -128,9 +166,8 @@ function customMethod(img, method, params) {
                 resolve(newImg); // Resolve image
             }
             if(method == "addBackground") { // Adds colour background
-                let bgImg = await createNewImage(params[0], params[1], params[2]);
-                newImg = await bgImg.composite(img, params[3], params[4])
-                resolve(newImg); // Resolve image
+                let bgImg = gm(params[0], params[1], params[2]).composite(gm(img), params[3], params[4])
+                resolve(bgImg); // Resolve image
             }
         } catch(e) {
             reject(e)
@@ -159,11 +196,13 @@ function loadFont(path) {
 // Exports
 module.exports = {
     exec,
+    execGM,
     readURL,
     readBuffer,
     measureText,
     measureTextHeight,
     loadFont,
     performMethod,
-    customMethod
+    customMethod,
+    gmToBuffer
 }

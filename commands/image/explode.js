@@ -5,7 +5,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, formatDuration } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { execGM } = require("../../modules/image.js")
+let { GM } = require("../../modules/image.js")
 
 let procMsg
 let imageUrl
@@ -17,13 +17,13 @@ async function cmdFunc(msg, args, startTime) {
         imageUrl = await findImage(msg)
         let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
         
-        let img = await execGM(imageUrl, [ ["negative", []] ]);
+        let img = await GM(imageUrl, [ ["implode", [ -0.5 ]] ]);
         
         const attachment = new MessageAttachment(img, "image."+extension);
         let timeTaken = formatDuration(new Date().getTime() - startTime)
 
         let embed = new MessageEmbed({
-            "title": "Invert",
+            "title": "Fisheye",
             "description": `<@${msg.author.id}>`,
             "color": Number(process.env.EMBED_COLOUR),
             "timestamp": new Date(),

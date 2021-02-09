@@ -5,7 +5,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, formatDuration } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { exec } = require("../../modules/image.js")
+let { execGM } = require("../../modules/image.js")
 
 let procMsg
 let imageUrl
@@ -17,10 +17,7 @@ async function cmdFunc(msg, args, startTime) {
         imageUrl = await findImage(msg)
         let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
         
-        let r = (args.length > 0 && !Number.isNaN(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 1.6;
-        let scaleFactor = r;
-        if(r < 1) scaleFactor = 1/(r*r)*2;
-        let img = await exec(imageUrl, [ ["fisheye", [{ r }]], ["canvasScale", [1/scaleFactor]], ["scale", [scaleFactor]] ]);
+        let img = await execGM(imageUrl, [ ["implode", [ 0.5 ]] ]);
         
         const attachment = new MessageAttachment(img, "image."+extension);
         let timeTaken = formatDuration(new Date().getTime() - startTime)
@@ -55,7 +52,7 @@ async function cmdFunc(msg, args, startTime) {
         msg.channel.stopTyping()
         procMsg.delete();
     } catch(e) {
-        //console.log(e)
+        console.log(e)
         msg.channel.stopTyping()
         msg.channel.send({
             embed: {

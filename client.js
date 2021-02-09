@@ -17,7 +17,7 @@ client.on('message', async msg => {
     let parsed = await parseMsg(msg); // Parses message, returns [0: Prefix, 1: Command, 2: Args string]
     let cmdFunc = await getCmdFunc(parsed[1]); // Gets function of command
     setImmediate(async () => { // Fake thread separation
-        cmdFunc(msg, parsed[2]) // Runs command function
+        cmdFunc(msg, parsed[2], new Date().getTime()) // Runs command function
     });
 });
 

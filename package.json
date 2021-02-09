@@ -15,6 +15,7 @@
     "gif-frames": "^1.0.1",
     "gifwrap": "^0.9.2",
     "jimp": "^0.16.1",
+    "mime-types": "^2.1.28",
     "node-canvas-with-twemoji-and-discord-emoji": "^1.1.8",
     "webp-converter": "^2.3.1"
   }

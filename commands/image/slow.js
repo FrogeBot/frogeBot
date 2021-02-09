@@ -11,7 +11,7 @@ async function cmdFunc(msg, args) {
         msg.channel.startTyping()
         
         let imgUrl = await findImage(msg)
-        let extension = imgUrl.split(".")[imgUrl.split(".").length-1].split("?")[0];
+        let extension = imgUrl.split("?")[0].split(".")[imgUrl.split(".").length-1];
 
         if(imgUrl.match(/(\.gif)/gi)) {
             try {

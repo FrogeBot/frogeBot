@@ -13,7 +13,7 @@ async function cmdFunc(msg, args) {
         msg.channel.startTyping()
         
         let imageUrl = await findImage(msg)
-        let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
+        let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
 
         let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 8;
         let img = await exec(imageUrl, [ ["pixelate", [r]] ]);

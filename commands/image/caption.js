@@ -15,7 +15,7 @@ async function cmdFunc(msg, args) {
         msg.channel.startTyping()
         
         let imageUrl = await findImage(msg)
-        let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
+        let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
         
         let imgFG = await readURL(await findImage(msg));
         let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.1), "Roboto", Math.round(imgFG.bitmap.width*0.8))

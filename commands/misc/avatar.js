@@ -18,7 +18,7 @@ async function cmdFunc(msg, args) {
             "embed": {
                 "title": "Avatar",
                 "description": `No user found`,
-                "color": process.env.EMBED_COLOUR,
+                "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
                     "name": process.env.BOT_NAME,
@@ -34,7 +34,7 @@ async function cmdFunc(msg, args) {
                 "image": {
                     "url": member.user.displayAvatarURL()+"?size=1024"
                 },
-                "color": process.env.EMBED_COLOUR,
+                "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
                     "name": process.env.BOT_NAME,

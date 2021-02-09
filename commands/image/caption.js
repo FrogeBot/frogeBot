@@ -33,7 +33,7 @@ async function cmdFunc(msg, args, startTime) {
         let embed = new MessageEmbed({
             "title": "Caption",
             "description": `<@${msg.author.id}>`,
-            "color": process.env.EMBED_COLOUR,
+            "color": Number(process.env.EMBED_COLOUR),
             "timestamp": new Date(),
             "author": {
                 "name": process.env.BOT_NAME,
@@ -48,7 +48,7 @@ async function cmdFunc(msg, args, startTime) {
                 embed: {
                     "title": "Error",
                     "description": `<@${msg.author.id}> - Failed to send`,
-                    "color": process.env.EMBED_COLOUR,
+                    "color": Number(process.env.EMBED_COLOUR),
                     "timestamp": new Date(),
                     "author": {
                         "name": process.env.BOT_NAME,
@@ -67,7 +67,7 @@ async function cmdFunc(msg, args, startTime) {
             embed: {
                 "title": "Error",
                 "description": `<@${msg.author.id}> - ${ imageUrl != undefined ? "Something went wrong" : "No images found"}`,
-                "color": process.env.EMBED_COLOUR,
+                "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
                     "name": process.env.BOT_NAME,

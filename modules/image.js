@@ -19,11 +19,8 @@ function readURL(imgUrl) {
                 fs.unlink(__dirname+"/tmp.png", () => {}); // Remove tmp.png
 
                 maxSize = Number(process.env.MAX_IMG_SIZE);
-                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
-                    await img.resize(maxSize, Jimp.AUTO);
-                    resolve(img); // Resolve image limited to max size and converted to image/png
-                } else if(img.bitmap.height > maxSize) {
-                    await img.resize(Jimp.AUTO, maxSize);
+                if(img.bitmap.width > maxSize || img.bitmap.width > maxSize) {
+                    await img.scaleToFit(maxSize, maxSize);
                     resolve(img); // Resolve image limited to max size and converted to image/png
                 } else {
                     resolve(img) // Resolve image converted to image/png
@@ -33,11 +30,8 @@ function readURL(imgUrl) {
             // Read image type supported by jimp
             Jimp.read(imgUrl).then(async img => {
                 maxSize = Number(process.env.MAX_IMG_SIZE);
-                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
-                    await img.resize(maxSize, Jimp.AUTO);
-                    resolve(img); // Resolve image limited to max size
-                } else if(img.bitmap.height > maxSize) {
-                    await img.resize(Jimp.AUTO, maxSize);
+                if(img.bitmap.width > maxSize || img.bitmap.width > maxSize) {
+                    await img.scaleToFit(maxSize, maxSize);
                     resolve(img); // Resolve image limited to max size
                 } else {
                     resolve(img) // Resolve image

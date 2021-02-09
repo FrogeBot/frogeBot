@@ -74,6 +74,10 @@ function spawnWorker(list, i, speed, frameData, frameSkip, cb) {
     stream.on("end", async function () {
         if(list == null) {
             let newImg = await readBuffer(Buffer.concat(chunks));
+            maxSize = Number(process.env.MAX_GIF_SIZE);
+            if(img.bitmap.width > maxSize || img.bitmap.width > maxSize) {
+                await img.scaleToFit(maxSize, maxSize);
+            }
             let frame = new GifFrame(newImg.bitmap, { disposal: 2, delayCentisecs: Math.round(frameData[i].frameInfo.delay/speed), interlaced: frameData[i].frameInfo.interlaced })
             //frame.bitmap = newImg.bitmap;
             GifUtil.quantizeDekker(frame);
@@ -88,6 +92,10 @@ function spawnWorker(list, i, speed, frameData, frameSkip, cb) {
             worker.on('message', async (img) => {
                 if(img == null) reject()
                 let newImg = await readBuffer(Buffer.from(img));
+                maxSize = Number(process.env.MAX_GIF_SIZE);
+                if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {
+                    await newImg.scaleToFit(maxSize, maxSize);
+                }
                 let frame = new GifFrame(newImg.bitmap, { disposal: 2, delayCentisecs: Math.round(frameData[i].frameInfo.delay/speed), interlaced: frameData[i].frameInfo.interlaced })
                 //frame.bitmap = newImg.bitmap;
                 GifUtil.quantizeDekker(frame);

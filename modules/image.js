@@ -42,7 +42,7 @@ function readURL(imgUrl) {
                 } else {
                     resolve(img) // Resolve image
                 }
-            });
+            }).catch(reject)
         }
     });
 }
@@ -51,7 +51,7 @@ function readBuffer(buffer) {
         // Read image type supported by jimp (from buffer)
         Jimp.read(buffer).then(async img => {
             resolve(img) // Resolve image
-        });
+        }).catch(reject)
     });
 }
 
@@ -85,7 +85,7 @@ function exec(imgUrl, list) {
                     resolve(Buffer.from(img))
                 });
             } catch(e) {
-                console.log(e)
+                //console.log(e)
                 reject(e)
             }
         } else {
@@ -94,7 +94,7 @@ function exec(imgUrl, list) {
 
             worker.on('message', (img) => {
                 if(img == null) reject()
-                resolve(Buffer.from(img))
+                else resolve(Buffer.from(img))
             });
         }
     })
@@ -115,7 +115,7 @@ function performMethod(img, method, params) {
             }
             resolve(img); // Resolve image
         } catch(e) {
-            console.log(e)
+            //console.log(e)
             reject(e)
         }
     })

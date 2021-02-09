@@ -9,10 +9,13 @@
     "invert": "image/invert.js",
     "greyscale": "image/greyscale.js",
     "jpeg": "image/jpeg.js",
+    "jpeg2": "image/jpeg2.js",
     "caption": "image/caption.js",
     "caption2": "image/caption2.js",
     "motivate": "image/motivate.js",
     "evenframes": "image/evenframes.js",
     "speed": "image/speed.js",
-    "slow": "image/slow.js"
+    "slow": "image/slow.js",
+    "square": "image/square.js",
+    "sepia": "image/sepia.js"
 }

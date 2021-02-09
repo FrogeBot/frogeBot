@@ -8,11 +8,14 @@
     "fisheye": "Applies a fisheye effect to an image (usage: `fisheye [amount]`)",
     "invert": "Inverts an image",
     "greyscale": "Applies a greyscale filter to the image",
-    "jpeg": "JPEG-ifies an image",
+    "jpeg": "Runs JPEG compression on an image",
+    "jpeg2": "Pixelates and applies colour banding to an image",
     "caption": "Adds a caption to an image",
     "caption2": "Adds a caption of an alternate style to an image",
     "motivate": "Adds a demotivational poster caption to an image (Line separation = `|` )",
     "evenframes": "Returns a GIF image with only its even frames, preserving the speed of the GIF.",
     "speed": "Doubles the speed of a GIF",
-    "slow": "Halves the speed of a GIF"
+    "slow": "Halves the speed of a GIF",
+    "square": "Crops the image to a square"
+}
 }

@@ -1,16 +1,18 @@
 require("dotenv").config()
-const { MessageAttachment } = require('discord.js');
+const { MessageAttachment, MessageEmbed } = require('discord.js');
 const { Worker } = require('worker_threads');
 
 delete require.cache[require.resolve("../../modules/utils.js")];
-let { findImage } = require("../../modules/utils.js")
+let { findImage, formatDuration } = require("../../modules/utils.js")
 
-async function cmdFunc(msg, args) {
+let procMsg
+let imgUrl
+async function cmdFunc(msg, args, startTime) {
     try {
-        let procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
+        procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
         msg.channel.startTyping()
         
-        let imgUrl = await findImage(msg)
+        imgUrl = await findImage(msg)
         let extension = imgUrl.split("?")[0].split(".")[imgUrl.split(".").length-1];
 
         if(imgUrl.match(/(\.gif)/gi)) {
@@ -19,24 +21,76 @@ async function cmdFunc(msg, args) {
                 worker.postMessage({ imgUrl, list: null, frameSkip: 2, speed: 0.5 })
     
                 worker.on('message', async (img) => {
-                    const attachment = new MessageAttachment(Buffer.from(img), "image."+extension);
+        
+                    const attachment = new MessageAttachment(img, "image."+extension);
+                    let timeTaken = formatDuration(new Date().getTime() - startTime)
+            
+                    let embed = new MessageEmbed({
+                        "title": "Even Frames",
+                        "description": `<@${msg.author.id}>`,
+                        "color": process.env.EMBED_COLOUR,
+                        "timestamp": new Date(),
+                        "author": {
+                            "name": process.env.BOT_NAME,
+                            "icon_url": msg.client.user.displayAvatarURL()
+                        },
+                        "footer": {
+                            "text": `Took ${timeTaken}`
+                        }
+                    }).attachFiles(attachment).setImage("attachment://image."+extension);
+                    msg.channel.send({ embed }).catch(() => {
+                        msg.channel.send({
+                            embed: {
+                                "title": "Error",
+                                "description": `<@${msg.author.id}> - Failed to send`,
+                                "color": process.env.EMBED_COLOUR,
+                                "timestamp": new Date(),
+                                "author": {
+                                    "name": process.env.BOT_NAME,
+                                    "icon_url": msg.client.user.displayAvatarURL()
+                                }
+                            }
+                        })
+                    })                
                     msg.channel.stopTyping()
-                    msg.channel.send(attachment)
                     procMsg.delete();
                 });
             } catch(e) {
-                console.log(e)
+                //console.log(e)
                 reject(e)
             }
         } else {
             msg.channel.stopTyping()
-            msg.channel.send("GIF image not supplied")
+            msg.channel.send({
+                embed: {
+                    "title": "Error",
+                    "description": `<@${msg.author.id}> - Not a GIF image`,
+                    "color": process.env.EMBED_COLOUR,
+                    "timestamp": new Date(),
+                    "author": {
+                        "name": process.env.BOT_NAME,
+                        "icon_url": msg.client.user.displayAvatarURL()
+                    }
+                }
+            })
             procMsg.delete();
         }
     } catch(e) {
-        console.log(e)
+        //console.log(e)
         msg.channel.stopTyping()
-        msg.channel.send("It broke")
+        msg.channel.send({
+            embed: {
+                "title": "Error",
+                "description": `<@${msg.author.id}> - ${ imgUrl != undefined ? "Something went wrong" : "No images found"}`,
+                "color": process.env.EMBED_COLOUR,
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": msg.client.user.displayAvatarURL()
+                }
+            }
+        })
+        procMsg.delete();
     }
 }
 

@@ -1,5 +1,5 @@
 const { createCanvas, loadImage, registerFont } = require('canvas')
-const { fillTextWithTwemoji } = require('node-canvas-with-twemoji-and-discord-emoji');
+const { fillTextWithTwemoji, measureText } = require('./emojiCanvasText');
 
 // Fonts
 registerFont(__dirname+'/../fonts/RobotoBlack.ttf', { family: 'Roboto' })
@@ -23,16 +23,6 @@ function canvasText(text, fontSize, fontFamily, width, align = "center", lineSpa
 
         let lines = await printAtWordWrap(ctx, text, startX, fontSize, lineHeight, width); // Print text on canvas, returns number of lines
 
-        const canvas2 = createCanvas(width, (lineHeight*lines > maxHeight ? maxHeight : lineHeight*lines))
-        const ctx2 = canvas.getContext('2d')
-
-        /*
-        let imageData = ctx.getImageData(0, 0, width, (lineHeight*lines > maxHeight ? maxHeight : lineHeight*lines));
-        ctx2.putImageData(imageData, 0, 0);
-
-        console.log(await canvas2.toBuffer())
-        */
-
         resolve([await canvas.toBuffer(), (lineHeight*lines > maxHeight ? maxHeight : lineHeight*lines)]) // Resolve canvas image buffer and used height
     })
 }
@@ -52,14 +42,14 @@ function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
         while (words.length > 0 && idx <= words.length)
         {
             var str = words.slice(0,idx).join(' ');
-            var w = context.measureText(str.replace(/(<a?:.+:[0-9]+>)/gi, "🤡")).width; // Measure text, replacing discord custom emojis with the clown emoji
+            var w = measureText(context, str).width; // Measure text, replacing discord custom emojis with the clown emoji
             if ( w > fitWidth )
             {
                 if (idx==1)
                 {
                     idx=2;
                 }
-                await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.1} ); // Fills text using Twemoji support
+                await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), lineHeight, x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.15 } ); // Fills text using Twemoji support
                 currentLine++;
                 words = words.splice(idx-1);
                 idx = 1;
@@ -68,7 +58,7 @@ function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
             {idx++;}
         }
         if  (idx > 0)
-        await fillTextWithTwemoji(context, words.join(' '), x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.1} ); // Fills text using Twemoji support
+        await fillTextWithTwemoji(context, words.join(' '), lineHeight, x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.15 } ); // Fills text using Twemoji support
 
         resolve(currentLine+1); // Resolve number of lines
     });

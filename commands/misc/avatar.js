@@ -18,10 +18,10 @@ async function cmdFunc(msg, args) {
             "embed": {
                 "title": "Avatar",
                 "description": `No user found`,
-                "color": 3394611,
+                "color": process.env.EMBED_COLOUR,
                 "timestamp": new Date(),
                 "author": {
-                    "name": "FrogeBot",
+                    "name": process.env.BOT_NAME,
                     "icon_url": msg.client.user.displayAvatarURL()
                 }
             }
@@ -34,10 +34,10 @@ async function cmdFunc(msg, args) {
                 "image": {
                     "url": member.user.displayAvatarURL()+"?size=1024"
                 },
-                "color": 3394611,
+                "color": process.env.EMBED_COLOUR,
                 "timestamp": new Date(),
                 "author": {
-                    "name": "FrogeBot",
+                    "name": process.env.BOT_NAME,
                     "icon_url": msg.client.user.displayAvatarURL()
                 }
             }

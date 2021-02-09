@@ -1,6 +1,6 @@
 require("dotenv").config()
 
-async function cmdFunc(msg, args) {
+async function cmdFunc(msg, args, startTime) {
     
 }
 

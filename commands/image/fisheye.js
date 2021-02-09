@@ -1,32 +1,75 @@
 require("dotenv").config()
-const { MessageAttachment } = require('discord.js');
+const { MessageAttachment, MessageEmbed } = require('discord.js');
 
 delete require.cache[require.resolve("../../modules/utils.js")];
-let { findImage } = require("../../modules/utils.js")
+let { findImage, formatDuration } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
 let { exec } = require("../../modules/image.js")
 
-async function cmdFunc(msg, args) {
+let procMsg
+let imageUrl
+async function cmdFunc(msg, args, startTime) {
     try {
-        let procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
+        procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
         msg.channel.startTyping()
         
-        let imageUrl = await findImage(msg)
+        imageUrl = await findImage(msg)
         let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
         
         let r = (args.length > 0 && !Number.isNaN(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 1.6;
         let scaleFactor = r;
         if(r < 1) scaleFactor = 1/(r*r)*2;
         let img = await exec(imageUrl, [ ["fisheye", [{ r }]], ["canvasScale", [1/scaleFactor]], ["scale", [scaleFactor]] ]);
+        
         const attachment = new MessageAttachment(img, "image."+extension);
+        let timeTaken = formatDuration(new Date().getTime() - startTime)
+
+        let embed = new MessageEmbed({
+            "title": "Fisheye",
+            "description": `<@${msg.author.id}>`,
+            "color": process.env.EMBED_COLOUR,
+            "timestamp": new Date(),
+            "author": {
+                "name": process.env.BOT_NAME,
+                "icon_url": msg.client.user.displayAvatarURL()
+            },
+            "footer": {
+                "text": `Took ${timeTaken}`
+            }
+        }).attachFiles(attachment).setImage("attachment://image."+extension);
+        msg.channel.send({ embed }).catch(() => {
+            msg.channel.send({
+                embed: {
+                    "title": "Error",
+                    "description": `<@${msg.author.id}> - Failed to send`,
+                    "color": process.env.EMBED_COLOUR,
+                    "timestamp": new Date(),
+                    "author": {
+                        "name": process.env.BOT_NAME,
+                        "icon_url": msg.client.user.displayAvatarURL()
+                    }
+                }
+            })
+        })
         msg.channel.stopTyping()
-        msg.channel.send(attachment)
         procMsg.delete();
     } catch(e) {
-        console.log(e)
+        //console.log(e)
         msg.channel.stopTyping()
-        msg.channel.send("It broke")
+        msg.channel.send({
+            embed: {
+                "title": "Error",
+                "description": `<@${msg.author.id}> - ${ imageUrl != undefined ? "Something went wrong" : "No images found"}`,
+                "color": process.env.EMBED_COLOUR,
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": msg.client.user.displayAvatarURL()
+                }
+            }
+        })
+        procMsg.delete();
     }
 }
 

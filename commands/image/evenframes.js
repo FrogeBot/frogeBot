@@ -56,7 +56,7 @@ async function cmdFunc(msg, args, startTime) {
                     procMsg.delete();
                 });
             } catch(e) {
-                //console.log(e)
+                console.log(e)
                 reject(e)
             }
         } else {
@@ -76,7 +76,7 @@ async function cmdFunc(msg, args, startTime) {
             procMsg.delete();
         }
     } catch(e) {
-        //console.log(e)
+        console.log(e)
         msg.channel.stopTyping()
         msg.channel.send({
             embed: {

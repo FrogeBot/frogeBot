@@ -1,7 +1,7 @@
 const { GifFrame, GifUtil, GifCodec } = require('gifwrap');
 var gifFrames = require('gif-frames');
 const { isMainThread, parentPort, Worker } = require('worker_threads');
-let { readBuffer } = require("./image.js")
+let { readBuffer, readURL } = require("./image.js")
 require("dotenv").config()
 
 const os = require('os')
@@ -22,7 +22,7 @@ parentPort.once('message', async (msg) => {
                             parentPort.postMessage(gif.buffer)
                             clearInterval(workerInterval)
                         }).catch(e => {
-                            //console.log(e)
+                            console.log(e)
                             parentPort.postMessage(null)
                             clearInterval(workerInterval)
                         });
@@ -36,7 +36,7 @@ parentPort.once('message', async (msg) => {
                 });
             });
         } catch(e) {
-            //console.log(e)
+            console.log(e)
             parentPort.postMessage(null)
         }
     }
@@ -90,7 +90,7 @@ function spawnWorker(list, i, speed, frameData, frameSkip, cb) {
             worker.postMessage({ buffer: Buffer.concat(chunks), list })
 
             worker.on('message', async (img) => {
-                if(img == null) reject()
+                if(img == null) return
                 let newImg = await readBuffer(Buffer.from(img));
                 maxSize = Number(process.env.MAX_GIF_SIZE);
                 if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {

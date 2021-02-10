@@ -33,6 +33,14 @@ parentPort.once('message', async (msg) => {
             framesProcessed = 0;
             for(let i = 0; i < gif.frames.length; i++) {
                 if(i%frameSkip == 0) {
+                    if(gif.frames[i].disposalMethod == 1 && frameSkip > 1 && i >= frameSkip) {
+                        let frameImg = await GifUtil.copyAsJimp(Jimp, gif.frames[i+1-frameSkip]);
+                        for(let j = 1; j <= frameSkip; j++) {
+                            let newFrameImg = await GifUtil.copyAsJimp(Jimp, gif.frames[i+j-frameSkip]);
+                            frameImg.composite(newFrameImg, 0, 0)
+                        }
+                        gif.frames[i].bitmap = frameImg.bitmap;
+                    }
                     queueWorker(list, i, speed, gif.frames, frameSkip, jimp, cb);
                 }
             }
@@ -66,17 +74,16 @@ async function workerQueuer(){
 let workerInterval = setInterval(workerQueuer, 500);
 
 async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
-    let frame = frameData[i]
+    let frame = await frameData[i]
     if(list == null) {
         let newImg = await GifUtil.copyAsJimp(Jimp, frame);
         maxSize = Number(process.env.MAX_GIF_SIZE);
         if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {
             await newImg.scaleToFit(maxSize, maxSize);
         }
-        let frame = new GifFrame(newImg.bitmap, { disposal: 2, delayCentisecs: Math.round(frameData[i].frameInfo.delay/speed), interlaced: frameData[i].frameInfo.interlaced })
-        //frame.bitmap = newImg.bitmap;
-        GifUtil.quantizeDekker(frame);
-        frames[i] = frame;
+        let newFrame = new GifFrame(newImg.bitmap, { disposalMethod: frame.disposalMethod, delayCentisecs: Math.round(frame.delay/speed), interlaced: frame.interlaced })
+        GifUtil.quantizeDekker(newFrame);
+        frames[i] = newFrame;
         framesProcessed += frameSkip;
         if(framesProcessed >= frameData.length) cb()
         concurrent--;
@@ -87,12 +94,12 @@ async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
             await newImg.scaleToFit(maxSize, maxSize);
         }
         let worker = new Worker(__dirname+`/image-worker${jimp ? "-jimp" : ""}.js`)
-        worker.postMessage({ buffer: await newImg.getBufferAsync(Jimp.AUTO), list })
+        worker.postMessage({ buffer: await newImg.getBufferAsync(Jimp.AUTO), list, allowBackgrounds: (i == 0 || frameData[i].disposalMethod != 1) })
 
         worker.on('message', async (img) => {
             if(img == null) return
             let newImg = await readBuffer(Buffer.from(img));
-            let newFrame = new GifFrame(newImg.bitmap, { disposal: frame.disposal, delayCentisecs: Math.round(frame.delayCentisecs/speed), interlaced: frame.interlaced })
+            let newFrame = new GifFrame(newImg.bitmap, { disposalMethod: frame.disposalMethod, delayCentisecs: Math.round(frame.delayCentisecs/speed), interlaced: frame.interlaced })
 
             GifUtil.quantizeDekker(newFrame);
             frames[i] = newFrame;

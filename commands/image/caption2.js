@@ -7,7 +7,7 @@ var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
 let { exec, jimpReadURL, readBuffer } = require("../../modules/image.js")
-let { canvasText } = require("../../modules/canvas.js")
+let { canvasText, canvasRect } = require("../../modules/canvas.js")
 
 let procMsg
 let imageUrl
@@ -22,8 +22,12 @@ async function cmdFunc(msg, args, startTime) {
         let imgFG = await jimpReadURL(imageUrl);
         let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.05), "Arial", Math.round(imgFG.bitmap.width*0.9), "left")
         let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
+
+        let rectCanvas = await canvasRect(imgFG.bitmap.width, offset, "transparent", 0, "white")
+
         let img = await exec(imageUrl, [
-            ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', 0, 0]],
+            ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, 'transparent', 0, 0]],
+            ["composite", [rectCanvas, 0, imgFG.bitmap.height]],
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.05), imgFG.bitmap.height+Math.round(imgFG.bitmap.width*0.05)]]
         ]);
         

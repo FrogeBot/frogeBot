@@ -6,7 +6,7 @@ let { findImage, formatDuration } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
 let { readURL, jimpReadURL, readBuffer, exec } = require("../../modules/image.js")
-let { canvasRect, canvasText } = require("../../modules/canvas.js");
+let { canvasText, canvasWindow } = require("../../modules/canvas.js");
 
 let procMsg
 let imageUrl
@@ -24,17 +24,19 @@ async function cmdFunc(msg, args, startTime) {
         let height = Math.round(imgFG.bitmap.height+imgFG.bitmap.width*0.05);
         let width = ( height * 4/3 > imgFG.bitmap.width*1.2 ) ? Math.round(height * 4/3) : Math.round(imgFG.bitmap.width*1.2);
 
-        let rectCanvas = await canvasRect(Math.round(imgFG.bitmap.width*1.05), Math.round(imgFG.bitmap.height+imgFG.bitmap.width*0.05), "white", Math.round(imgFG.bitmap.width*0.005), "transparent")
+        let x = Math.round(width/2-imgFG.bitmap.width/2);
+        let y = Math.round(width*0.05)
 
         let textCanvas = await canvasText(args.split("|")[0].trim(), Math.round(width*0.1), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white")
-
         let textCanvas2 = await canvasText(args.split("|").slice(1).join("|").trim(), Math.round(width*0.07), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white")
 
         let offset = textCanvas[1]+textCanvas2[1] + width*0.05;
 
+        let windowCanvas = await canvasWindow(width, height+offset, x, y, imgFG.bitmap.width, imgFG.bitmap.height, "white", Math.ceil(imgFG.bitmap.width*0.005), Math.ceil(width*0.025 - imgFG.bitmap.width*0.0125), "black")
+
         let img = await exec(imageUrl, [
-            ["addBackground", [width, height+offset, "#000000", Math.round(width/2-imgFG.bitmap.width/2), Math.round(width*0.05)] ],
-            ["composite", [rectCanvas, Math.round(width/2-imgFG.bitmap.width/2 - Math.round(imgFG.bitmap.width*0.025)), Math.round(width*0.05 - imgFG.bitmap.width*0.025)]],
+            ["addBackground", [width, height+offset, "#000000", x, y] ],
+            ["composite", [windowCanvas, 0, 0]],
             ["composite", [textCanvas[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025)]],
             ["composite", [textCanvas2[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025)+textCanvas[1]]]
         ]).catch(e => {

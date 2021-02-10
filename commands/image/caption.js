@@ -7,7 +7,7 @@ var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
 let { exec, readURL, jimpReadURL, readBuffer } = require("../../modules/image.js")
-let { canvasText } = require("../../modules/canvas.js")
+let { canvasText, canvasRect } = require("../../modules/canvas.js")
 
 let procMsg
 let imageUrl
@@ -21,11 +21,16 @@ async function cmdFunc(msg, args, startTime) {
 
         let imgFG = await jimpReadURL(imageUrl);
 
-        let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.1), "Roboto", Math.round(imgFG.bitmap.width*0.8))
+        let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.1), "Roboto", Math.round(imgFG.bitmap.width*0.8), "center", 1.5, "black")
         let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
+        
+        let rectCanvas = await canvasRect(imgFG.bitmap.width, offset, "transparent", 0, "white")
+
+        textCanvas[0] = await (await readBuffer(textCanvas[0])).crop(0, 0, Math.round(imgFG.bitmap.width*0.8), textCanvas[1]).getBufferAsync(Jimp.AUTO)
 
         let img = await exec(imageUrl, [
-            ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, '#FFFFFF', 0, offset]],
+            ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, 'transparent', 0, offset]],
+            ["composite", [rectCanvas, 0, 0]],
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.1), Math.round(imgFG.bitmap.width*0.05)]]
         ]);
         

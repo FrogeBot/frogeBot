@@ -12,7 +12,7 @@ parentPort.once('message', async (msg) => {
                 // Get image from URL
                 jimpReadURL(imgUrl).then(async img => {
                     for(let i = 0; i < list.length; i++) { // Loop through actions in list
-                        img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
+                        img = await performMethod(img, list[i][0], list[i][1], msg.allowBackgrounds); // Perform each in succecssion
                     }
                     parentPort.postMessage(await img.getBufferAsync(Jimp.AUTO)) // Resolve image
                 }).catch((e) => {
@@ -24,7 +24,7 @@ parentPort.once('message', async (msg) => {
                 // Get image from buffer
                 readBuffer(buffer).then(async img => {
                     for(let i = 0; i < list.length; i++) { // Loop through actions in list
-                        img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
+                        img = await performMethod(img, list[i][0], list[i][1], msg.allowBackgrounds); // Perform each in succecssion
                     }
                     parentPort.postMessage(await img.getBufferAsync(Jimp.AUTO)) // Resolve image
                 }).catch((e) => {

@@ -4,13 +4,18 @@ const { fillTextWithTwemoji, measureText } = require('./emojiCanvasText');
 // Fonts
 registerFont(__dirname+'/../fonts/RobotoBlack.ttf', { family: 'Roboto' })
 
-function canvasText(text, fontSize, fontFamily, width, align = "center", lineSpacing = 1.5, fillStyle = "black") {
+function canvasText(text, fontSize, fontFamily, width, align = "center", lineSpacing = 1.5, fillStyle = "black", bg = "transparent") {
     return new Promise(async (resolve, reject) => {
         // Init canvas
         let maxHeight = 16384
         const canvas = createCanvas(width, maxHeight)
         const ctx = canvas.getContext('2d')
         
+        if(bg != "transparent") {
+            ctx.fillStyle = bg
+            ctx.fillRect(0,0,canvas.width,canvas.height)
+        }
+
         // Text styling
         ctx.fillStyle = fillStyle
         ctx.textAlign = align;
@@ -65,27 +70,55 @@ function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
 }
 function canvasRect(width, height, strokeStyle = "white", strokeWidth = 4, fillStyle = "black") {
     return new Promise(async (resolve, reject) => {
-        // Init canvas
-        const canvas = createCanvas(width, height)
-        const ctx = canvas.getContext('2d')
+        try {
+            // Init canvas
+            const canvas = createCanvas(width, height)
+            const ctx = canvas.getContext('2d')
 
-        ctx.beginPath();
-        ctx.rect(0, 0, width, height);
-        ctx.fillStyle = strokeStyle
-        ctx.fill();
+            ctx.beginPath();
+            ctx.rect(0, 0, width, height);
+            ctx.fillStyle = strokeStyle
+            ctx.fill();
 
-        ctx.clearRect(strokeWidth, strokeWidth, width-strokeWidth*2, height-strokeWidth*2);
+            ctx.clearRect(strokeWidth, strokeWidth, width-strokeWidth*2, height-strokeWidth*2);
 
-        ctx.beginPath();
-        ctx.rect(strokeWidth, strokeWidth, width-strokeWidth*2, height-strokeWidth*2);
-        ctx.fillStyle = fillStyle
-        ctx.fill();
+            ctx.beginPath();
+            ctx.rect(strokeWidth, strokeWidth, width-strokeWidth*2, height-strokeWidth*2);
+            ctx.fillStyle = fillStyle
+            ctx.fill();
 
-        resolve(await canvas.toBuffer()) // Resolve canvas image buffer
+            resolve(await canvas.toBuffer()) // Resolve canvas image buffer
+        } catch(e) {
+            reject(e)
+        }
+    })
+}
+function canvasWindow(width, height, x, y, holeWidth, holeHeight, strokeStyle = "white", strokeWidth = 4, strokeOffset = 0, fillStyle = "black") {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Init canvas
+            const canvas = createCanvas(width, height)
+            const ctx = canvas.getContext('2d')
+
+            ctx.fillStyle = fillStyle
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.rect(0, 0, width, height);
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeRect(x-strokeOffset, y-strokeOffset, holeWidth+strokeOffset*2, holeHeight+strokeOffset*2);
+
+            ctx.clearRect(x, y, holeWidth, holeHeight);
+
+            resolve(await canvas.toBuffer()) // Resolve canvas image buffer
+        } catch(e) {
+            reject(e)
+        }
     })
 }
 
 module.exports = {
     canvasText,
-    canvasRect
+    canvasRect,
+    canvasWindow
 }

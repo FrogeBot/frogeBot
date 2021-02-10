@@ -115,7 +115,7 @@ function exec(imgUrl, list) {
             }
         } else {
             let worker = new Worker(__dirname+"/image-worker-jimp.js")
-            worker.postMessage({ imgUrl, list })
+            worker.postMessage({ imgUrl, list, allowBackgrounds: true })
 
             worker.on('message', (img) => {
                 if(img == null) reject()
@@ -142,7 +142,7 @@ function execGM(imgUrl, list) {
             }
         } else {
             let worker = new Worker(__dirname+"/image-worker.js")
-            worker.postMessage({ imgUrl, list })
+            worker.postMessage({ imgUrl, list, allowBackgrounds: true })
 
             worker.on('message', (img) => {
                 if(img == null) reject()
@@ -152,7 +152,7 @@ function execGM(imgUrl, list) {
     })
 }
 
-function performMethod(img, method, params) {
+function performMethod(img, method, params, allowBackgrounds) {
     return new Promise(async (resolve, reject) => {
         try {
             if(img.bitmap) {
@@ -165,7 +165,7 @@ function performMethod(img, method, params) {
             if(img[method]) { // If native method
                 img = await img[method](...params) // Run method function on image
             } else { // If custom method or undefined method
-                img = await customMethod(img, method, params) // Attempt to run method function on image
+                img = await customMethod(img, method, params, allowBackgrounds) // Attempt to run method function on image
             }
             resolve(img); // Resolve image
         } catch(e) {
@@ -174,7 +174,7 @@ function performMethod(img, method, params) {
         }
     })
 }
-function customMethod(img, method, params) {
+function customMethod(img, method, params, allowBackgrounds) {
     return new Promise(async (resolve, reject) => {
         try {
             let newImg = img;
@@ -188,7 +188,7 @@ function customMethod(img, method, params) {
                 resolve(newImg); // Resolve image
             }
             if(method == "addBackground") { // Adds colour background
-                let bgImg = await createNewImage(params[0], params[1], params[2]);
+                let bgImg = await createNewImage(params[0], params[1], (allowBackgrounds ? params[2] : "transparent"));
                 newImg = await bgImg.composite(img, params[3], params[4])
                 resolve(newImg); // Resolve image
             }

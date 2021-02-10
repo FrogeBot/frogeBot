@@ -6,6 +6,8 @@
     "fliph": "Flips an image horizontally",
     "flipv": "Flips an image vertically",
     "fisheye": "Applies a fisheye effect to an image (usage: `fisheye [amount = 0+]`)",
+    "implode": "Implodes and image",
+    "explode": "Explodes an image",
     "invert": "Inverts an image",
     "greyscale": "Applies a greyscale filter to the image",
     "jpeg": "Runs JPEG compression on an image (usage: `jpeg [quality = 0-100]`)",

@@ -5,7 +5,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, formatDuration } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { exec, readURL } = require("../../modules/image.js")
+let { exec, jimpReadURL } = require("../../modules/image.js")
 
 let procMsg
 let imageUrl
@@ -17,7 +17,7 @@ async function cmdFunc(msg, args, startTime) {
         imageUrl = await findImage(msg)
         let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
         
-        let img = await readURL(imageUrl);
+        let img = await jimpReadURL(imageUrl);
         let size = (img.bitmap.height >= img.bitmap.width) ? img.bitmap.width : img.bitmap.height;
 
         img = await exec(imageUrl, [ ["cover", [size, size]] ]);

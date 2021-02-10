@@ -6,7 +6,7 @@ let { findImage, formatDuration } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { exec, readURL, readBuffer } = require("../../modules/image.js")
+let { exec, jimpReadURL, readBuffer } = require("../../modules/image.js")
 let { canvasText } = require("../../modules/canvas.js")
 
 let procMsg
@@ -19,7 +19,7 @@ async function cmdFunc(msg, args, startTime) {
         imageUrl = await findImage(msg)
         let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
         
-        let imgFG = await readURL(await findImage(msg));
+        let imgFG = await jimpReadURL(imageUrl);
         let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.05), "Arial", Math.round(imgFG.bitmap.width*0.9), "left")
         let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
         let img = await exec(imageUrl, [

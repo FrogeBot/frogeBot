@@ -21,7 +21,7 @@ async function cmdFunc(msg, args, startTime) {
                 worker.postMessage({ imgUrl, list: null, frameSkip: 1, speed: 2 })
     
                 worker.on('message', async (img) => {
-                    const attachment = new MessageAttachment(img, "image."+extension);
+                    const attachment = new MessageAttachment(Buffer.from(img), "image."+extension);
                     let timeTaken = formatDuration(new Date().getTime() - startTime)
             
                     let embed = new MessageEmbed({

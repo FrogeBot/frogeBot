@@ -3,12 +3,10 @@ const { MessageAttachment, MessageEmbed } = require('discord.js');
 
 delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, formatDuration } = require("../../modules/utils.js")
-var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { readURL, readBuffer, exec } = require("../../modules/image.js")
+let { readURL, jimpReadURL, readBuffer, exec } = require("../../modules/image.js")
 let { canvasRect, canvasText } = require("../../modules/canvas.js");
-const { scale } = require("jimp");
 
 let procMsg
 let imageUrl
@@ -20,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         imageUrl = await findImage(msg)
         let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
 
-        let imgFG = await readURL(imageUrl);
+        let imgFG = await jimpReadURL(imageUrl);
 
         
         let height = Math.round(imgFG.bitmap.height+imgFG.bitmap.width*0.05);

@@ -1,9 +1,14 @@
 require("dotenv").config()
 const { MessageAttachment, MessageEmbed } = require('discord.js');
 const { Worker } = require('worker_threads');
+const { readBuffer } = require("../../modules/image.js");
 
 delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, formatDuration } = require("../../modules/utils.js")
+var gm = require('gm');
+if(process.env.USE_IMAGEMAGICK == "true") {
+    gm = gm.subClass({ imageMagick: true });
+}
 
 let procMsg
 let imgUrl
@@ -22,9 +27,9 @@ async function cmdFunc(msg, args, startTime) {
     
                 worker.on('message', async (img) => {
         
-                    const attachment = new MessageAttachment(img, "image."+extension);
+                    const attachment = new MessageAttachment(Buffer.from(img), "image."+extension);
                     let timeTaken = formatDuration(new Date().getTime() - startTime)
-            
+
                     let embed = new MessageEmbed({
                         "title": "Even Frames",
                         "description": `<@${msg.author.id}>`,

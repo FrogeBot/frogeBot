@@ -5,6 +5,7 @@
     "fliph": "image/fliph.js",
     "flipv": "image/flipv.js",
     "blur": "image/blur.js",
+    "fisheye": "image/fisheye.js",
     "implode": "image/implode.js",
     "explode": "image/explode.js",
     "invert": "image/invert.js",

@@ -1,6 +1,6 @@
 const { isMainThread, parentPort } = require('worker_threads');
 var Jimp = require('jimp');
-let { readURL, performMethod, readBuffer } = require("./image.js")
+let { jimpReadURL, performMethod, readBuffer } = require("./image.js")
 
 
 parentPort.once('message', async (msg) => {
@@ -10,7 +10,7 @@ parentPort.once('message', async (msg) => {
             if(msg.imgUrl) {
                 let imgUrl = msg.imgUrl;
                 // Get image from URL
-                readURL(imgUrl).then(async img => {
+                jimpReadURL(imgUrl).then(async img => {
                     for(let i = 0; i < list.length; i++) { // Loop through actions in list
                         img = await performMethod(img, list[i][0], list[i][1]); // Perform each in succecssion
                     }

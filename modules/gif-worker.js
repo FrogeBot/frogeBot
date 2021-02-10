@@ -1,8 +1,12 @@
 const { GifFrame, GifUtil, GifCodec } = require('gifwrap');
-var gifFrames = require('gif-frames');
 const { isMainThread, parentPort, Worker } = require('worker_threads');
 let { readBuffer, readURL } = require("./image.js")
 require("dotenv").config()
+var gm = require('gm');
+if(process.env.USE_IMAGEMAGICK == "true") {
+    gm = gm.subClass({ imageMagick: true });
+}
+var Jimp = require('jimp');
 
 const os = require('os')
 const cpuCount = os.cpus().length
@@ -12,29 +16,26 @@ let frames = [];
 
 parentPort.once('message', async (msg) => {
     if (!isMainThread) {
-        let { imgUrl, list, frameSkip, speed } = msg;
+        let { imgUrl, list, frameSkip, speed, jimp } = msg;
         try {
-            gifFrames({ url: imgUrl, frames: 0 }).then(function (firstFrameData) {
-                gifFrames({ url: imgUrl, frames: '0-'+(Number(process.env.GIF_FRAME_LIM)-1), cumulative: (firstFrameData[0].frameInfo.disposal == 1) }).then(async function (frameData) {
-                    async function cb () {
-                        const codec = new GifCodec();
-                        codec.encodeGif(frames.filter(f => f != undefined)).then(gif => {
-                            parentPort.postMessage(gif.buffer)
-                            clearInterval(workerInterval)
-                        }).catch(e => {
-                            console.log(e)
-                            parentPort.postMessage(null)
-                            clearInterval(workerInterval)
-                        });
-                    }
-                    framesProcessed = 0;
-                    for(let i = 0; i < frameData.length; i++) {
-                        if(i%frameSkip == 0) {
-                            queueWorker(list, i, speed, frameData, frameSkip, cb);
-                        }
-                    }
+            const codec = new GifCodec();
+            let gif = await codec.decodeGif(await readURL(imgUrl));
+            async function cb () {
+                codec.encodeGif(frames.filter(f => f != undefined)).then(gif => {
+                    parentPort.postMessage(gif.buffer)
+                    clearInterval(workerInterval)
+                }).catch(e => {
+                    console.log(e)
+                    parentPort.postMessage(null)
+                    clearInterval(workerInterval)
                 });
-            });
+            }
+            framesProcessed = 0;
+            for(let i = 0; i < gif.frames.length; i++) {
+                if(i%frameSkip == 0) {
+                    queueWorker(list, i, speed, gif.frames, frameSkip, jimp, cb);
+                }
+            }
         } catch(e) {
             console.log(e)
             parentPort.postMessage(null)
@@ -44,8 +45,8 @@ parentPort.once('message', async (msg) => {
 
 let workers = []
 
-async function queueWorker(list, i, speed, frameData, frameSkip, cb) {
-    workers.push({ list, i, speed, frameData, frameSkip, cb });
+async function queueWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
+    workers.push({ list, i, speed, frameData, frameSkip, jimp, cb });
 }
 
 
@@ -54,56 +55,50 @@ async function workerQueuer(){
         let startConcurrent = concurrent
         for(let i = 0; i < cpuCount-startConcurrent; i++) {
             if(workers.length == 0) return
-            let { list, i, speed, frameData, frameSkip, cb } = workers.shift();
+            let { list, i, speed, frameData, frameSkip, jimp, cb } = workers.shift();
             concurrent++;
             setImmediate(() => {
-                spawnWorker(list, i, speed, frameData, frameSkip, cb)
+                spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb)
             });
         }
     }
 }
 let workerInterval = setInterval(workerQueuer, 500);
 
-function spawnWorker(list, i, speed, frameData, frameSkip, cb) {
-    let stream = frameData[i].getImage()
-    const chunks = [];
-    stream.on("data", function (chunk) {
-        chunks.push(chunk);
-    });
-    // Send the buffer or you can put it into a var
-    stream.on("end", async function () {
-        if(list == null) {
-            let newImg = await readBuffer(Buffer.concat(chunks));
-            maxSize = Number(process.env.MAX_GIF_SIZE);
-            if(img.bitmap.width > maxSize || img.bitmap.width > maxSize) {
-                await img.scaleToFit(maxSize, maxSize);
-            }
-            let frame = new GifFrame(newImg.bitmap, { disposal: 2, delayCentisecs: Math.round(frameData[i].frameInfo.delay/speed), interlaced: frameData[i].frameInfo.interlaced })
-            //frame.bitmap = newImg.bitmap;
-            GifUtil.quantizeDekker(frame);
-            frames[i] = frame;
+async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
+    let frame = frameData[i]
+    if(list == null) {
+        let newImg = await GifUtil.copyAsJimp(Jimp, frame);
+        maxSize = Number(process.env.MAX_GIF_SIZE);
+        if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {
+            await newImg.scaleToFit(maxSize, maxSize);
+        }
+        let frame = new GifFrame(newImg.bitmap, { disposal: 2, delayCentisecs: Math.round(frameData[i].frameInfo.delay/speed), interlaced: frameData[i].frameInfo.interlaced })
+        //frame.bitmap = newImg.bitmap;
+        GifUtil.quantizeDekker(frame);
+        frames[i] = frame;
+        framesProcessed += frameSkip;
+        if(framesProcessed >= frameData.length) cb()
+        concurrent--;
+    } else {
+        let newImg = await GifUtil.copyAsJimp(Jimp, frame);
+        maxSize = Number(process.env.MAX_GIF_SIZE);
+        if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {
+            await newImg.scaleToFit(maxSize, maxSize);
+        }
+        let worker = new Worker(__dirname+`/image-worker${jimp ? "-jimp" : ""}.js`)
+        worker.postMessage({ buffer: await newImg.getBufferAsync(Jimp.AUTO), list })
+
+        worker.on('message', async (img) => {
+            if(img == null) return
+            let newImg = await readBuffer(Buffer.from(img));
+            let newFrame = new GifFrame(newImg.bitmap, { disposal: frame.disposal, delayCentisecs: Math.round(frame.delayCentisecs/speed), interlaced: frame.interlaced })
+
+            GifUtil.quantizeDekker(newFrame);
+            frames[i] = newFrame;
             framesProcessed += frameSkip;
             if(framesProcessed >= frameData.length) cb()
             concurrent--;
-        } else {
-            let worker = new Worker(__dirname+"/image-worker.js")
-            worker.postMessage({ buffer: Buffer.concat(chunks), list })
-
-            worker.on('message', async (img) => {
-                if(img == null) return
-                let newImg = await readBuffer(Buffer.from(img));
-                maxSize = Number(process.env.MAX_GIF_SIZE);
-                if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {
-                    await newImg.scaleToFit(maxSize, maxSize);
-                }
-                let frame = new GifFrame(newImg.bitmap, { disposal: 2, delayCentisecs: Math.round(frameData[i].frameInfo.delay/speed), interlaced: frameData[i].frameInfo.interlaced })
-                //frame.bitmap = newImg.bitmap;
-                GifUtil.quantizeDekker(frame);
-                frames[i] = frame;
-                framesProcessed += frameSkip;
-                if(framesProcessed >= frameData.length) cb()
-                concurrent--;
-            });
-        }
-    });
+        });
+    }
 }

@@ -2,7 +2,10 @@ var Jimp = require('jimp');
 const webp = require('webp-converter');
 const http = require('https');
 const fs = require('fs');
-const gm = require('gm')
+var gm = require('gm');
+if(process.env.USE_IMAGEMAGICK == "true") {
+    gm = gm.subClass({ imageMagick: true });
+}
 const request = require('request')
 
 var mime = require('mime-types')
@@ -21,8 +24,15 @@ function gmToBuffer(gm) {
 
 function readURL(imgUrl) {
     return new Promise(async (resolve, reject) => {
-        resolve(await gmToBuffer(gm(request(imgUrl)).resize(process.env.MAX_IMG_SIZE, process.env.MAX_IMG_SIZE)))
-        /*
+        let maxSize = Number(process.env.MAX_IMG_SIZE)
+        gm(request(imgUrl)).size({bufferStream: true}, async function (err, size) {
+            this.resize(maxSize > size.width ? size.width : maxSize, maxSize > size.height ? size.height : maxSize)
+            resolve(await gmToBuffer(this))
+        })
+    });
+}
+function jimpReadURL(imgUrl) {
+    return new Promise(async (resolve, reject) => {
         // Check if .webp, requires additional handling
         if((await mime.lookup(imgUrl.split("?")[0])) === "image/webp") {
             // Get .webp image
@@ -35,8 +45,11 @@ function readURL(imgUrl) {
                 fs.unlink(__dirname+"/tmp.png", () => {}); // Remove tmp.png
 
                 maxSize = Number(process.env.MAX_IMG_SIZE);
-                if(img.bitmap.width > maxSize || img.bitmap.width > maxSize) {
-                    await img.scaleToFit(maxSize, maxSize);
+                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
+                    await img.resize(maxSize, Jimp.AUTO);
+                    resolve(img); // Resolve image limited to max size and converted to image/png
+                } else if(img.bitmap.height > maxSize) {
+                    await img.resize(Jimp.AUTO, maxSize);
                     resolve(img); // Resolve image limited to max size and converted to image/png
                 } else {
                     resolve(img) // Resolve image converted to image/png
@@ -46,15 +59,17 @@ function readURL(imgUrl) {
             // Read image type supported by jimp
             Jimp.read(imgUrl).then(async img => {
                 maxSize = Number(process.env.MAX_IMG_SIZE);
-                if(img.bitmap.width > maxSize || img.bitmap.width > maxSize) {
-                    await img.scaleToFit(maxSize, maxSize);
+                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
+                    await img.resize(maxSize, Jimp.AUTO);
+                    resolve(img); // Resolve image limited to max size
+                } else if(img.bitmap.height > maxSize) {
+                    await img.resize(Jimp.AUTO, maxSize);
                     resolve(img); // Resolve image limited to max size
                 } else {
                     resolve(img) // Resolve image
                 }
             }).catch(reject)
         }
-        */
     });
 }
 function readBuffer(buffer) {
@@ -88,7 +103,7 @@ function exec(imgUrl, list) {
         if((await mime.lookup(imgUrl.split("?")[0])) === "image/gif") {
             try {
                 let worker = new Worker(__dirname+"/gif-worker.js")
-                worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1 })
+                worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1, jimp: true })
     
                 worker.on('message', async (img) => {
                     if(img == null) reject()
@@ -99,7 +114,7 @@ function exec(imgUrl, list) {
                 reject(e)
             }
         } else {
-            let worker = new Worker(__dirname+"/image-worker.js")
+            let worker = new Worker(__dirname+"/image-worker-jimp.js")
             worker.postMessage({ imgUrl, list })
 
             worker.on('message', (img) => {
@@ -115,7 +130,7 @@ function execGM(imgUrl, list) {
         if((await mime.lookup(imgUrl.split("?")[0])) === "image/gif") {
             try {
                 let worker = new Worker(__dirname+"/gif-worker.js")
-                worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1 })
+                worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1, jimp: false })
     
                 worker.on('message', async (img) => {
                     if(img == null) reject()
@@ -140,6 +155,13 @@ function execGM(imgUrl, list) {
 function performMethod(img, method, params) {
     return new Promise(async (resolve, reject) => {
         try {
+            if(img.bitmap) {
+                for (let i = 0; i < params.length; i++) {
+                    if(typeof params[i] == "object") {
+                        try{ params[i] = await readBuffer(Buffer.from(params[i])); } catch(e) {}
+                    }  
+                }
+            }
             if(img[method]) { // If native method
                 img = await img[method](...params) // Run method function on image
             } else { // If custom method or undefined method
@@ -166,8 +188,9 @@ function customMethod(img, method, params) {
                 resolve(newImg); // Resolve image
             }
             if(method == "addBackground") { // Adds colour background
-                let bgImg = gm(params[0], params[1], params[2]).composite(gm(img), params[3], params[4])
-                resolve(bgImg); // Resolve image
+                let bgImg = await createNewImage(params[0], params[1], params[2]);
+                newImg = await bgImg.composite(img, params[3], params[4])
+                resolve(newImg); // Resolve image
             }
         } catch(e) {
             reject(e)
@@ -198,6 +221,7 @@ module.exports = {
     exec,
     execGM,
     readURL,
+    jimpReadURL,
     readBuffer,
     measureText,
     measureTextHeight,

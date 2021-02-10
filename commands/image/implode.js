@@ -23,7 +23,7 @@ async function cmdFunc(msg, args, startTime) {
         let timeTaken = formatDuration(new Date().getTime() - startTime)
 
         let embed = new MessageEmbed({
-            "title": "Fisheye",
+            "title": "Implode",
             "description": `<@${msg.author.id}>`,
             "color": Number(process.env.EMBED_COLOUR),
             "timestamp": new Date(),

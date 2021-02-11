@@ -22,38 +22,7 @@ async function cmdFunc(msg, args, startTime) {
     
                 worker.on('message', async (img) => {
                     if(img != null) {
-                        const attachment = new MessageAttachment(Buffer.from(img), "image."+extension);
-                        let timeTaken = formatDuration(new Date().getTime() - startTime)
-                
-                        let embed = new MessageEmbed({
-                            "title": "Slow",
-                            "description": `<@${msg.author.id}>`,
-                            "color": Number(process.env.EMBED_COLOUR),
-                            "timestamp": new Date(),
-                            "author": {
-                                "name": process.env.BOT_NAME,
-                                "icon_url": msg.client.user.displayAvatarURL()
-                            },
-                            "footer": {
-                                "text": `Took ${timeTaken}`
-                            }
-                        }).attachFiles(attachment).setImage("attachment://image."+extension);
-                        msg.channel.send({ embed }).catch(() => {
-                            msg.channel.send({
-                                embed: {
-                                    "title": "Error",
-                                    "description": `<@${msg.author.id}> - Failed to send`,
-                                    "color": Number(process.env.EMBED_COLOUR),
-                                    "timestamp": new Date(),
-                                    "author": {
-                                        "name": process.env.BOT_NAME,
-                                        "icon_url": msg.client.user.displayAvatarURL()
-                                    }
-                                }
-                            })
-                        })            
-                        msg.channel.stopTyping()
-                        procMsg.delete();
+                        sendImage(msg, "Slow", startTime, img, extension, procMsg)
                     } else {
                         msg.channel.stopTyping()
                         msg.channel.send({

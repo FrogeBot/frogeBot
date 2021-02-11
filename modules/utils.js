@@ -112,7 +112,7 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, proc
 
         let embed = new MessageEmbed({
             "title": cmdName,
-            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
+            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host. It will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
             "color": Number(process.env.EMBED_COLOUR),
             "timestamp": new Date(),
             "author": {

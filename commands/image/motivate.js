@@ -39,42 +39,9 @@ async function cmdFunc(msg, args, startTime) {
             ["composite", [windowCanvas, 0, 0]],
             ["composite", [textCanvas[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025)]],
             ["composite", [textCanvas2[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025)+textCanvas[1]]]
-        ]).catch(e => {
-            throw e
-        });
+        ])
         
-        const attachment = new MessageAttachment(img, "image."+extension);
-        let timeTaken = formatDuration(new Date().getTime() - startTime)
-
-        let embed = new MessageEmbed({
-            "title": "Motivate",
-            "description": `<@${msg.author.id}>`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": msg.client.user.displayAvatarURL()
-            },
-            "footer": {
-                "text": `Took ${timeTaken}`
-            }
-        }).attachFiles(attachment).setImage("attachment://image."+extension);
-        msg.channel.send({ embed }).catch(() => {
-            msg.channel.send({
-                embed: {
-                    "title": "Error",
-                    "description": `<@${msg.author.id}> - Failed to send`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": msg.client.user.displayAvatarURL()
-                    }
-                }
-            })
-        })
-        msg.channel.stopTyping()
-        procMsg.delete();
+        sendImage(msg, "Motivate", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

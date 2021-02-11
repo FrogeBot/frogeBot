@@ -19,39 +19,8 @@ async function cmdFunc(msg, args, startTime) {
         
         let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 8;
         let img = await execGM(imageUrl, [ ["blur", [Math.max(r, 0)]] ]);
-        
-        const attachment = new MessageAttachment(img, "image."+extension);
-        let timeTaken = formatDuration(new Date().getTime() - startTime)
 
-        let embed = new MessageEmbed({
-            "title": "Blur",
-            "description": `<@${msg.author.id}>`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": msg.client.user.displayAvatarURL()
-            },
-            "footer": {
-                "text": `Took ${timeTaken}`
-            }
-        }).attachFiles(attachment).setImage("attachment://image."+extension);
-        msg.channel.send({ embed }).catch(() => {
-            msg.channel.send({
-                embed: {
-                    "title": "Error",
-                    "description": `<@${msg.author.id}> - Failed to send`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": msg.client.user.displayAvatarURL()
-                    }
-                }
-            })
-        })
-        msg.channel.stopTyping()
-        procMsg.delete();
+        sendImage(msg, "Blur", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

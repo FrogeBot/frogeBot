@@ -22,40 +22,9 @@ async function cmdFunc(msg, args, startTime) {
         if(r < 1) scaleFactor = 1/(r*r)*2;
         let img = await exec(imageUrl, [ ["fisheye", [{ r }]], ["canvasScale", [1/scaleFactor]], ["scale", [scaleFactor]] ]);
         
-        const attachment = new MessageAttachment(img, "image."+extension);
-        let timeTaken = formatDuration(new Date().getTime() - startTime)
-
-        let embed = new MessageEmbed({
-            "title": "Fisheye",
-            "description": `<@${msg.author.id}>`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": msg.client.user.displayAvatarURL()
-            },
-            "footer": {
-                "text": `Took ${timeTaken}`
-            }
-        }).attachFiles(attachment).setImage("attachment://image."+extension);
-        msg.channel.send({ embed }).catch(() => {
-            msg.channel.send({
-                embed: {
-                    "title": "Error",
-                    "description": `<@${msg.author.id}> - Failed to send`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": msg.client.user.displayAvatarURL()
-                    }
-                }
-            })
-        })
-        msg.channel.stopTyping()
-        procMsg.delete();
+        sendImage(msg, "Fisheye", startTime, img, extension, procMsg)
     } catch(e) {
-        //console.log(e)
+        console.log(e)
         msg.channel.stopTyping()
         msg.channel.send({
             embed: {

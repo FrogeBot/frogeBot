@@ -1,18 +1,14 @@
 var Jimp = require('jimp');
-const webp = require('webp-converter');
-const http = require('https');
-const fs = require('fs');
 var gm = require('gm');
 if(process.env.USE_IMAGEMAGICK == "true") {
     gm = gm.subClass({ imageMagick: true });
 }
 const request = require('request')
 
-var mime = require('mime-types')
-
-function gmToBuffer(gm) {
+function gmToBuffer(gm, useWebp = true) {
     return new Promise(async (resolve, reject) => {
         gm.format({bufferStream: true}, function (err, format) {
+            if(format == "WEBP" && !useWebp) format = "PNG"
             this.toBuffer(format, function (err, buffer) {
                 if (!err) {
                     resolve(buffer);
@@ -22,54 +18,28 @@ function gmToBuffer(gm) {
     });
 }
 
-function readURL(imgUrl) {
+function getFormat(imgUrl) {
+    return new Promise(async (resolve, reject) => {
+        gm.format({bufferStream: true}, function (err, format) {
+            return format
+        });
+    });
+}
+
+function readURL(imgUrl, useWebp = true) {
     return new Promise(async (resolve, reject) => {
         let maxSize = Number(process.env.MAX_IMG_SIZE)
         gm(request(imgUrl)).size({bufferStream: true}, async function (err, size) {
             this.resize(maxSize > size.width ? size.width : maxSize, maxSize > size.height ? size.height : maxSize)
-            resolve(await gmToBuffer(this))
+            resolve(await gmToBuffer(this, useWebp))
         })
     });
 }
 function jimpReadURL(imgUrl) {
     return new Promise(async (resolve, reject) => {
-        // Check if .webp, requires additional handling
-        if((await mime.lookup(imgUrl.split("?")[0])) === "image/webp") {
-            // Get .webp image
-            const file = fs.createWriteStream(__dirname+"/tmp.webp");
-            const request = http.get(imgUrl, async function(response) {
-                await response.pipe(file); // Save to tmp.webp
-                let result = await webp.dwebp(__dirname+"/tmp.webp", __dirname+"/tmp.png", "-o"); // Convert to tmp.webp -> tmp.png
-                let img = await Jimp.read(__dirname+'/tmp.png'); // Read tmp.png for jimp
-                fs.unlink(__dirname+"/tmp.webp", () => {}); // Remove tmp.webp
-                fs.unlink(__dirname+"/tmp.png", () => {}); // Remove tmp.png
-
-                maxSize = Number(process.env.MAX_IMG_SIZE);
-                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
-                    await img.resize(maxSize, Jimp.AUTO);
-                    resolve(img); // Resolve image limited to max size and converted to image/png
-                } else if(img.bitmap.height > maxSize) {
-                    await img.resize(Jimp.AUTO, maxSize);
-                    resolve(img); // Resolve image limited to max size and converted to image/png
-                } else {
-                    resolve(img) // Resolve image converted to image/png
-                }
-            });
-        } else {
-            // Read image type supported by jimp
-            Jimp.read(imgUrl).then(async img => {
-                maxSize = Number(process.env.MAX_IMG_SIZE);
-                if(img.bitmap.width > maxSize && img.bitmap.width > img.bitmap.height) {
-                    await img.resize(maxSize, Jimp.AUTO);
-                    resolve(img); // Resolve image limited to max size
-                } else if(img.bitmap.height > maxSize) {
-                    await img.resize(Jimp.AUTO, maxSize);
-                    resolve(img); // Resolve image limited to max size
-                } else {
-                    resolve(img) // Resolve image
-                }
-            }).catch(reject)
-        }
+        Jimp.read(await readURL(imgUrl, false)).then(async img => {
+            resolve(img)
+        }).catch(reject)
     });
 }
 function readBuffer(buffer) {
@@ -100,7 +70,7 @@ const { Worker } = require('worker_threads');
 
 function exec(imgUrl, list) {
     return new Promise(async (resolve, reject) => {
-        if((await mime.lookup(imgUrl.split("?")[0])) === "image/gif") {
+        if(await getFormat(imgUrl) == "GIF") {
             try {
                 let worker = new Worker(__dirname+"/gif-worker.js")
                 worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1, jimp: true })
@@ -127,7 +97,7 @@ function exec(imgUrl, list) {
 
 function execGM(imgUrl, list) {
     return new Promise(async (resolve, reject) => {
-        if((await mime.lookup(imgUrl.split("?")[0])) === "image/gif") {
+        if(await getFormat(imgUrl) == "GIF") {
             try {
                 let worker = new Worker(__dirname+"/gif-worker.js")
                 worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1, jimp: false })

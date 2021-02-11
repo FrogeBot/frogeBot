@@ -36,36 +36,42 @@ function printAtWordWrap( context , text, x, y, lineHeight, fitWidth) {
     return new Promise(async (resolve, reject) => {
         fitWidth = fitWidth || 0;
         
-        if (fitWidth <= 0)
+        let forcedLines = text.split("\n")
+
+        if (fitWidth <= 0 && forcedLines.length <= 1)
         {
             await fillTextWithTwemoji(context, text, x, y, { emojiTopMarginPercent: 0.1} ); // Fills text using Twemoji support
             resolve(0);
         }
-        var words = text.split(' ');
-        var currentLine = 0; // Resolve number of lines
-        var idx = 1;
-        while (words.length > 0 && idx <= words.length)
-        {
-            var str = words.slice(0,idx).join(' ');
-            var w = measureText(context, str).width; // Measure text, replacing discord custom emojis with the clown emoji
-            if ( w > fitWidth )
-            {
-                if (idx==1)
-                {
-                    idx=2;
-                }
-                await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), lineHeight, x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.15 } ); // Fills text using Twemoji support
-                currentLine++;
-                words = words.splice(idx-1);
-                idx = 1;
-            }
-            else
-            {idx++;}
-        }
-        if  (idx > 0)
-        await fillTextWithTwemoji(context, words.join(' '), lineHeight, x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.15 } ); // Fills text using Twemoji support
 
-        resolve(currentLine+1); // Resolve number of lines
+        var currentLine = 0; // Init number of lines
+        for(let l = 0; l < forcedLines.length; l++) {
+            var words = forcedLines[l].split(' ');
+            var idx = 1;
+            while (words.length > 0 && idx <= words.length)
+            {
+                var str = words.slice(0,idx).join(' ');
+                var w = measureText(context, str).width; // Measure text, replacing discord custom emojis with the clown emoji
+                if ( w > fitWidth || words[0] == "\n" )
+                {
+                    if (idx==1)
+                    {
+                        idx=2;
+                    }
+                    await fillTextWithTwemoji(context, words.slice(0,idx-1).join(' '), lineHeight, x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.15 } ); // Fills text using Twemoji support
+                    currentLine++;
+                    words = words.splice(idx-1);
+                    idx = 1;
+                }
+                else
+                {idx++;}
+            }
+            if  (idx > 0)
+            await fillTextWithTwemoji(context, words.join(' '), lineHeight, x, y + (lineHeight*currentLine), { emojiTopMarginPercent: 0.15 } ); // Fills text using Twemoji support
+            currentLine++;
+        }
+
+        resolve(currentLine); // Resolve number of lines
     });
 }
 function canvasRect(width, height, strokeStyle = "white", strokeWidth = 4, fillStyle = "black") {

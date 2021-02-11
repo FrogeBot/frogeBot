@@ -71,7 +71,7 @@ function clamp(input, min, max) {
 
 const fs = require("fs");
 const path = require("path");
-const { MessageAttachment } = require("discord.js")
+const { MessageAttachment, MessageEmbed } = require("discord.js")
 
 function sendImage(msg, cmdName, startTime, img, extension, procMsg) {
     const attachment = new MessageAttachment(img, "image."+extension);

@@ -1,5 +1,5 @@
 require("dotenv").config()
-const { MessageAttachment, MessageEmbed } = require('discord.js');
+
 const { Worker } = require('worker_threads');
 const { readBuffer } = require("../../modules/image.js");
 

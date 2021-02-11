@@ -49,8 +49,9 @@ if(process.env.WEB_ENABLED == "true") {
     const express = require('express')
     const app = express()
 
+    app.use(express.static("web/public"))
     app.get('/', (req, res) => {
-        res.send('Hello World!')
+        res.sendFile(path.join(__dirname,"web/index.html"))
     })
 
     app.get("/images/*", async (req, res) => {

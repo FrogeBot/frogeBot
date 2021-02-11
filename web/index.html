@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Froge Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="topBar">
+        <a href="/"><img src="frogeBot.png" draggable="false" /></a>
+        <a href="#about" class="btn btn-outline-primary">About</a>
+        <a href="#commands" class="btn btn-outline-secondary">Commands</a>
+        <a href="https://github.com/barnabwhy/frogeBot" class="btn btn-outline-light">GitHub</a>
+    </div>
+    <div id="main">
+        <div id="about" style="padding-top: 96px;">
+            <h1>About</h1>
+            <p>It's a bot with image editing.</p>
+            <p>And it's open-source.</p>
+            <b style="font-family: 'Open Sans', sans-serif;">It's also froge.</b>
+        </div>
+        <div id="commands" style="padding-top: 96px;">
+            <h1>Commands</h1>
+            <div id="commandList"></div>
+        </div>
+        <div id="footer" style="padding-top: 96px;">
+            <p style="color: var(--color-secondary-light)">Made by Barnaby</p>
+        </div> 
+        
+    </div>
+    <script>
+        let helpList = {
+            "help": "Shows the list of commands",
+            "avatar": "Shows the avatar of the mentioned user (usage: `avatar [user]`)",
+            "pixelate": "Pixelates the supplied image (usage: `pixelate [amount = 0+]`)",
+            "blur": "Blurs the supplied image (usage: `blur [amount = 0+]`)",
+            "fliph": "Flips an image horizontally",
+            "flipv": "Flips an image vertically",
+            "fisheye": "Applies a fisheye effect to an image (usage: `fisheye [amount = 0+]`)",
+            "implode": "Implodes and image",
+            "explode": "Explodes an image",
+            "invert": "Inverts an image",
+            "greyscale": "Applies a greyscale filter to the image",
+            "jpeg": "Runs JPEG compression on an image (usage: `jpeg [quality = 0-100]`)",
+            "jpeg2": "Pixelates and applies colour banding to an image",
+            "caption": "Adds a caption to an image (usage: `caption <text>`)",
+            "caption2": "Adds a caption of an alternate style to an image (usage: `caption2 <text>`)",
+            "motivate": "Adds a demotivational poster caption to an image (usage: `motivate <text> | [text]`)",
+            "evenframes": "Returns a GIF image with only its even frames, preserving the speed of the GIF.",
+            "speed": "Doubles the speed of a GIF",
+            "slow": "Halves the speed of a GIF",
+            "square": "Crops the image to a square",
+            "sepia": "Applies a sepia filter to the image"
+        }
+        document.getElementById("commandList").innerHTML = Object.keys(helpList).map((key) => { return `<div><b>${key}</b> <p>${helpList[key].replace(/`(.+)`/g, "<code>$1</code>").replace(/<text>/g, "&lt;text&gt;")}`}).join("<hr>");
+    </script>
+</body>
+</html>

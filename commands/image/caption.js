@@ -2,7 +2,7 @@ require("dotenv").config()
 const { MessageAttachment, MessageEmbed } = require('discord.js');
 
 delete require.cache[require.resolve("../../modules/utils.js")];
-let { findImage, formatDuration } = require("../../modules/utils.js")
+let { findImage, sendImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
@@ -33,40 +33,8 @@ async function cmdFunc(msg, args, startTime) {
             ["composite", [rectCanvas, 0, 0]],
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.075), Math.round(imgFG.bitmap.width*0.1)]]
         ]);
-        
-        const attachment = new MessageAttachment(img, "image."+extension);
-        let timeTaken = formatDuration(new Date().getTime() - startTime)
 
-        let embed = new MessageEmbed({
-            "title": "Caption",
-            "description": `<@${msg.author.id}>`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": msg.client.user.displayAvatarURL()
-            },
-            "footer": {
-                "text": `Took ${timeTaken}`
-            }
-        }).attachFiles(attachment).setImage("attachment://image."+extension);
-        msg.channel.send({ embed }).catch(() => {
-            msg.channel.send({
-                embed: {
-                    "title": "Error",
-                    "description": `<@${msg.author.id}> - Failed to send`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": msg.client.user.displayAvatarURL()
-                    }
-                }
-            })
-        })
-
-        msg.channel.stopTyping()
-        procMsg.delete();
+        sendImage(msg, "Caption", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

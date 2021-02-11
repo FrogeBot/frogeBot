@@ -1,3 +1,5 @@
+require("dotenv").config()
+
 function findImage(msg) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -67,9 +69,69 @@ function clamp(input, min, max) {
     return Math.min(Math.max(input, min), max);
 };
 
+const fs = require("fs");
+const path = require("path");
+const { MessageAttachment } = require("discord.js")
+
+function sendImage(msg, cmdName, startTime, img, extension, procMsg) {
+    const attachment = new MessageAttachment(img, "image."+extension);
+    let timeTaken = formatDuration(new Date().getTime() - startTime)
+
+    /*let embed = new MessageEmbed({
+        "title": cmdName,
+        "description": `<@${msg.author.id}>`,
+        "color": Number(process.env.EMBED_COLOUR),
+        "timestamp": new Date(),
+        "author": {
+            "name": process.env.BOT_NAME,
+            "icon_url": msg.client.user.displayAvatarURL()
+        },
+        "footer": {
+            "text": `Took ${timeTaken}`
+        }
+    }).attachFiles(attachment).setImage("attachment://image."+extension);
+    msg.channel.send({ embed }).catch(() => {*/
+        if(process.env.WEB_ENABLED == "true") {
+            fs.writeFileSync(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
+            msg.channel.send({
+                embed: {
+                    "title": cmdName,
+                    "description": `<@${msg.author.id}> - Failed to upload to discord, using external web host`,
+                    "color": Number(process.env.EMBED_COLOUR),
+                    "timestamp": new Date(),
+                    "author": {
+                        "name": process.env.BOT_NAME,
+                        "icon_url": msg.client.user.displayAvatarURL()
+                    },
+                    "image": {
+                        "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
+                    }
+                }
+            })
+        } else {
+            msg.channel.send({
+                embed: {
+                    "title": "Error",
+                    "description": `<@${msg.author.id}> - Failed to send`,
+                    "color": Number(process.env.EMBED_COLOUR),
+                    "timestamp": new Date(),
+                    "author": {
+                        "name": process.env.BOT_NAME,
+                        "icon_url": msg.client.user.displayAvatarURL()
+                    }
+                }
+            })
+        }
+    //})
+
+    msg.channel.stopTyping()
+    if(procMsg) procMsg.delete();
+}
+
 // Exports
 module.exports = {
     findImage,
+    sendImage,
     formatDuration,
     clamp
 }

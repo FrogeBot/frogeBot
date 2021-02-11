@@ -21,7 +21,7 @@ function gmToBuffer(gm, useWebp = true) {
 function getFormat(imgUrl) {
     return new Promise(async (resolve, reject) => {
         gm(request(imgUrl)).format({bufferStream: true}, function (err, format) {
-            return format
+            resolve(format);
         });
     });
 }

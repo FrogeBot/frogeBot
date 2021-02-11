@@ -3,7 +3,7 @@ const { MessageAttachment, MessageEmbed } = require('discord.js');
 const { Worker } = require('worker_threads');
 
 delete require.cache[require.resolve("../../modules/utils.js")];
-let { findImage, formatDuration } = require("../../modules/utils.js")
+let { findImage, sendImage } = require("../../modules/utils.js")
 
 let procMsg
 let imgUrl

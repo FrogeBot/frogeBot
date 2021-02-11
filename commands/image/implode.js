@@ -2,7 +2,7 @@ require("dotenv").config()
 const { MessageAttachment, MessageEmbed } = require('discord.js');
 
 delete require.cache[require.resolve("../../modules/utils.js")];
-let { findImage, formatDuration } = require("../../modules/utils.js")
+let { findImage, sendImage } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
 let { execGM } = require("../../modules/image.js")
@@ -19,7 +19,7 @@ async function cmdFunc(msg, args, startTime) {
         
         let r = (args.length > 0 && Number(args.split(" ")[0]) != NaN) ? Number(args.split(" ")[0]) : 0.5;
         let img = await execGM(imageUrl, [ ["implode", [ r ]] ]);
-        
+
         sendImage(msg, "Implode", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)

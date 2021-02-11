@@ -4,7 +4,7 @@ const { Worker } = require('worker_threads');
 const { readBuffer } = require("../../modules/image.js");
 
 delete require.cache[require.resolve("../../modules/utils.js")];
-let { findImage, formatDuration } = require("../../modules/utils.js")
+let { findImage, sendImage } = require("../../modules/utils.js")
 var gm = require('gm');
 if(process.env.USE_IMAGEMAGICK == "true") {
     gm = gm.subClass({ imageMagick: true });

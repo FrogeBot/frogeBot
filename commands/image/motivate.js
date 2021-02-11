@@ -2,7 +2,7 @@ require("dotenv").config()
 const { MessageAttachment, MessageEmbed } = require('discord.js');
 
 delete require.cache[require.resolve("../../modules/utils.js")];
-let { findImage, formatDuration } = require("../../modules/utils.js")
+let { findImage, sendImage } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
 let { jimpReadURL, exec } = require("../../modules/image.js")

@@ -56,7 +56,7 @@ if(process.env.WEB_ENABLED == "true") {
     app.get("/images/*", async (req, res) => {
         let imgPath = path.join(__dirname,"web_images/"+req.path.split("/")[2])
         if (fs.existsSync(imgPath)) {
-            const r = fs.createReadStream(__dirname,"web_images/"+req.path.split("/")[2])
+            const r = fs.createReadStream(imgPath)
             r.pipe(res)
         } else {
             const r = fs.createReadStream("assets/imageExpired.png")

@@ -77,7 +77,7 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg) {
     const attachment = new MessageAttachment(img, "image."+extension);
     let timeTaken = formatDuration(new Date().getTime() - startTime)
 
-    /*let embed = new MessageEmbed({
+    let embed = new MessageEmbed({
         "title": cmdName,
         "description": `<@${msg.author.id}>`,
         "color": Number(process.env.EMBED_COLOUR),
@@ -90,8 +90,9 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg) {
             "text": `Took ${timeTaken}`
         }
     }).attachFiles(attachment).setImage("attachment://image."+extension);
-    msg.channel.send({ embed }).catch(() => {*/
+    msg.channel.send({ embed }).catch(() => {
         if(process.env.WEB_ENABLED == "true") {
+            console.log(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
             fs.writeFileSync(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
             let embed = new MessageEmbed({
                 "title": cmdName,
@@ -103,7 +104,6 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg) {
                     "icon_url": msg.client.user.displayAvatarURL()
                 }
             }).setImage(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
-            console.log(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
             msg.channel.send({ embed })
         } else {
             msg.channel.send({
@@ -119,7 +119,7 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg) {
                 }
             })
         }
-    //})
+    })
 
     msg.channel.stopTyping()
     if(procMsg) procMsg.delete();

@@ -74,11 +74,13 @@ const path = require("path");
 const { MessageAttachment, MessageEmbed } = require("discord.js")
 
 function sendImage(msg, cmdName, startTime, img, extension, procMsg, forceWeb = false) {
+    if(procMsg) procMsg.edit("Uploading...");
+
     const attachment = new MessageAttachment(img, "image."+extension);
     let timeTaken = formatDuration(new Date().getTime() - startTime)
 
     if(forceWeb) {
-        attemptSendImageWeb(msg, cmdName, timeTaken, img, extension)
+        attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg)
     } else {
         let embed = new MessageEmbed({
             "title": cmdName,
@@ -93,40 +95,43 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg, forceWeb = 
                 "text": `Took ${timeTaken}`
             }
         }).attachFiles(attachment).setImage("attachment://image."+extension);
-        msg.channel.send({ embed }).catch(async () => {
-            attemptSendImageWeb(msg, cmdName, timeTaken, img, extension)
+        msg.channel.send({ embed }).then(() => {
+            msg.channel.stopTyping()
+            if(procMsg) procMsg.delete();
+        }).catch(async () => {
+            attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg)
         })
     }
-
-    msg.channel.stopTyping()
-    if(procMsg) procMsg.delete();
 }
 
 const request = require("request")
-async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension) {
+async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg) {
     if(process.env.WEB_ENABLED == "true") {
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
         setTimeout(() => fs.unlink(path.join(__dirname,`/../web_images/${msg.id}.${extension}`)), timeVals.minute*Number(process.env.WEB_SAVE_MINS))
 
-        await request(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
-        path.join(__dirname,`/../web_images/${msg.id}.${extension}`)
-        let embed = new MessageEmbed({
-            "title": cmdName,
-            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": msg.client.user.displayAvatarURL()
-            },
-            "image": {
-                "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
-            },
-            "footer": {
-                "text": `Took ${timeTaken}`
-            }
-        })
-        msg.channel.send({ embed })
+        request(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`, function (error, response, body) {
+            let embed = new MessageEmbed({
+                "title": cmdName,
+                "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": msg.client.user.displayAvatarURL()
+                },
+                "image": {
+                    "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
+                },
+                "footer": {
+                    "text": `Took ${timeTaken}`
+                }
+            })
+            msg.channel.send({ embed }).then(() => {
+                msg.channel.stopTyping()
+                if(procMsg) procMsg.delete();
+            })
+        });
     } else {
         msg.channel.send({
             embed: {
@@ -139,6 +144,9 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension) {
                     "icon_url": msg.client.user.displayAvatarURL()
                 }
             }
+        }).then(() => {
+            msg.channel.stopTyping()
+            if(procMsg) procMsg.delete();
         })
     }
 }

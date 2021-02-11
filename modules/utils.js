@@ -107,22 +107,23 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension) {
         console.log(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
         setTimeout(() => fs.unlink(path.join(__dirname,`/../web_images/${msg.id}.${extension}`)), timeVals.minute*Number(process.env.WEB_SAVE_MINS))
-
-        path.join(__dirname,`/../web_images/${msg.id}.${extension}`)
-        let embed = new MessageEmbed({
-            "title": cmdName,
-            "description": `<@${msg.author.id}> - Failed to upload to Discord, using external web host`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": msg.client.user.displayAvatarURL()
-            },
-            "footer": {
-                "text": `Took ${timeTaken}`
-            }
-        }).setImage(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
-        msg.channel.send({ embed })
+        setTimeout(() => {
+            path.join(__dirname,`/../web_images/${msg.id}.${extension}`)
+            let embed = new MessageEmbed({
+                "title": cmdName,
+                "description": `<@${msg.author.id}> - Failed to upload to Discord, using external web host`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": msg.client.user.displayAvatarURL()
+                },
+                "footer": {
+                    "text": `Took ${timeTaken}`
+                }
+            }).setImage(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
+            msg.channel.send({ embed })
+        }, 1000);
     } else {
         msg.channel.send({
             embed: {

@@ -5,7 +5,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, formatDuration } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { readURL, jimpReadURL, readBuffer, exec } = require("../../modules/image.js")
+let { jimpReadURL, exec } = require("../../modules/image.js")
 let { canvasText, canvasWindow } = require("../../modules/canvas.js");
 
 let procMsg

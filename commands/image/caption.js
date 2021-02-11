@@ -6,7 +6,7 @@ let { findImage, sendImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { exec, readURL, jimpReadURL, readBuffer } = require("../../modules/image.js")
+let { exec, jimpReadURL, readBuffer } = require("../../modules/image.js")
 let { canvasText, canvasRect } = require("../../modules/canvas.js")
 
 let procMsg
@@ -34,7 +34,7 @@ async function cmdFunc(msg, args, startTime) {
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.075), Math.round(imgFG.bitmap.width*0.1)]]
         ]);
 
-        sendImage(msg, "Caption", startTime, img, extension, procMsg)
+        sendImage(msg, "Caption", startTime, img, extension, procMsg, true)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

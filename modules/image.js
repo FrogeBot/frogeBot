@@ -28,18 +28,32 @@ function getFormat(imgUrl) {
 
 function readURL(imgUrl, useWebp = true) {
     return new Promise(async (resolve, reject) => {
-        let maxSize = Number(process.env.MAX_IMG_SIZE)
-        gm(request(imgUrl)).size({bufferStream: true}, async function (err, size) {
-            this.resize(maxSize > size.width ? size.width : maxSize, maxSize > size.height ? size.height : maxSize)
-            resolve(await gmToBuffer(this, useWebp))
-        })
+        try {
+            let maxSize = Number(process.env.MAX_IMG_SIZE)
+            console.log(await gmToBuffer(gm(request(imgUrl))));
+            gm(request(imgUrl)).size({bufferStream: true}, async function (err, size) {
+                if(err) {
+                    console.log(err)
+                    reject(err)
+                } else {
+                    await this.resize(maxSize > size.width ? size.width : maxSize, maxSize > size.height ? size.height : maxSize)
+                    resolve(await gmToBuffer(this, useWebp))
+                }
+            })
+        } catch(e) {
+            reject(e)
+        }
     });
 }
 function jimpReadURL(imgUrl) {
     return new Promise(async (resolve, reject) => {
-        Jimp.read(await readURL(imgUrl, false)).then(async img => {
-            resolve(img)
-        }).catch(reject)
+        try {
+            Jimp.read(await readURL(imgUrl, false)).then(async img => {
+                resolve(img)
+            }).catch(reject)
+        } catch(e) {
+            reject(e)
+        }
     });
 }
 function readBuffer(buffer) {
@@ -76,7 +90,7 @@ function exec(imgUrl, list) {
                 worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1, jimp: true })
     
                 worker.on('message', async (img) => {
-                    if(img == null) reject()
+                    if(img == null) reject("Null image")
                     resolve(Buffer.from(img))
                 });
             } catch(e) {
@@ -88,7 +102,7 @@ function exec(imgUrl, list) {
             worker.postMessage({ imgUrl, list, allowBackgrounds: true })
 
             worker.on('message', (img) => {
-                if(img == null) reject()
+                if(img == null) reject("Null image")
                 else resolve(Buffer.from(img))
             });
         }
@@ -103,7 +117,7 @@ function execGM(imgUrl, list) {
                 worker.postMessage({ imgUrl, list, frameSkip: 1, speed: 1, jimp: false })
     
                 worker.on('message', async (img) => {
-                    if(img == null) reject()
+                    if(img == null) reject("Null image")
                     resolve(Buffer.from(img))
                 });
             } catch(e) {
@@ -115,7 +129,7 @@ function execGM(imgUrl, list) {
             worker.postMessage({ imgUrl, list, allowBackgrounds: true })
 
             worker.on('message', (img) => {
-                if(img == null) reject()
+                if(img == null) reject("Null image")
                 else resolve(Buffer.from(img))
             });
         }

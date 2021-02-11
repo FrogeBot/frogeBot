@@ -74,11 +74,12 @@ async function workerQueuer(){
 let workerInterval = setInterval(workerQueuer, 500);
 
 async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
+    let { width, height } = frameData[0].bitmap;
     let frame = await frameData[i]
     if(list == null) {
-        let newImg = await GifUtil.copyAsJimp(Jimp, frame);
+        let newImg = new Jimp(width, height, "transparent").composite(await GifUtil.copyAsJimp(Jimp, frame), frame.xOffset, frame.yOffset);
         maxSize = Number(process.env.MAX_GIF_SIZE);
-        if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {
+        if(newImg.bitmap.width > maxSize || newImg.bitmap.height > maxSize) {
             await newImg.scaleToFit(maxSize, maxSize);
         }
         let newFrame = new GifFrame(newImg.bitmap, { disposalMethod: frame.disposalMethod, delayCentisecs: Math.max(2, Math.round(frame.delayCentisecs/speed)), interlaced: frame.interlaced })
@@ -88,9 +89,9 @@ async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
         if(framesProcessed >= frameData.length) cb()
         concurrent--;
     } else {
-        let newImg = await GifUtil.copyAsJimp(Jimp, frame);
+        let newImg = await (new Jimp(width, height)).composite(await GifUtil.copyAsJimp(Jimp, frame), frame.xOffset, frame.yOffset);
         maxSize = Number(process.env.MAX_GIF_SIZE);
-        if(newImg.bitmap.width > maxSize || newImg.bitmap.width > maxSize) {
+        if(newImg.bitmap.width > maxSize || newImg.bitmap.height > maxSize) {
             await newImg.scaleToFit(maxSize, maxSize);
         }
         let worker = new Worker(__dirname+`/image-worker${jimp ? "-jimp" : ""}.js`)

@@ -110,9 +110,10 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, proc
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
         setTimeout(() => fs.unlink(path.join(__dirname,`/../web_images/${msg.id}.${extension}`)), timeVals.minute*Number(process.env.WEB_SAVE_MINS))
 
+        let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}${process.env.WEB_REFRESH_CACHE == "true" ? `?q=${Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 8)}` : ""}`
         let embed = new MessageEmbed({
             "title": cmdName,
-            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host. It will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
+            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host. It will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](${imgUrl})`,
             "color": Number(process.env.EMBED_COLOUR),
             "timestamp": new Date(),
             "author": {
@@ -120,7 +121,7 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, proc
                 "icon_url": msg.client.user.displayAvatarURL()
             },
             "image": {
-                "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
+                "url": imgUrl
             },
             "footer": {
                 "text": `Took ${timeTaken}`

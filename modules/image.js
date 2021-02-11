@@ -20,7 +20,7 @@ function gmToBuffer(gm, useWebp = true) {
 
 function getFormat(imgUrl) {
     return new Promise(async (resolve, reject) => {
-        gm.format({bufferStream: true}, function (err, format) {
+        gm(request(imgUrl)).format({bufferStream: true}, function (err, format) {
             return format
         });
     });

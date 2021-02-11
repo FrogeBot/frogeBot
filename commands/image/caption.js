@@ -21,17 +21,17 @@ async function cmdFunc(msg, args, startTime) {
 
         let imgFG = await jimpReadURL(imageUrl);
 
-        let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.1), "Roboto", Math.round(imgFG.bitmap.width*0.8), "center", 1.5, "black")
-        let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
+        let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.08), "Roboto", Math.round(imgFG.bitmap.width*0.85), "center", 1.5, "black")
+        let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.15);
         
         let rectCanvas = await canvasRect(imgFG.bitmap.width, offset, "transparent", 0, "white")
 
-        textCanvas[0] = await (await readBuffer(textCanvas[0])).crop(0, 0, Math.round(imgFG.bitmap.width*0.8), textCanvas[1]).getBufferAsync(Jimp.AUTO)
+        textCanvas[0] = await (await readBuffer(textCanvas[0])).crop(0, 0, Math.round(imgFG.bitmap.width*0.85), textCanvas[1]).getBufferAsync(Jimp.AUTO)
 
         let img = await exec(imageUrl, [
             ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, 'transparent', 0, offset]],
             ["composite", [rectCanvas, 0, 0]],
-            ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.1), Math.round(imgFG.bitmap.width*0.05)]]
+            ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.075), Math.round(imgFG.bitmap.width*0.1)]]
         ]);
         
         const attachment = new MessageAttachment(img, "image."+extension);

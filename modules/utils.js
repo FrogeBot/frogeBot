@@ -101,30 +101,32 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg, forceWeb = 
     msg.channel.stopTyping()
     if(procMsg) procMsg.delete();
 }
+
+const request = require("request")
 async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension) {
     if(process.env.WEB_ENABLED == "true") {
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
         setTimeout(() => fs.unlink(path.join(__dirname,`/../web_images/${msg.id}.${extension}`)), timeVals.minute*Number(process.env.WEB_SAVE_MINS))
-        setTimeout(() => {
-            path.join(__dirname,`/../web_images/${msg.id}.${extension}`)
-            let embed = new MessageEmbed({
-                "title": cmdName,
-                "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
-                "color": Number(process.env.EMBED_COLOUR),
-                "timestamp": new Date(),
-                "author": {
-                    "name": process.env.BOT_NAME,
-                    "icon_url": msg.client.user.displayAvatarURL()
-                },
-                "image": {
-                  "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
-                },
-                "footer": {
-                    "text": `Took ${timeTaken}`
-                }
-            })
-            msg.channel.send({ embed })
-        }, 5000);
+
+        await request(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
+        path.join(__dirname,`/../web_images/${msg.id}.${extension}`)
+        let embed = new MessageEmbed({
+            "title": cmdName,
+            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
+            "color": Number(process.env.EMBED_COLOUR),
+            "timestamp": new Date(),
+            "author": {
+                "name": process.env.BOT_NAME,
+                "icon_url": msg.client.user.displayAvatarURL()
+            },
+            "image": {
+                "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
+            },
+            "footer": {
+                "text": `Took ${timeTaken}`
+            }
+        })
+        msg.channel.send({ embed })
     } else {
         msg.channel.send({
             embed: {

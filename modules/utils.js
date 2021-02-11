@@ -110,28 +110,26 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, proc
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
         setTimeout(() => fs.unlink(path.join(__dirname,`/../web_images/${msg.id}.${extension}`)), timeVals.minute*Number(process.env.WEB_SAVE_MINS))
 
-        request(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`, function (error, response, body) {
-            let embed = new MessageEmbed({
-                "title": cmdName,
-                "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
-                "color": Number(process.env.EMBED_COLOUR),
-                "timestamp": new Date(),
-                "author": {
-                    "name": process.env.BOT_NAME,
-                    "icon_url": msg.client.user.displayAvatarURL()
-                },
-                "image": {
-                    "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
-                },
-                "footer": {
-                    "text": `Took ${timeTaken}`
-                }
-            })
-            msg.channel.send({ embed }).then(() => {
-                msg.channel.stopTyping()
-                if(procMsg) procMsg.delete();
-            })
-        });
+        let embed = new MessageEmbed({
+            "title": cmdName,
+            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
+            "color": Number(process.env.EMBED_COLOUR),
+            "timestamp": new Date(),
+            "author": {
+                "name": process.env.BOT_NAME,
+                "icon_url": msg.client.user.displayAvatarURL()
+            },
+            "image": {
+                "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
+            },
+            "footer": {
+                "text": `Took ${timeTaken}`
+            }
+        })
+        msg.channel.send({ embed }).then(() => {
+            msg.channel.stopTyping()
+            if(procMsg) procMsg.delete();
+        })
     } else {
         msg.channel.send({
             embed: {

@@ -32,7 +32,7 @@ async function cmdFunc(msg, args) {
                 "title": "Avatar",
                 "description": `Here's ${member}'s avatar`,
                 "image": {
-                    "url": member.user.displayAvatarURL()+"?size=1024"
+                    "url": member.user.displayAvatarURL({ format: "png", dynamic: true, size: 1024 })
                 },
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),

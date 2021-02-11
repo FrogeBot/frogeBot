@@ -21,7 +21,9 @@ client.on('message', async msg => {
     });
 });
 
-const fs = require("fs").promises
+const fs = require("fs")
+var path = require('path'); 
+
 if(process.env.WEB_ENABLED == "true") {
     fs.mkdir("web_images", { recursive: true }, (err) => { 
         if (err) { 
@@ -34,8 +36,7 @@ function gracefulShutdown() {
     client.destroy();
     console.log("Destroyed client")
     if(process.env.WEB_ENABLED == "true") {
-        fs.rmdir("web_images", { recursive: true })
-        .then(() => {
+        fs.rmdir("web_images", { recursive: true }, () => {
             console.log('Removed web_images directory.');
             process.exit();
         })
@@ -52,7 +53,14 @@ if(process.env.WEB_ENABLED == "true") {
         res.send('Hello World!')
     })
 
-    app.use("/images", express.static("web_images"))
+    app.get("/images/*", async (req, res) => {
+        let imgPath = path.join(__dirname,"web_images/"+req.path.split("/")[2])
+        if (fs.existsSync(imgPath)) {
+            res.sendFile(imgPath)
+        } else {
+            res.sendFile(__dirname+"/assets/imageExpired.png")
+        }
+    })
 
     app.listen(process.env.WEB_PORT, () => {
         console.log(`Web host listening at http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}:${process.env.WEB_PORT}`)

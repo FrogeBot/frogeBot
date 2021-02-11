@@ -30,7 +30,6 @@ function readURL(imgUrl, useWebp = true) {
     return new Promise(async (resolve, reject) => {
         try {
             let maxSize = Number(process.env.MAX_IMG_SIZE)
-            console.log(await gmToBuffer(gm(request(imgUrl))));
             gm(request(imgUrl)).size({bufferStream: true}, async function (err, size) {
                 if(err) {
                     console.log(err)

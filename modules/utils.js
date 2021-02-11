@@ -29,7 +29,6 @@ function findImage(msg) {
                     if(attachmentURL) return attachmentURL // Return image URL for each message
                 }).filter(a => a != undefined); // Filter out messages with no image
                 if(attachmentMessages[0]) {
-                    console.log(attachmentMessages[0])
                     resolve(attachmentMessages[0]) // Resolve image URL
                 } else {
                     reject("No Image found")
@@ -104,26 +103,28 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg, forceWeb = 
 }
 async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension) {
     if(process.env.WEB_ENABLED == "true") {
-        console.log(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
         setTimeout(() => fs.unlink(path.join(__dirname,`/../web_images/${msg.id}.${extension}`)), timeVals.minute*Number(process.env.WEB_SAVE_MINS))
         setTimeout(() => {
             path.join(__dirname,`/../web_images/${msg.id}.${extension}`)
             let embed = new MessageEmbed({
                 "title": cmdName,
-                "description": `<@${msg.author.id}> - Failed to upload to Discord, using external web host`,
+                "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host\n[Open Image](http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension})`,
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
                     "name": process.env.BOT_NAME,
                     "icon_url": msg.client.user.displayAvatarURL()
                 },
+                "image": {
+                  "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
+                },
                 "footer": {
                     "text": `Took ${timeTaken}`
                 }
-            }).setImage(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
+            })
             msg.channel.send({ embed })
-        }, 1000);
+        }, 5000);
     } else {
         msg.channel.send({
             embed: {

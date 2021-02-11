@@ -93,21 +93,18 @@ function sendImage(msg, cmdName, startTime, img, extension, procMsg) {
     msg.channel.send({ embed }).catch(() => {*/
         if(process.env.WEB_ENABLED == "true") {
             fs.writeFileSync(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
-            msg.channel.send({
-                embed: {
-                    "title": cmdName,
-                    "description": `<@${msg.author.id}> - Failed to upload to discord, using external web host`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": msg.client.user.displayAvatarURL()
-                    },
-                    "image": {
-                        "url": `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`
-                    }
+            let embed = new MessageEmbed({
+                "title": cmdName,
+                "description": `<@${msg.author.id}> - Failed to upload to discord, using external web host`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": msg.client.user.displayAvatarURL()
                 }
-            })
+            }).setImage(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
+            console.log(`http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}`)
+            msg.channel.send({ embed })
         } else {
             msg.channel.send({
                 embed: {

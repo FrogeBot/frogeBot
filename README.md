@@ -1,5 +1,5 @@
 # Froge Bot
-![Froge Bot](https://cdn.discordapp.com/avatars/807205252582604830/94e2877abbf19fd86f5a202801085ac7.png?size=512)
+![Froge Bot](https://github.com/barnabwhy/frogeBot/blob/master/assets/icon.png?raw=true)
 
 It's a bot with image editing.
 

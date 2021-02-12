@@ -14,7 +14,7 @@ let procMsg
 let imgUrl
 async function cmdFunc(msg, args, startTime) {
     try {
-        procMsg = await msg.channel.send("<a:processing:807338286753906718> Processing... This may take a minute.");
+        procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
         msg.channel.startTyping()
         
         imgUrl = await findImage(msg)

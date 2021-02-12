@@ -84,7 +84,7 @@ const extensions = {
 }
 
 async function sendImage(msg, cmdName, startTime, img, procMsg, forceWeb = false) {
-    if(procMsg) procMsg.edit("Uploading...");
+    if(procMsg) procMsg.edit(process.env.MSG_UPLOADING);
 
     let extension = await new Promise((resolve, reject) => {
         gm(img).format({bufferStream: true}, function (err, format) {
@@ -100,7 +100,7 @@ async function sendImage(msg, cmdName, startTime, img, procMsg, forceWeb = false
     } else {
         let embed = new MessageEmbed({
             "title": cmdName,
-            "description": `<@${msg.author.id}>`,
+            "description": `<@${msg.author.id}> ${process.env.MSG_SUCCESS}`,
             "color": Number(process.env.EMBED_COLOUR),
             "timestamp": new Date(),
             "author": {
@@ -128,7 +128,7 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, proc
         let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}${process.env.WEB_REFRESH_CACHE == "true" ? `?q=${Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 8)}` : ""}`
         let embed = new MessageEmbed({
             "title": cmdName,
-            "description": `<@${msg.author.id}> - Failed to upload to Discord, using local web host.\nImage will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](${imgUrl})`,
+            "description": `<@${msg.author.id}> - ${process.env.MSG_SEND_LOCAL}\nImage will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](${imgUrl})`,
             "color": Number(process.env.EMBED_COLOUR),
             "timestamp": new Date(),
             "author": {
@@ -150,7 +150,7 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, proc
         msg.channel.send({
             embed: {
                 "title": "Error",
-                "description": `<@${msg.author.id}> - Failed to send`,
+                "description": `<@${msg.author.id}> - ${process.env.MSG_SEND_FAIL}`,
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {

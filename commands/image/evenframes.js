@@ -33,7 +33,7 @@ async function cmdFunc(msg, args, startTime) {
                         msg.channel.send({
                             embed: {
                                 "title": "Error",
-                                "description": `<@${msg.author.id}> - ${ imgUrl != undefined ? "Something went wrong" : "No images found"}`,
+                                "description": `<@${msg.author.id}> - ${ imgUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
                                 "color": Number(process.env.EMBED_COLOUR),
                                 "timestamp": new Date(),
                                 "author": {
@@ -71,7 +71,7 @@ async function cmdFunc(msg, args, startTime) {
         msg.channel.send({
             embed: {
                 "title": "Error",
-                "description": `<@${msg.author.id}> - ${ imgUrl != undefined ? "Something went wrong" : "No images found"}`,
+                "description": `<@${msg.author.id}> - ${ imgUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {

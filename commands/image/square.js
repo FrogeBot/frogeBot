@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         
         let img = await jimpReadURL(imageUrl);
         let size = (img.bitmap.height >= img.bitmap.width) ? img.bitmap.width : img.bitmap.height;
-        newImg = await execGM(imageUrl, [ ["crop", [size, size, img.bitmap.width-size, img.bitmap.height-size]] ]);
+        newImg = await execGM(imageUrl, [ ["crop", [size, size, img.bitmap.width/2-size/2, img.bitmap.height/2-size/2]] ]);
 
         
         sendImage(msg, "Square", startTime, newImg, extension, procMsg)

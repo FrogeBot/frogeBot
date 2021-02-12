@@ -19,5 +19,6 @@
     "speed": "image/speed.js",
     "slow": "image/slow.js",
     "square": "image/square.js",
-    "sepia": "image/sepia.js"
+    "sepia": "image/sepia.js",
+    "cat": "misc/cat.js"
 }

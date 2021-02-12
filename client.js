@@ -49,6 +49,16 @@ if(process.env.WEB_ENABLED == "true") {
     const express = require('express')
     const app = express()
 
+    // set up rate limiter: maximum of five requests per minute
+    var RateLimit = require('express-rate-limit');
+    var limiter = new RateLimit({
+        windowMs: 1*60*1000, // 1 minute
+        max: 50
+    });
+
+    // apply rate limiter to all requests
+    app.use(limiter);
+
     app.use(express.static("web/public"))
     app.get('/', (req, res) => {
         res.sendFile(path.join(__dirname,"web/index.html"))

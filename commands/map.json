@@ -21,5 +21,6 @@
     "square": "image/square.js",
     "sepia": "image/sepia.js",
     "cat": "misc/cat.js",
-    "frog": "misc/frog.js"
+    "frog": "misc/frog.js",
+    "booba": "misc/booba.js"
 }

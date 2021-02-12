@@ -24,7 +24,7 @@ async function cmdFunc(msg, args, startTime) {
             msg.channel.send({
                 embed: {
                     "title": "Cat",
-                    "description": `<@${msg.author.id}> ${process.env.MSG_SUCCESS}`,
+                    "description": `<@${msg.author.id}> ${process.env.MSG_CAT}`,
                     "color": Number(process.env.EMBED_COLOUR),
                     "timestamp": new Date(),
                     "author": {

@@ -9,7 +9,8 @@ function gmToBuffer(gm, useWebp = true, as) {
     return new Promise(async (resolve, reject) => {
         gm.format({bufferStream: true}, function (err, format) {
             if(format == "WEBP" && !useWebp) format = "PNG"
-            this.toBuffer(as != undefined ? as : format, function (err, buffer) {
+            if(as != undefined) format = as
+            this.toBuffer(format, function (err, buffer) {
                 if (!err) {
                     resolve(buffer);
                 } else reject(err)

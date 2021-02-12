@@ -3,8 +3,8 @@ require("dotenv").config()
 const request = require("request")
 
 async function cmdFunc(msg, args, startTime) {
-    let frogUrl = "https://www.reddit.com/r/frogs.json";
-    request(frogUrl, function(error, response, body){
+    let dogUrl = "https://www.reddit.com/r/DOG.json";
+    request(dogUrl, function(error, response, body){
         if (error)
             msg.channel.send({
                 embed: {
@@ -19,15 +19,15 @@ async function cmdFunc(msg, args, startTime) {
                 }
             })
         else {
-            let frogJSON = JSON.parse(response.body)
+            let dogJSON = JSON.parse(response.body)
             
-            let frogImages = frogJSON.data.children.filter(f => (!f.data.over_18 && f.data.url.startsWith("https://i.redd.it")))
+            let dogImages = dogJSON.data.children.filter(f => (!f.data.over_18 && f.data.url.startsWith("https://i.redd.it")))
 
-            let randomFrog = frogImages[Math.floor(Math.random()*frogImages.length)];
+            let randomDog = dogImages[Math.floor(Math.random()*dogImages.length)];
 
             msg.channel.send({
                 embed: {
-                    "title": "Frog",
+                    "title": "Dog",
                     "description": `<@${msg.author.id}> ${process.env.MSG_SUCCESS}`,
                     "color": Number(process.env.EMBED_COLOUR),
                     "timestamp": new Date(),
@@ -36,10 +36,10 @@ async function cmdFunc(msg, args, startTime) {
                         "icon_url": msg.client.user.displayAvatarURL()
                     },
                     "footer": {
-                        "text": "mmmm myes pet froge"
+                        "text": "Dog :("
                     },
                     "image": {
-                        "url": randomFrog.data.url
+                        "url": randomDog.data.url
                     }
                 }
             })

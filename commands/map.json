@@ -23,5 +23,7 @@
     "cat": "misc/cat.js",
     "frog": "misc/frog.js",
     "dog": "misc/dog.js",
-    "booba": "misc/booba.js"
+    
+    "booba": "misc/booba.js",
+    "floof": "misc/floof.js"
 }

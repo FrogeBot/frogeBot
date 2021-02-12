@@ -86,7 +86,6 @@ const extensions = {
 async function sendImage(msg, cmdName, startTime, img, extension, procMsg, forceWeb = false) {
     if(procMsg) procMsg.edit(process.env.MSG_UPLOADING);
 
-    console.log(img)
     extension = await new Promise((resolve, reject) => {
         gm(img).format({bufferStream: true}, function (err, format) {
             if(err) {
@@ -125,7 +124,6 @@ async function sendImage(msg, cmdName, startTime, img, extension, procMsg, force
     }
 }
 
-const request = require("request")
 async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg) {
     if(process.env.WEB_ENABLED == "true") {
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)

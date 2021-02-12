@@ -4,7 +4,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { exec, jimpReadURL } = require("../../modules/image.js")
+let { execGM, jimpReadURL } = require("../../modules/image.js")
 
 let procMsg
 let imageUrl
@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         
         let img = await jimpReadURL(imageUrl);
         let size = (img.bitmap.height >= img.bitmap.width) ? img.bitmap.width : img.bitmap.height;
-        newImg = await exec(imageUrl, [ ["crop", [size, size]] ]);
+        newImg = await execGM(imageUrl, [ ["crop", [size, size, img.bitmap.width-size, img.bitmap.height-size]] ]);
 
         
         sendImage(msg, "Square", startTime, newImg, extension, procMsg)

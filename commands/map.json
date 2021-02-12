@@ -20,5 +20,6 @@
     "slow": "image/slow.js",
     "square": "image/square.js",
     "sepia": "image/sepia.js",
-    "cat": "misc/cat.js"
+    "cat": "misc/cat.js",
+    "frog": "misc/frog.js"
 }

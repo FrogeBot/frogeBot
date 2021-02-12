@@ -59,7 +59,9 @@
             "speed": "Doubles the speed of a GIF",
             "slow": "Halves the speed of a GIF",
             "square": "Crops the image to a square",
-            "sepia": "Applies a sepia filter to the image"
+            "sepia": "Applies a sepia filter to the image",
+            "cat": "Gets a random cat image",
+            "frog": "Gets a random frog image"
         }
         document.getElementById("commandList").innerHTML = Object.keys(helpList).map((key) => { return `<div><b>${key}</b> <p>${helpList[key].replace(/`(.+)`/g, "<code>$1</code>").replace(/<text>/g, "&lt;text&gt;")}`}).join("<hr>");
     </script>

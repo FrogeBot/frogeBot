@@ -1,7 +1,7 @@
 ---
 name: Documentation
 about: Suggest improvements to the documentation
-title: "[DOCS] "
+title: ""
 labels: documentation
 assignees: ''
 

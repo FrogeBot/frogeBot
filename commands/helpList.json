@@ -21,5 +21,6 @@
     "square": "Crops the image to a square",
     "sepia": "Applies a sepia filter to the image",
     "cat": "Gets a random cat image",
-    "frog": "Gets a random frog image"
+    "frog": "Gets a random frog image",
+    "dog": "Gets a random dog image"
 }

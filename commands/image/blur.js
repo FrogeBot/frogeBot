@@ -19,7 +19,7 @@ async function cmdFunc(msg, args, startTime) {
         let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 8;
         let img = await execGM(imageUrl, [ ["blur", [Math.max(r, 0)]] ]);
 
-        sendImage(msg, "Blur", startTime, img, procMsg)
+        sendImage(msg, "Blur", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

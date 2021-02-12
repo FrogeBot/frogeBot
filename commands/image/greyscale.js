@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         
         let img = await exec(imageUrl, [ ["greyscale", []] ]);
         
-        sendImage(msg, "Greyscale", startTime, img, procMsg)
+        sendImage(msg, "Greyscale", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
 
         let img = await exec(imageUrl, [ ["posterize", [8]], ["pixelate", [4]] ]);
         
-        sendImage(msg, "JPEG 2", startTime, img, procMsg)
+        sendImage(msg, "JPEG 2", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

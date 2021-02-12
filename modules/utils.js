@@ -83,15 +83,17 @@ const extensions = {
     "MPEG": "mp4"
 }
 
-async function sendImage(msg, cmdName, startTime, img, procMsg, forceWeb = false) {
+async function sendImage(msg, cmdName, startTime, img, extension, procMsg, forceWeb = false) {
     if(procMsg) procMsg.edit(process.env.MSG_UPLOADING);
 
     console.log(img)
     let extension = await new Promise((resolve, reject) => {
         gm(img).format({bufferStream: true}, function (err, format) {
-            console.log(err)
-            console.log(format)
-            resolve(extensions[format] || format.toLowerCase());
+            if(err) {
+                resolve(extension)
+            } else {
+                resolve(extensions[format] || format.toLowerCase());
+            }
         });
     });
 

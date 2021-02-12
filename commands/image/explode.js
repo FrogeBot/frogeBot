@@ -19,7 +19,7 @@ async function cmdFunc(msg, args, startTime) {
         let r = (args.length > 0 && Number(args.split(" ")[0]) != NaN) ? Number(args.split(" ")[0]) : 0.5;
         let img = await execGM(imageUrl, [ ["implode", [ -r ]] ]);
  
-        sendImage(msg, "Explode", startTime, img, procMsg)
+        sendImage(msg, "Explode", startTime, img, extension, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

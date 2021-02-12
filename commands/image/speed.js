@@ -22,7 +22,7 @@ async function cmdFunc(msg, args, startTime) {
     
                 worker.on('message', async (img) => {
                     if(img != null) {
-                        sendImage(msg, "Speed", startTime, img, procMsg)
+                        sendImage(msg, "Speed", startTime, img, extension, procMsg)
                     } else {
                         msg.channel.stopTyping()
                         msg.channel.send({

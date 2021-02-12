@@ -89,10 +89,10 @@ async function sendImage(msg, cmdName, startTime, img, extension, procMsg, force
     console.log(img)
     extension = await new Promise((resolve, reject) => {
         gm(img).format({bufferStream: true}, function (err, format) {
-            if(false && err) {
+            if(err) {
                 resolve(extension)
             } else {
-                resolve(extensions[format] || (format.toLowerCase()));
+                resolve(extensions[format] || format.toLowerCase());
             }
         });
     });

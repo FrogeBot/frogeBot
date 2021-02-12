@@ -86,6 +86,7 @@ const extensions = {
 async function sendImage(msg, cmdName, startTime, img, procMsg, forceWeb = false) {
     if(procMsg) procMsg.edit(process.env.MSG_UPLOADING);
 
+    console.log(img)
     let extension = await new Promise((resolve, reject) => {
         gm(img).format({bufferStream: true}, function (err, format) {
             console.log(err)

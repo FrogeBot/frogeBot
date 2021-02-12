@@ -87,7 +87,7 @@ async function sendImage(msg, cmdName, startTime, img, extension, procMsg, force
     if(procMsg) procMsg.edit(process.env.MSG_UPLOADING);
 
     console.log(img)
-    let extension = await new Promise((resolve, reject) => {
+    extension = await new Promise((resolve, reject) => {
         gm(img).format({bufferStream: true}, function (err, format) {
             if(false && err) {
                 resolve(extension)

@@ -5,11 +5,11 @@ if(process.env.USE_IMAGEMAGICK == "true") {
 }
 const request = require('request')
 
-function gmToBuffer(gm, useWebp = true) {
+function gmToBuffer(gm, useWebp = true, as) {
     return new Promise(async (resolve, reject) => {
         gm.format({bufferStream: true}, function (err, format) {
             if(format == "WEBP" && !useWebp) format = "PNG"
-            this.toBuffer(format, function (err, buffer) {
+            this.toBuffer(as != undefined ? as : format, function (err, buffer) {
                 if (!err) {
                     resolve(buffer);
                 } else reject(err)
@@ -26,17 +26,17 @@ function getFormat(imgUrl) {
     });
 }
 
-function readURL(imgUrl, useWebp = true) {
+function readURL(imgUrl, useWebp = true, as) {
     return new Promise(async (resolve, reject) => {
         try {
             let maxSize = Number(process.env.MAX_IMG_SIZE)
             gm(request(imgUrl)).size({bufferStream: true}, async function (err, size) {
                 if(err) {
-                    console.log(err)
+                    //console.log(err)
                     reject(err)
                 } else {
                     await this.resize(maxSize > size.width ? size.width : maxSize, maxSize > size.height ? size.height : maxSize)
-                    resolve(await gmToBuffer(this, useWebp))
+                    resolve(await gmToBuffer(this, useWebp, as))
                 }
             })
         } catch(e) {
@@ -47,9 +47,15 @@ function readURL(imgUrl, useWebp = true) {
 function jimpReadURL(imgUrl) {
     return new Promise(async (resolve, reject) => {
         try {
-            Jimp.read(await readURL(imgUrl, false)).then(async img => {
-                resolve(img)
-            }).catch(reject)
+            if(await getFormat(imgUrl) == "WEBP") {
+                Jimp.read(await readURL(imgUrl, false)).then(async img => {
+                    resolve(img)
+                }).catch(reject)
+            } else {
+                Jimp.read(imgUrl).then(async img => {
+                    resolve(img)
+                }).catch(reject)
+            }
         } catch(e) {
             reject(e)
         }
@@ -120,7 +126,7 @@ function execGM(imgUrl, list) {
                     resolve(Buffer.from(img))
                 });
             } catch(e) {
-                console.log(e)
+                //console.log(e)
                 reject(e)
             }
         } else {
@@ -152,7 +158,7 @@ function performMethod(img, method, params, allowBackgrounds) {
             }
             resolve(img); // Resolve image
         } catch(e) {
-            console.log(e)
+            //console.log(e)
             reject(e)
         }
     })
@@ -174,6 +180,10 @@ function customMethod(img, method, params, allowBackgrounds) {
                 let bgImg = await createNewImage(params[0], params[1], (allowBackgrounds ? params[2] : "transparent"));
                 newImg = await bgImg.composite(img, params[3], params[4])
                 resolve(newImg); // Resolve image
+            }
+            if(method == "jpeg") { // Adds colour background
+                let newImg = gm(await gmToBuffer(img, true, "JPEG")).quality(...params)
+                resolve(newImg)
             }
         } catch(e) {
             reject(e)

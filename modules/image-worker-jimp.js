@@ -16,7 +16,7 @@ parentPort.once('message', async (msg) => {
                     }
                     parentPort.postMessage(await img.getBufferAsync(Jimp.AUTO)) // Resolve image
                 }).catch((e) => {
-                    //console.log(e)
+                    console.log(e)
                     parentPort.postMessage(null)
                 })
             } else if(msg.buffer) {
@@ -28,12 +28,12 @@ parentPort.once('message', async (msg) => {
                     }
                     parentPort.postMessage(await img.getBufferAsync(Jimp.AUTO)) // Resolve image
                 }).catch((e) => {
-                    //console.log(e)
+                    console.log(e)
                     parentPort.postMessage(null)
                 })
             }
         } catch(e) {
-            //console.log(e)
+            console.log(e)
             parentPort.postMessage(null)
         }
     }

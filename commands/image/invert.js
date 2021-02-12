@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         
         let img = await exec(imageUrl, [ ["invert", []] ]);
         
-        sendImage(msg, "Invert", startTime, img, extension, procMsg)
+        sendImage(msg, "Invert", startTime, img, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

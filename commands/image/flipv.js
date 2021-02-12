@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         
         let img = await execGM(imageUrl, [ ["flip", [ ]] ]);
         
-        sendImage(msg, "Flip V", startTime, img, extension, procMsg)
+        sendImage(msg, "Flip V", startTime, img, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

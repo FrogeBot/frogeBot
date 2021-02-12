@@ -30,7 +30,7 @@ async function cmdFunc(msg, args, startTime) {
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.05), imgFG.bitmap.height+Math.round(imgFG.bitmap.width*0.05)]]
         ]);
 
-        sendImage(msg, "Caption 2", startTime, img, extension, procMsg)
+        sendImage(msg, "Caption 2", startTime, img, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

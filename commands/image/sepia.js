@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         
         let img = await exec(imageUrl, [ ["sepia", []] ]);
         
-        sendImage(msg, "Sepia", startTime, img, extension, procMsg)
+        sendImage(msg, "Sepia", startTime, img, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

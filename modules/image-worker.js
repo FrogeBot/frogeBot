@@ -12,7 +12,7 @@ parentPort.once('message', async (msg) => {
             let list = msg.list;
             if(msg.imgUrl) {
                 let imgUrl = msg.imgUrl;
-                let img = gm(await readURL(imgUrl))
+                let img = await gm(await readURL(imgUrl))
                 for(let i = 0; i < list.length; i++) { // Loop through actions in list
                     img = await performMethod(img, list[i][0], list[i][1], msg.allowBackgrounds); // Perform each in succecssion
                 }
@@ -27,7 +27,7 @@ parentPort.once('message', async (msg) => {
             } else if(msg.buffer) {
                 let buffer = Buffer.from(msg.buffer);
                 // Get image from buffer
-                let img = gm(buffer)
+                let img = await gm(buffer)
                 for(let i = 0; i < list.length; i++) { // Loop through actions in list
                     img = await performMethod(img, list[i][0], list[i][1], msg.allowBackgrounds); // Perform each in succecssion
                 }

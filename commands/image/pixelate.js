@@ -19,7 +19,7 @@ async function cmdFunc(msg, args, startTime) {
         let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 8;
         let img = await exec(imageUrl, [ ["pixelate", [r]] ]);
         
-        sendImage(msg, "Pixelate", startTime, img, extension, procMsg)
+        sendImage(msg, "Pixelate", startTime, img, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

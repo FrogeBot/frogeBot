@@ -69,12 +69,28 @@ function clamp(input, min, max) {
     return Math.min(Math.max(input, min), max);
 };
 
+const gm = require("gm");
+
 const fs = require("fs").promises;
 const path = require("path");
 const { MessageAttachment, MessageEmbed } = require("discord.js")
 
-function sendImage(msg, cmdName, startTime, img, extension, procMsg, forceWeb = false) {
+const extensions = {
+    "PNG": "png",
+    "JPEG": "jpg",
+    "GIF": "gif",
+    "WEBP": "webp",
+    "MPEG": "mp4"
+}
+
+async function sendImage(msg, cmdName, startTime, img, procMsg, forceWeb = false) {
     if(procMsg) procMsg.edit("Uploading...");
+
+    let extension = await new Promise((resolve, reject) => {
+        gm(img).format({bufferStream: true}, function (err, format) {
+            resolve(extensions[format] || format.toLowerCase());
+        });
+    });
 
     const attachment = new MessageAttachment(img, "image."+extension);
     let timeTaken = formatDuration(new Date().getTime() - startTime)
@@ -109,7 +125,6 @@ async function attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, proc
     if(process.env.WEB_ENABLED == "true") {
         await fs.writeFile(path.join(__dirname,`/../web_images/${msg.id}.${extension}`), img)
         setTimeout(() => fs.unlink(path.join(__dirname,`/../web_images/${msg.id}.${extension}`)), timeVals.minute*Number(process.env.WEB_SAVE_MINS))
-
         let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${msg.id}.${extension}${process.env.WEB_REFRESH_CACHE == "true" ? `?q=${Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 8)}` : ""}`
         let embed = new MessageEmbed({
             "title": cmdName,

@@ -19,7 +19,7 @@ async function cmdFunc(msg, args, startTime) {
         let img = await jimpReadURL(imageUrl);
         let size = (img.bitmap.height >= img.bitmap.width) ? img.bitmap.width : img.bitmap.height;
 
-        sendImage(msg, "Square", startTime, img, extension, procMsg)
+        sendImage(msg, "Square", startTime, img, procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

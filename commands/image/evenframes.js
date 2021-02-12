@@ -27,7 +27,7 @@ async function cmdFunc(msg, args, startTime) {
     
                 worker.on('message', async (img) => {
                     if(img != null) {
-                        sendImage(msg, "Even Frames", startTime, img, extension, procMsg)
+                        sendImage(msg, "Even Frames", startTime, img, procMsg)
                     } else {
                         msg.channel.stopTyping()
                         msg.channel.send({

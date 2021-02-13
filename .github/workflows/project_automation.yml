@@ -1,4 +1,4 @@
-name: Auto Assign to Project
+name: Project Automation
 
 on:
   issues:
@@ -11,7 +11,7 @@ env:
 jobs:
   assign_one_project:
     runs-on: ubuntu-latest
-    name: Assign to One Project
+    name: Assign to Froge Bot Project
     steps:
     - name: Assign NEW issues and NEW pull requests to project 2
       uses: srggrs/assign-one-project-github-action@1.2.0

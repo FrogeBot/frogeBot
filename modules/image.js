@@ -177,13 +177,18 @@ function customMethod(img, method, params, allowBackgrounds) {
                 newImg = await img.crop(x, y, w, h)
                 resolve(newImg); // Resolve image
             }
-            if(method == "addBackground") { // Adds colour background
+            if(method == "addBackground") { // Adds colour background (jimp only)
                 let bgImg = await createNewImage(params[0], params[1], (allowBackgrounds ? params[2] : "transparent"));
                 newImg = await bgImg.composite(img, params[3], params[4])
                 resolve(newImg); // Resolve image
             }
-            if(method == "jpeg") { // Adds colour background
+            if(method == "jpeg") { // JPEG-ifies image (magick only)
                 let newImg = gm(await gmToBuffer(img, true, "JPEG")).quality(...params)
+                resolve(newImg)
+            }
+            if(method == "square") { // Crops image to square (jimp only)
+                let size = (img.bitmap.height >= img.bitmap.width) ? img.bitmap.width : img.bitmap.height;
+                let newImg = img.crop(size, size, img.bitmap.width/2-size/2, img.bitmap.height/2-size/2)
                 resolve(newImg)
             }
         } catch(e) {
@@ -222,5 +227,6 @@ module.exports = {
     loadFont,
     performMethod,
     customMethod,
-    gmToBuffer
+    gmToBuffer,
+    getFormat
 }

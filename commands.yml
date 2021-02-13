@@ -1,0 +1,185 @@
+# Commands: Info can be found here https://github.com/barnabwhy/frogeBot/wiki/Commands
+help:
+  type: script
+  path: commands/misc/help.js
+  category: Misc
+  description: "Shows the list of commands"
+avatar:
+  type: script
+  path: commands/misc/avatar.js
+  category: Misc
+  description: "Shows the avatar of the mentioned user (usage: `avatar [user]`)"
+cat:
+  type: script
+  path: commands/misc/cat.js
+  category: Misc
+  description: "Gets a random cat image"
+frog:
+  type: script
+  path: commands/misc/frog.js
+  category: Misc
+  description: "Gets a random frog image"
+dog:
+  type: script
+  path: commands/misc/dog.js
+  category: Misc
+  description: "Gets a random dog image"
+  
+pixelate:
+  type: image
+  library: jimp
+  r: (input:0) || 8
+  r_type: int
+  list:
+    - pixelate:
+        params:
+          - (r)
+  title: Blur
+  category: Image
+  description: "Pixelates the supplied image (usage: `pixelate [amount = 0+]`)"
+fliph:
+  type: image
+  library: magick
+  list:
+    - flop
+  title: Flip H
+  category: Image
+  description: "Flips an image horizontally"
+flipv:
+  type: image
+  library: magick
+  list:
+    - flip
+  title: Flip V
+  category: Image
+  description: "Flips an image vertically"
+blur:
+  type: image
+  library: magick
+  r: (input:0) || 8
+  r_type: int>0
+  list:
+    - blur:
+        params:
+          - (r)
+  title: Blur
+  category: Image
+  description: "Blurs the supplied image (usage: `blur [amount = 0+]`)"
+fisheye:
+  type: script
+  path: commands/image/fisheye.js
+  category: Image
+  description: "Applies a fisheye effect to an image (usage: `fisheye [amount = 0+]`)"
+implode:
+  type: image
+  library: magick
+  r: (input:0) || 0.5
+  r_type: num
+  list:
+    - implode:
+        params:
+          - (r)
+  title: Implode
+  category: Image
+  description: "Implodes and image"
+explode:
+  type: image
+  library: magick
+  r: -(input:0) || -0.5
+  r_type: num
+  list:
+    - implode:
+        params:
+          - (r)
+  title: Explode
+  category: Image
+  description: "Explodes and image"
+invert:
+  type: image
+  library: jimp
+  list:
+    - invert
+  title: Invert
+  category: Image
+  description: "Inverts an image"
+greyscale:
+  type: image
+  library: jimp
+  list:
+    - greyscale
+  title: Greyscale
+  category: Image
+  description: "Applies a greyscale filter to the image"
+jpeg:
+  type: script
+  path: commands/image/jpeg.js
+  category: Image
+  description: "Runs JPEG compression on an image (usage: `jpeg [quality = 0-100]`)"
+jpeg2:
+  type: image
+  library: jimp
+  list:
+    - posterize:
+        params: 
+          - 8
+    - pixelate:
+        params:
+          - 4
+  title: JPEG 2
+  category: Image
+  description: "Pixelates and applies colour banding to an image"
+caption:
+  type: script
+  path: commands/image/caption.js
+  category: Image
+  description: "Adds a caption to an image (usage: `caption <text>`)"
+caption2:
+  type: script
+  path: commands/image/caption2.js
+  category: Image
+  description: "Adds a caption of an alternate style to an image (usage: `caption2 <text>`)"
+motivate:
+  type: script
+  path: commands/image/motivate.js
+  category: Image
+  description: "Adds a demotivational poster caption to an image (usage: `motivate <text> | [text]`)"
+evenframes:
+  type: script
+  path: commands/image/evenframes.js
+  category: Image
+  description: "Returns a GIF image with only its even frames preserving the speed of the GIF."
+speed:
+  type: script
+  path: commands/image/speed.js
+  category: Image
+  description: "Doubles the speed of a GIF"
+slow:
+  type: script
+  path: commands/image/slow.js
+  category: Image
+  description: "Halves the speed of a GIF"
+square:
+  type: image
+  library: jimp
+  list:
+    - cropSquare
+  title: Square
+  category: Image
+  description: "Crops the image to a square"
+sepia:
+  type: image
+  library: jimp
+  list:
+    - sepia
+  title: Sepia
+  category: Image
+  description: "Applies a sepia filter to the image"
+
+booba:
+  type: script
+  path: commands/hidden/booba.js
+  hidden: true
+floof:
+  type: script
+  path: commands/hidden/floof.js
+  hidden: true

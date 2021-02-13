@@ -8,7 +8,7 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-const { parseMsg, isCmd, getCmdFunc } = require("./modules/parse.js")
+const { parseMsg, isCmd } = require("./modules/parse.js")
 
 const fs = require("fs")
 const YAML = require('yaml')

@@ -1,4 +1,30 @@
 # Commands: Info can be found here https://github.com/barnabwhy/frogeBot/wiki/Commands
+help:
+  type: script
+  path: commands/misc/help.js
+  category: Misc
+  description: "Shows the list of commands"
+avatar:
+  type: script
+  path: commands/misc/avatar.js
+  category: Misc
+  description: "Shows the avatar of the mentioned user (usage: `avatar [user]`)"
+cat:
+  type: script
+  path: commands/misc/cat.js
+  category: Misc
+  description: "Gets a random cat image"
+frog:
+  type: script
+  path: commands/misc/frog.js
+  category: Misc
+  description: "Gets a random frog image"
+dog:
+  type: script
+  path: commands/misc/dog.js
+  category: Misc
+  description: "Gets a random dog image"
+  
 pixelate:
   type: image
   library: jimp
@@ -148,32 +174,6 @@ sepia:
   title: Sepia
   category: Image
   description: "Applies a sepia filter to the image"
-
-help:
-  type: script
-  path: commands/misc/help.js
-  category: Misc
-  description: "Shows the list of commands"
-avatar:
-  type: script
-  path: commands/misc/avatar.js
-  category: Misc
-  description: "Shows the avatar of the mentioned user (usage: `avatar [user]`)"
-cat:
-  type: script
-  path: commands/misc/cat.js
-  category: Misc
-  description: "Gets a random cat image"
-frog:
-  type: script
-  path: commands/misc/frog.js
-  category: Misc
-  description: "Gets a random frog image"
-dog:
-  type: script
-  path: commands/misc/dog.js
-  category: Misc
-  description: "Gets a random dog image"
 
 booba:
   type: script

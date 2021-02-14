@@ -17,7 +17,7 @@ async function cmdFunc(msg, args) {
         msg.channel.send({
             "embed": {
                 "title": "Avatar",
-                "description": `No user found`,
+                "description": `${process.env.MSG_ERROR} - No user found`,
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
@@ -30,7 +30,7 @@ async function cmdFunc(msg, args) {
         msg.channel.send({
             "embed": {
                 "title": "Avatar",
-                "description": `Here's ${member}'s avatar`,
+                "description": `${process.env.MSG_SUCCESS} Here's ${member}'s avatar`,
                 "image": {
                     "url": member.user.displayAvatarURL({ format: "png", dynamic: true, size: 1024 })
                 },

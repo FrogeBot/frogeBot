@@ -203,7 +203,7 @@ async function execute(message, serverQueue, args) {
                                 }
                             }
                         });
-                        playTrack(message.guild, serverQueue.songs[0]);
+                        if(serverQueue.songs.length == 1) playTrack(message.guild, serverQueue.songs[0]);
                     }
                 }
             }

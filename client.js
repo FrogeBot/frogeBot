@@ -91,15 +91,18 @@ client.on('message', async msg => {
             })
             procMsg.delete();
         }
-    } else if (cmd.type == 'music') { // If command is set as music type
+    } else if (cmd.type == 'music' && process.env.MUSIC_ENABLED == "true") { // If command is set as music type
         musicWorker.postMessage({ msgId: msg.id, channelId: msg.channel.id, args, cmd })
     }
 });
 
-const { Worker } = require('worker_threads');
+let musicWorker;
+if(process.env.MUSIC_ENABLED == "true") {
+    const { Worker } = require('worker_threads');
 
-const musicWorkerPath = '/modules/music-worker.js'
-let musicWorker = new Worker(__dirname+musicWorkerPath)
+    const musicWorkerPath = '/modules/music-worker.js'
+    musicWorker = new Worker(__dirname+musicWorkerPath)
+}
 
 var path = require('path'); 
 

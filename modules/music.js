@@ -624,7 +624,7 @@ function playTrack(guild, song) {
     clearTimeout(serverQueue.leaveTimeout)
     
     const dispatcher = serverQueue.connection
-      .play(ytdl(song.url, {filter: "audio"}))
+      .play(ytdl(song.url, {filter: "audio", quality: "lowestaudio"}))
       .on("finish", () => {
         serverQueue.songs.shift();
         playTrack(guild, serverQueue.songs[0]);

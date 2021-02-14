@@ -1,6 +1,6 @@
 {
   "name": "frogebot",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "description": "",
   "main": "client.js",
   "scripts": {
@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@discordjs/opus": "^0.4.0",
     "canvas": "^2.6.1",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
@@ -18,7 +19,6 @@
     "gm": "^1.23.1",
     "googleapis": "^67.0.0",
     "jimp": "^0.16.1",
-    "opusscript": "0.0.7",
     "request": "^2.88.2",
     "twemoji-parser": "^13.0.0",
     "yaml": "^1.10.0",

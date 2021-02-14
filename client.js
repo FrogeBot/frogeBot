@@ -29,7 +29,7 @@ client.on('message', async msg => {
 
     if(cmd.type == 'script') { // If command is set as script type
         let { cmdFunc } = require('./'+cmd.path) // Gets function of command
-        setImmediate(async () => { // Fake thread separation
+        setImmediate(async () => {
             cmdFunc(msg, args, startTime) // Runs command function
         });
     } else if (cmd.type == 'image') { // If command is set as image type
@@ -91,6 +91,14 @@ client.on('message', async msg => {
             })
             procMsg.delete();
         }
+    } else if (cmd.type == 'music') { // If command is set as music type
+        const musicCmdPath = 'commands/music/music.js'
+        
+        let { cmdFunc } = require('./'+musicCmdPath) // Gets function of music commands
+
+        setImmediate(async () => {
+            cmdFunc(msg, args, cmd.action) // Runs command function
+        });
     }
 });
 

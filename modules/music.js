@@ -268,7 +268,7 @@ async function execute(message, serverQueue, args) {
             return message.channel.send({
                 embed: {
                     "title": "Error",
-                    "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} YouTube Data API v3 quota exceeded`,
+                    "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} YouTube Data API v3 quota exceeded. You can still play video links.`,
                     "color": Number(process.env.EMBED_COLOUR),
                     "timestamp": new Date(),
                     "author": {
@@ -624,7 +624,7 @@ function playTrack(guild, song) {
     clearTimeout(serverQueue.leaveTimeout)
     
     const dispatcher = serverQueue.connection
-      .play(ytdl(song.url))
+      .play(ytdl(song.url, {filter: "audio"}))
       .on("finish", () => {
         serverQueue.songs.shift();
         playTrack(guild, serverQueue.songs[0]);

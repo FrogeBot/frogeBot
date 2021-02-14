@@ -14,12 +14,12 @@ client.login(process.env.TOKEN); // discord.js connect to discord bot
 const musicCmdPath = 'music.js'
 let { cmdFunc } = require('./'+musicCmdPath) // Gets function of music commands
 
-parentPort.once('message', async (data) => {
+parentPort.on('message', async (data) => {
     if (!isMainThread && ready) {
         let { msgId, channelId, args, cmd } = data;
         try {
-            let channel = await client.channels.resolve(channelId);
-            let msg = await channel.messages.resolve(msgId);
+            let channel = await client.channels.fetch(channelId);
+            let msg = await channel.messages.fetch(msgId);
             setImmediate(async () => {
                 cmdFunc(msg, args, cmd.action) // Runs command function
             });

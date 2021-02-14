@@ -183,3 +183,59 @@ floof:
   type: script
   path: commands/hidden/floof.js
   hidden: true
+
+play:
+  type: music
+  action: play
+  category: Music
+  description: Play a song
+p: # Alias of play
+  type: music
+  action: play
+  hidden: true
+queue:
+  type: music
+  action: queue
+  category: Music
+  description: Show the queued tracks
+q: # Alias of queue
+  type: music
+  action: queue
+  hidden: true
+np:
+  type: music
+  action: nowPlaying
+  category: Music
+  description: Show what's currently playing
+shuffle:
+  type: music
+  action: shuffle
+  category: Music
+  description: Shuffles the queue
+skip:
+  type: music
+  action: next
+  category: Music
+  description: Skip to the next song
+s: # Alias of skip
+  type: music
+  action: next
+  hidden: true
+leave:
+  type: music
+  action: disconnect
+  category: Music
+  description: Leave the voice channel if in one
+dc: # Alias of leave
+  type: music
+  action: disconnect
+  hidden: true
+disconnect: # Alias of leave
+  type: music
+  action: disconnect
+  hidden: true
+remove:
+  type: music
+  action: remove
+  category: Music
+  description: "Removes a song from the queue (Usage: `remove <index>`)"

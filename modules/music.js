@@ -1,8 +1,5 @@
 require("dotenv").config()
 
-const fs = require("fs")
-const YAML = require('yaml')
-const commands = YAML.parse(fs.readFileSync('./commands.yml', 'utf8'))
 const ytdl = require("ytdl-core");
 
 const queue = new Map();
@@ -339,8 +336,39 @@ function skip(message, serverQueue) {
             }
         });
     }
-    message.react("👍")
-    serverQueue.connection.dispatcher.end();
+    let sPercent = Number(process.env.SKIP_PERCENT);
+    let members = serverQueue.voiceChannel.members.size-1
+    let toSkip = Math.max(1, Math.round(members*sPercent/100));
+    if(!serverQueue.skips) serverQueue.skips = 0;
+    serverQueue.skips += 1;
+    if(serverQueue.skips >= toSkip) {
+        message.channel.send({
+            embed: {
+                "title": `Skipped (${Math.round(members*sPercent/100)}/${Math.round(members*sPercent/100)})`,
+                "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} Skipped song`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                }
+            }
+        })
+        serverQueue.connection.dispatcher.end();
+    } else {
+        message.channel.send({
+            embed: {
+                "title": `Skipping (${serverQueue.skips}/${toSkip})`,
+                "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} Skipped song`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                }
+            }
+        })
+    }
 }
   
 function stop(message, serverQueue) {
@@ -532,6 +560,8 @@ function playTrack(guild, song) {
         }, 120000)
         return;
     }
+
+    serverQueue.skips = 0;
 
     clearTimeout(serverQueue.leaveTimeout)
     

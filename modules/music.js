@@ -214,7 +214,8 @@ async function execute(message, serverQueue, args) {
         const song = {
             title: songInfo.videoDetails.title,
             url: songInfo.videoDetails.video_url,
-            duration: Number(songInfo.videoDetails.lengthSeconds)
+            duration: Number(songInfo.videoDetails.lengthSeconds),
+            user: message.author.id
         };
     
         if (!serverQueue) {
@@ -338,7 +339,7 @@ function skip(message, serverQueue) {
     }
     let sPercent = Number(process.env.SKIP_PERCENT);
     let members = serverQueue.voiceChannel.members.size-1
-    let toSkip = Math.max(1, Math.round(members*sPercent/100));
+    let toSkip = Math.max(1, Math.ceil(members*sPercent/100));
     if(!serverQueue.skips) serverQueue.skips = 0;
     serverQueue.skips += 1;
     if(serverQueue.skips >= toSkip) {
@@ -414,8 +415,35 @@ function stop(message, serverQueue) {
             }
         });
     }
-    serverQueue.songs = [];
-    serverQueue.connection.dispatcher.end();
+    if(process.env.USE_MUSIC_ROLE != "true" || message.member.roles.cache.find(r => r.name == process.env.MUSIC_ROLE_NAME) != undefined) {
+        message.channel.send({
+            embed: {
+                "title": `Stopping`,
+                "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} Stopped music`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                }
+            }
+        })
+        serverQueue.songs = [];
+        serverQueue.connection.dispatcher.end();
+    } else {
+        message.channel.send({
+            embed: {
+                "title": "Error",
+                "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                }
+            }
+        });
+    }
   }
 
 function getQueue(message, serverQueue, args) {
@@ -489,19 +517,34 @@ function remove(message, serverQueue, args) {
                 });
             }
             let song = serverQueue.songs[Number(args)-1];
-            serverQueue.songs.splice(Number(args)-1, 1);
-            return message.channel.send({
-                embed: {
-                    "title": "Removed",
-                    "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} Removed **[${song.title}](${song.url})** from the queue`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": message.client.user.displayAvatarURL()
+            if(process.env.USE_MUSIC_ROLE != "true" || message.member.roles.cache.find(r => r.name == process.env.MUSIC_ROLE_NAME) != undefined || song.user == message.author.id) {
+                serverQueue.songs.splice(Number(args)-1, 1);
+                return message.channel.send({
+                    embed: {
+                        "title": "Removed",
+                        "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} Removed **[${song.title}](${song.url})** from the queue`,
+                        "color": Number(process.env.EMBED_COLOUR),
+                        "timestamp": new Date(),
+                        "author": {
+                            "name": process.env.BOT_NAME,
+                            "icon_url": message.client.user.displayAvatarURL()
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                return message.channel.send({
+                    embed: {
+                        "title": "Error",
+                        "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+                        "color": Number(process.env.EMBED_COLOUR),
+                        "timestamp": new Date(),
+                        "author": {
+                            "name": process.env.BOT_NAME,
+                            "icon_url": message.client.user.displayAvatarURL()
+                        }
+                    }
+                });
+            }
         } else {
             return message.channel.send({
                 embed: {
@@ -534,20 +577,35 @@ function shuffle(message, serverQueue) {
             }
         });
     } else {
-        let shuffled = [serverQueue.songs[0]].concat(serverQueue.songs.slice(1).shuffle());
-        serverQueue.songs = shuffled;
-        return message.channel.send({
-            embed: {
-                "title": "Shuffled",
-                "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} Shuffled the music`,
-                "color": Number(process.env.EMBED_COLOUR),
-                "timestamp": new Date(),
-                "author": {
-                    "name": process.env.BOT_NAME,
-                    "icon_url": message.client.user.displayAvatarURL()
+        if(process.env.USE_MUSIC_ROLE != "true" || message.member.roles.cache.find(r => r.name == process.env.MUSIC_ROLE_NAME) != undefined) {
+            let shuffled = [serverQueue.songs[0]].concat(serverQueue.songs.slice(1).shuffle());
+            serverQueue.songs = shuffled;
+            return message.channel.send({
+                embed: {
+                    "title": "Shuffled",
+                    "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} Shuffled the music`,
+                    "color": Number(process.env.EMBED_COLOUR),
+                    "timestamp": new Date(),
+                    "author": {
+                        "name": process.env.BOT_NAME,
+                        "icon_url": message.client.user.displayAvatarURL()
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            message.channel.send({
+                embed: {
+                    "title": "Error",
+                    "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+                    "color": Number(process.env.EMBED_COLOUR),
+                    "timestamp": new Date(),
+                    "author": {
+                        "name": process.env.BOT_NAME,
+                        "icon_url": message.client.user.displayAvatarURL()
+                    }
+                }
+            });
+        }
     }
 }
 
@@ -679,21 +737,36 @@ function disconnect(message, guildId) {
             }
         });
     }
-    clearTimeout(serverQueue.leaveTimeout)
-    serverQueue.voiceChannel.leave();
-    queue.delete(guildId);
-    message.channel.send({
-        embed: {
-            "title": "Disconnected",
-            "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING}`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": message.client.user.displayAvatarURL()
+    if(process.env.USE_MUSIC_ROLE != "true" || message.member.roles.cache.find(r => r.name == process.env.MUSIC_ROLE_NAME) != undefined || serverQueue.songs.length == 0) {
+        clearTimeout(serverQueue.leaveTimeout)
+        serverQueue.voiceChannel.leave();
+        queue.delete(guildId);
+        message.channel.send({
+            embed: {
+                "title": "Disconnected",
+                "description": `<@${message.author.id}> - ${process.env.MSG_VIBING}`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                }
             }
-        }
-    })
+        })
+    } else {
+        message.channel.send({
+            embed: {
+                "title": "Error",
+                "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                }
+            }
+        });
+    }
 }
 
 Number.prototype.durationFormat = function() {
@@ -727,19 +800,23 @@ Array.prototype.shuffle = function() {
 
 async function getPlaylistVideos(playlistId, pageToken) {
     return new Promise(async (resolve, reject) => {
-        let results = await Youtube.playlistItems.list({
-            part: 'contentDetails',
-            playlistId,
-            maxResults: 50,
-            pageToken
-        })
-        let items = results.data.items;
-        if(results.data.nextPageToken) {
-            let newResults = await getPlaylistVideos(playlistId, results.data.nextPageToken)
-            items = items.concat(newResults.data.items)
-            results.data.items = items
+        try {
+            let results = await Youtube.playlistItems.list({
+                part: 'contentDetails',
+                playlistId,
+                maxResults: 50,
+                pageToken
+            })
+            let items = results.data.items;
+            if(results.data.nextPageToken) {
+                let newResults = await getPlaylistVideos(playlistId, results.data.nextPageToken)
+                items = items.concat(newResults.data.items)
+                results.data.items = items
+            }
+            resolve(results)
+        } catch(e) {
+            reject(e)
         }
-        resolve(results)
     })
 }
 

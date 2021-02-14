@@ -221,6 +221,11 @@ s: # Alias of skip
   type: music
   action: next
   hidden: true
+stop:
+  type: music
+  action: stop
+  category: Music
+  description: Stops the music and clears the queue
 leave:
   type: music
   action: disconnect

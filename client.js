@@ -92,15 +92,14 @@ client.on('message', async msg => {
             procMsg.delete();
         }
     } else if (cmd.type == 'music') { // If command is set as music type
-        const musicCmdPath = 'modules/music.js'
-        
-        let { cmdFunc } = require('./'+musicCmdPath) // Gets function of music commands
-
-        setImmediate(async () => {
-            cmdFunc(msg, args, cmd.action) // Runs command function
-        });
+        musicWorker.postMessage({ msgId: msg.id, channelId: msg.channel.id, args, cmd })
     }
 });
+
+const { Worker } = require('worker_threads');
+
+const musicWorkerPath = '/modules/music-worker.js'
+let musicWorker = new Worker(__dirname+musicWorkerPath)
 
 var path = require('path'); 
 

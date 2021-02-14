@@ -92,7 +92,7 @@ client.on('message', async msg => {
             procMsg.delete();
         }
     } else if (cmd.type == 'music') { // If command is set as music type
-        const musicCmdPath = 'commands/music/music.js'
+        const musicCmdPath = 'modules/music.js'
         
         let { cmdFunc } = require('./'+musicCmdPath) // Gets function of music commands
 

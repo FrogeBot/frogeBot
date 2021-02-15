@@ -1,4 +1,5 @@
 var Jimp = require('jimp');
+var sharp = require('sharp');
 var gm = require('gm');
 if(process.env.USE_IMAGEMAGICK == "true") {
     gm = gm.subClass({ imageMagick: true });
@@ -145,14 +146,14 @@ function execGM(imgUrl, list) {
 function performMethod(img, method, params, allowBackgrounds) {
     return new Promise(async (resolve, reject) => {
         try {
-            if(img.bitmap) {
+            if(method != "composite" && img.bitmap) {
                 for (let i = 0; i < params.length; i++) {
                     if(typeof params[i] == "object") {
                         try{ params[i] = await readBuffer(Buffer.from(params[i])); } catch(e) {}
                     }  
                 }
             }
-            if(img[method]) { // If native method
+            if(method != "composite" && img[method]) { // If native method
                 img = await img[method](...params) // Run method function on image
             } else { // If custom method or undefined method
                 img = await customMethod(img, method, params, allowBackgrounds) // Attempt to run method function on image
@@ -177,9 +178,13 @@ function customMethod(img, method, params, allowBackgrounds) {
                 newImg = await img.crop(x, y, w, h)
                 resolve(newImg); // Resolve image
             }
-            if(method == "addBackground") { // Adds colour background (jimp only)
-                let bgImg = await createNewImage(params[0], params[1], (allowBackgrounds ? params[2] : "transparent"));
-                newImg = await bgImg.composite(img, params[3], params[4])
+            if(method == "addBackground") { // Adds colour background
+                if(img.bitmap) {
+                    let bgImg = await createNewImage(params[0], params[1], (allowBackgrounds ? params[2] : "transparent"));
+                    newImg = await bgImg.composite(img, params[3], params[4])
+                } else {
+                    newImg = img.extent(params[0], params[1], `${params[3]<0 ? '+' : '-'}${params[3]}${params[4]<0 ? '+' : '-'}${params[4]}`).background(params[2])
+                }
                 resolve(newImg); // Resolve image
             }
             if(method == "jpeg") { // JPEG-ifies image (magick only)
@@ -190,6 +195,17 @@ function customMethod(img, method, params, allowBackgrounds) {
                 let size = (img.bitmap.height >= img.bitmap.width) ? img.bitmap.width : img.bitmap.height;
                 let newImg = img.crop(size, size, img.bitmap.width/2-size/2, img.bitmap.height/2-size/2)
                 resolve(newImg)
+            }
+            if(method == "composite") {
+                if(img.bitmap) {
+                    newImg = sharp(await img.getBufferAsync(Jimp.AUTO)).composite([{ input: Buffer.from(params[0]), top: params[2], left: params[1] }])
+                    let newImgJimp = readBuffer(await newImg.toBuffer())
+                    resolve(newImgJimp)
+                } else {
+                    newImg = sharp(await gmToBuffer(img)).composite([{ input: Buffer.from(params[0]), top: params[2], left: params[1] }])
+                    let newImgMagick = gm(await newImg.toBuffer())
+                    resolve(newImgMagick)
+                }
             }
         } catch(e) {
             reject(e)

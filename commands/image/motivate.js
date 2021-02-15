@@ -4,8 +4,13 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 
 delete require.cache[require.resolve("../../modules/image.js")];
-let { jimpReadURL, exec } = require("../../modules/image.js")
+let { jimpReadURL, execGM, gmToBuffer } = require("../../modules/image.js")
 let { canvasText, canvasWindow } = require("../../modules/canvas.js");
+
+var gm = require('gm');
+if(process.env.USE_IMAGEMAGICK == "true") {
+    gm = gm.subClass({ imageMagick: true });
+}
 
 let procMsg
 let imageUrl
@@ -29,11 +34,14 @@ async function cmdFunc(msg, args, startTime) {
         let textCanvas = await canvasText(args.split("|")[0].trim(), Math.round(width*0.1), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white")
         let textCanvas2 = await canvasText(args.split("|").slice(1).join("|").trim(), Math.round(width*0.07), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white")
 
+        textCanvas[0] = await gmToBuffer(gm(textCanvas[0]).crop(width, textCanvas[1]))
+        textCanvas2[0] = await gmToBuffer(gm(textCanvas2[0]).crop(width, textCanvas2[1]))
+
         let offset = textCanvas[1]+textCanvas2[1] + width*0.05;
 
         let windowCanvas = await canvasWindow(width, height+offset, x, y, imgFG.bitmap.width, imgFG.bitmap.height, "white", Math.ceil(imgFG.bitmap.width*0.005), Math.ceil(width*0.025 - imgFG.bitmap.width*0.0125), "black")
 
-        let img = await exec(imageUrl, [
+        let img = await execGM(imageUrl, [
             ["addBackground", [width, height+offset, "#000000", x, y] ],
             ["composite", [windowCanvas, 0, 0]],
             ["composite", [textCanvas[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025)]],

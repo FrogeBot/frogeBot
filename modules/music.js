@@ -595,36 +595,40 @@ function playTrack(guild, song) {
 
     clearTimeout(serverQueue.leaveTimeout)
     
-    const dispatcher = serverQueue.connection
-      .play(ytdl(song.url, {filter: "audio", quality: "lowestaudio"}))
-      .on("finish", () => {
-        serverQueue.songs.shift();
-        playTrack(guild, serverQueue.songs[0]);
-      })
-      .on("error", error => {
-          console.error(error)
-          serverQueue.songs.shift();
-          playTrack(guild, serverQueue.songs[0]);
-      });
-    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+    try {
+        const dispatcher = serverQueue.connection
+        .play(ytdl(song.url, {filter: "audio", quality: "lowestaudio"}), { bitrate: 'auto' })
+        .on("finish", () => {
+            serverQueue.songs.shift();
+            playTrack(guild, serverQueue.songs[0]);
+        })
+        .on("error", error => {
+            console.error(error)
+            serverQueue.songs.shift();
+            playTrack(guild, serverQueue.songs[0]);
+        });
+        dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
     
-    serverQueue.textChannel.send({
-        embed: {
-            "title": "Now Playing",
-            "description": `${process.env.MSG_VIBING} **[${song.title}](${song.url})**`,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": guild.client.user.displayAvatarURL()
-            },
-            "footer": {
-                "text": song.duration.durationFormat()
+        serverQueue.textChannel.send({
+            embed: {
+                "title": "Now Playing",
+                "description": `${process.env.MSG_VIBING} **[${song.title}](${song.url})**`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": guild.client.user.displayAvatarURL()
+                },
+                "footer": {
+                    "text": song.duration.durationFormat()
+                }
             }
-        }
-    });
-    
-    serverQueue.songs[0].startTime = Math.round(new Date().getTime()/1000);
+        });
+        
+        serverQueue.songs[0].startTime = Math.round(new Date().getTime()/1000);
+    } catch(e) {
+        console.log(e)
+    }
 }
 
 function nowPlaying(message, serverQueue) {

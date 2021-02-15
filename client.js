@@ -8,6 +8,14 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
+client.on('error', (error) => {
+    console.log(error);
+});
+
+process.on('uncaughtException', function (err) {
+    console.log(err);
+})
+
 const { parseMsg, isCmd } = require("./modules/parse.js")
 
 const fs = require("fs")

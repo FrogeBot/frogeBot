@@ -9,6 +9,10 @@ client.on('ready', () => {
     console.log(`Music client ready`);
 });
 
+client.on('error', (error) => {
+    console.log(error);
+});
+
 client.login(process.env.TOKEN); // discord.js connect to discord bot
 
 const musicCmdPath = 'music.js'
@@ -28,3 +32,7 @@ parentPort.on('message', async (data) => {
         }
     }
 });
+
+process.on('uncaughtException', function (err) {
+    console.log(err);
+})

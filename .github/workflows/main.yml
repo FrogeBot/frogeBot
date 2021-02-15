@@ -12,10 +12,7 @@
 name: "CodeQL"
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    # The branches below must be a subset of the branches above
     branches: [ master ]
   schedule:
     - cron: 0 0 * * 0
@@ -44,6 +41,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   analyze:
     name: Analyze
+    needs: prettier
     runs-on: ubuntu-latest
 
     strategy:

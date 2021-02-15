@@ -45,7 +45,7 @@ async function cmdFunc(msg, args, startTime) {
             ["addBackground", [width, height+offset, "#000000", x, y] ],
             ["composite", [windowCanvas, 0, 0]],
             ["composite", [textCanvas[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025)]],
-            ["composite", [textCanvas2[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025)+textCanvas[1]]]
+            ["composite", [textCanvas2[0], Math.round(width*0.05), Math.round(height + width*0.05 - imgFG.bitmap.width*0.025+textCanvas[1])]]
         ])
         
         sendImage(msg, "Motivate", startTime, img, extension, procMsg)

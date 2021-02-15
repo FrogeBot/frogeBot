@@ -667,30 +667,45 @@ function nowPlaying(message, serverQueue) {
         });
     }
 
-    let song = serverQueue.songs[0]
+    try {
+        let song = serverQueue.songs[0]
 
-    let remaining = song.startTime+song.duration-Math.round(new Date().getTime()/1000);
-    let elapsed = song.duration-remaining;
+        let remaining = song.startTime+song.duration-Math.round(new Date().getTime()/1000);
+        let elapsed = song.duration-remaining;
 
-    let barLength = 30;
+        let barLength = 30;
 
-    let elapsedBars = Math.max(0, Math.round(elapsed/song.duration*barLength)-1)
+        let elapsedBars = Math.max(0, Math.round(elapsed/song.duration*barLength)-1)
 
-    serverQueue.textChannel.send({
-        embed: {
-            "title": "Now Playing",
-            "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${song.title}](${song.url})**\n \`\`\`nim\n[${('―'.repeat(elapsedBars)+'⬤'+'―'.repeat(barLength-elapsedBars-1)).substr(0,barLength)}] -${remaining.durationFormat()}\n\`\`\``,
-            "color": Number(process.env.EMBED_COLOUR),
-            "timestamp": new Date(),
-            "author": {
-                "name": process.env.BOT_NAME,
-                "icon_url": message.client.user.displayAvatarURL()
-            },
-            "footer": {
-                "text": song.duration.durationFormat()
+        serverQueue.textChannel.send({
+            embed: {
+                "title": "Now Playing",
+                "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${song.title}](${song.url})**\n \`\`\`nim\n[${('―'.repeat(elapsedBars)+'⬤'+'―'.repeat(barLength-elapsedBars-1)).substr(0,barLength)}] -${remaining.durationFormat()}\n\`\`\``,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                },
+                "footer": {
+                    "text": song.duration.durationFormat()
+                }
             }
-        }
-    });
+        });
+    } catch(e) {
+        return message.channel.send({
+            embed: {
+                "title": "Error",
+                "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} Something went wrong`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
+                }
+            }
+        });
+    }
 }
 
 function disconnect(message, guildId) {

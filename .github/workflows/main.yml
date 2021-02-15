@@ -12,6 +12,7 @@
 name: "CodeQL"
 
 on:
+  push:
   pull_request:
     branches: [ master ]
   schedule:
@@ -20,7 +21,6 @@ on:
 jobs:
   prettier:
     name: Prettify
-    if: github.ref != 'refs/head/master'
     runs-on: ubuntu-latest
 
     steps:
@@ -38,7 +38,8 @@ jobs:
         # This part is also where you can pass other options, for example:
         prettier_options: --write **/*.js
         only_changed: false
-        same_commit: true 
+        same_commit: true
+        commit_options: --force
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   analyze:

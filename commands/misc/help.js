@@ -11,6 +11,7 @@ function cmdFunc(msg, args) {
     let categoriesPaged = {}
     Object.keys(commands).forEach(cmd => {
         if(commands[cmd].hidden || commands[cmd].category == undefined || commands[cmd].description == undefined) return
+        if(process.env.MUSIC_ENABLED != "true" && commands[cmd].type == "music") return
         if(categories[commands[cmd].category] == undefined) categories[commands[cmd].category] = []
         categories[commands[cmd].category].push(cmd)
     });

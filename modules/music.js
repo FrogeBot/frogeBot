@@ -2,14 +2,11 @@ require("dotenv").config()
 
 const ytdl = require("ytdl-core");
 const ytsr = require('ytsr');
+var ytpl = require('ytpl');
 
 const queue = new Map();
 
 const { google } = require("googleapis");
-let Youtube = google.youtube({
-    version: 'v3',
-    auth: process.env.YOUTUBE_API_KEY
-});
 
 async function cmdFunc(msg, args, action) {
     const serverQueue = queue.get(msg.guild.id);
@@ -66,17 +63,11 @@ async function execute(message, serverQueue, args) {
 
         let results;
 
-        let isPlaylist = args.match(/https?:\/\/www.youtube.com\/playlist\?list=(.+)/);
+        let isPlaylist = ytpl.validateID(args)
         let isLinkOrId = ytdl.validateURL(args);
 
         let playlist;
-        if(isPlaylist) {
-                playlist = (await Youtube.playlists.list({
-                    part: 'snippet',
-                    id: args.replace(/https?:\/\/www.youtube.com\/playlist\?list=(.+)/, '$1')
-                })).data.items[0].snippet
-                results = await getPlaylistVideos(args.replace(/https?:\/\/www.youtube.com\/playlist\?list=(.+)/, '$1'))
-        } else if(isLinkOrId) {
+        if(isLinkOrId) {
             results = {
                 data: {
                     pageInfo: {
@@ -95,12 +86,12 @@ async function execute(message, serverQueue, args) {
                         
                 }
             }
-        } else {
+        } else if(!isPlaylist) {
             let filterUrl = (await ytsr.getFilters(args)).get('Type').get('Video').url
             results = await ytsr(filterUrl, { limit: 10 });
         }
 
-        if(args.length == 0 || (results.items && results.items.length == 0) || (results.data && results.data.pageInfo.totalResults == 0)) {
+        if(!isPlaylist && (args.length == 0 || (results.items && results.items.length == 0) || (results.data && results.data.pageInfo.totalResults == 0))) {
             return message.channel.send({
                 embed: {
                     "title": "Error",
@@ -116,7 +107,6 @@ async function execute(message, serverQueue, args) {
         }
 
         if(isPlaylist) {
-            playlist.id = args.replace(/https?:\/\/www.youtube.com\/playlist\?list=(.+)/, '$1')
             if (!serverQueue) {
                 const queueConstruct = {
                     textChannel: message.channel,
@@ -130,7 +120,8 @@ async function execute(message, serverQueue, args) {
             
                 queue.set(message.guild.id, queueConstruct);
 
-                let playlistSongs = await playlistToSongs(playlist.id, message.author.id);
+                let playlist = await getPlaylist(args, message.author.id);
+                let playlistSongs = playlist.songs;
                 message.channel.send({
                     embed: {
                         "title": "Queued Playlist",
@@ -158,7 +149,8 @@ async function execute(message, serverQueue, args) {
                     }
                 }
             } else {
-                let playlistSongs = await playlistToSongs(playlist.id, message.author.id);
+                let playlist = await getPlaylist(args, message.author.id);
+                let playlistSongs = playlist.songs;
                 message.channel.send({
                     embed: {
                         "title": "Queued Playlist",
@@ -235,34 +227,19 @@ async function execute(message, serverQueue, args) {
             });
         }
     } catch(e) {
-        if(e.errors && e.errors[0].reason == 'quotaExceeded') {
-            return message.channel.send({
-                embed: {
-                    "title": "Error",
-                    "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} YouTube Data API v3 quota exceeded. You can still play video links.`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": message.client.user.displayAvatarURL()
-                    }
+        console.log(e)
+        return message.channel.send({
+            embed: {
+                "title": "Error",
+                "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} Something went wrong`,
+                "color": Number(process.env.EMBED_COLOUR),
+                "timestamp": new Date(),
+                "author": {
+                    "name": process.env.BOT_NAME,
+                    "icon_url": message.client.user.displayAvatarURL()
                 }
-            });
-        } else {
-            console.log(e)
-            return message.channel.send({
-                embed: {
-                    "title": "Error",
-                    "description": `<@${message.author.id}> - ${process.env.MSG_UNVIBING} Something went wrong`,
-                    "color": Number(process.env.EMBED_COLOUR),
-                    "timestamp": new Date(),
-                    "author": {
-                        "name": process.env.BOT_NAME,
-                        "icon_url": message.client.user.displayAvatarURL()
-                    }
-                }
-            });
-        }
+            }
+        });
     }
 }
   
@@ -791,100 +768,29 @@ Array.prototype.shuffle = function() {
     }
   
     return array;
-  }
+}
 
-async function getPlaylistVideos(playlistId, pageToken) {
+async function getPlaylist(args, userId) {
     return new Promise(async (resolve, reject) => {
         try {
-            let results = await Youtube.playlistItems.list({
-                part: 'contentDetails',
-                playlistId,
-                maxResults: 50,
-                pageToken
-            })
-            let items = results.data.items;
-            if(results.data.nextPageToken) {
-                let newResults = await getPlaylistVideos(playlistId, results.data.nextPageToken)
-                items = items.concat(newResults.data.items)
-                results.data.items = items
-            }
-            resolve(results)
-        } catch(e) {
-            reject(e)
-        }
-    })
-}
-async function getVideosFromPlaylist(playlistItems, startIdx = 0) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let videoIds = playlistItems.data.items.slice(startIdx).map(p => p.contentDetails.videoId)
-            let results = await Youtube.videos.list({
-                part: 'snippet, contentDetails',
-                id: videoIds.slice(0,49).join(","),
-                maxResults: 50
-            })
-            let items = results.data.items;
-            if(videoIds.length > 50) {
-                let newResults = await getVideosFromPlaylist(playlistItems, 50+startIdx)
-                items = items.concat(newResults.data.items)
-                results.data.items = items
-            }
-            resolve(results)
-        } catch(e) {
-            reject(e)
-        }
-    })
-}
-async function playlistToSongs(playlistId, userId) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let results = await getVideosFromPlaylist(await getPlaylistVideos(playlistId));
-            let songs = results.data.items.map(v => {
+            const results = await ytpl(await ytpl.getPlaylistID(args), { limit: Infinity });
+            let songs = results.items.map(v => {
                 return {
-                    title: v.snippet.title,
-                    url: 'https://youtube.com/watch?v='+v.id,
-                    duration: convert_time(v.contentDetails.duration),
+                    title: v.title,
+                    url: v.url,
+                    duration: v.durationSec,
                     userId
                 }
             })
-            resolve(songs)
+            resolve({
+                title: results.title,
+                id: results.id,
+                songs
+            })
         } catch(e) {
             reject(e)
         }
     });
-}
-
-function convert_time(duration) {
-    var a = duration.match(/\d+/g);
-
-    if (duration.indexOf('M') >= 0 && duration.indexOf('H') == -1 && duration.indexOf('S') == -1) {
-        a = [0, a[0], 0];
-    }
-
-    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1) {
-        a = [a[0], 0, a[1]];
-    }
-    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1 && duration.indexOf('S') == -1) {
-        a = [a[0], 0, 0];
-    }
-
-    duration = 0;
-
-    if (a.length == 3) {
-        duration = duration + parseInt(a[0]) * 3600;
-        duration = duration + parseInt(a[1]) * 60;
-        duration = duration + parseInt(a[2]);
-    }
-
-    if (a.length == 2) {
-        duration = duration + parseInt(a[0]) * 60;
-        duration = duration + parseInt(a[1]);
-    }
-
-    if (a.length == 1) {
-        duration = duration + parseInt(a[0]);
-    }
-    return duration
 }
 
 module.exports = {

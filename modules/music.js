@@ -1,11 +1,11 @@
 require("dotenv").config()
 
 const ytdl = require("ytdl-core");
+const ytsr = require('ytsr');
 
 const queue = new Map();
 
 const { google } = require("googleapis");
-const { resize } = require("jimp");
 let Youtube = google.youtube({
     version: 'v3',
     auth: process.env.YOUTUBE_API_KEY
@@ -96,14 +96,11 @@ async function execute(message, serverQueue, args) {
                 }
             }
         } else {
-            results = await Youtube.search.list({
-                part: 'snippet',
-                type: 'video',
-                q: args
-            });
+            let filterUrl = (await ytsr.getFilters(args)).get('Type').get('Video').url
+            results = await ytsr(filterUrl, { limit: 10 });
         }
 
-        if(args.length == 0 || results.data.pageInfo.totalResults == 0) {
+        if(args.length == 0 || results.items.length == 0) {
             return message.channel.send({
                 embed: {
                     "title": "Error",
@@ -184,7 +181,7 @@ async function execute(message, serverQueue, args) {
             return
         }
 
-        const songInfo = await ytdl.getInfo(results.data.items[0].id.videoId);
+        const songInfo = await ytdl.getInfo(results.items[0].id);
         const song = {
             title: songInfo.videoDetails.title,
             url: songInfo.videoDetails.video_url,
@@ -205,8 +202,7 @@ async function execute(message, serverQueue, args) {
         
             queue.set(message.guild.id, queueConstruct);
         
-            queueConstruct.songs[queueConstruct.songIndex] = song;
-            serverQueue.songIndex += 1;
+            queueConstruct.songs.push(song);
         
             try {
                 var connection = await voiceChannel.join();
@@ -218,8 +214,7 @@ async function execute(message, serverQueue, args) {
                 return message.channel.send(err);
             }
         } else {
-            serverQueue.songs[serverQueue.songIndex] = song;
-            serverQueue.songIndex += 1;
+            serverQueue.songs.push(song);
             if(serverQueue.songs.length == 1) {
                 playTrack(message.guild, serverQueue.songs[0]);
             }
@@ -254,6 +249,7 @@ async function execute(message, serverQueue, args) {
                 }
             });
         } else {
+            console.log(e)
             return message.channel.send({
                 embed: {
                     "title": "Error",
@@ -603,13 +599,11 @@ function playTrack(guild, song) {
       .play(ytdl(song.url, {filter: "audio", quality: "lowestaudio"}))
       .on("finish", () => {
         serverQueue.songs.shift();
-        serverQueue.songIndex -= 1;
         playTrack(guild, serverQueue.songs[0]);
       })
       .on("error", error => {
           console.error(error)
           serverQueue.songs.shift();
-          serverQueue.songIndex -= 1;
           playTrack(guild, serverQueue.songs[0]);
       });
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);

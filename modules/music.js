@@ -629,7 +629,11 @@ function playTrack(guild, song) {
         serverQueue.songs.shift();
         playTrack(guild, serverQueue.songs[0]);
       })
-      .on("error", error => console.error(error));
+      .on("error", error => {
+          console.error(error)
+          serverQueue.songs.shift();
+          playTrack(guild, serverQueue.songs[0]);
+      });
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
     
     serverQueue.textChannel.send({

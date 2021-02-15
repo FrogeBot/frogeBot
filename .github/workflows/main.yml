@@ -21,12 +21,12 @@ on:
 jobs:
   prettier:
     name: Prettify
-    if: github.ref != 'ref/head/master'
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      if: github.ref != 'ref/head/master'
       with:
         # Make sure the actual branch is checked out when running on pull requests
         ref: ${{ github.head_ref }}
@@ -35,6 +35,7 @@ jobs:
 
     - name: Prettify code
       uses: creyD/prettier_action@v3.1
+      if: github.ref != 'ref/head/master'
       with:
         # This part is also where you can pass other options, for example:
         prettier_options: --write **/*.js

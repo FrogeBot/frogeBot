@@ -1,9 +1,7 @@
-require("dotenv").config()
+require("dotenv").config();
 
-async function cmdFunc(msg, args, startTime) {
-    
-}
+async function cmdFunc(msg, args, startTime) {}
 
 module.exports = {
-    cmdFunc
-}
+  cmdFunc,
+};

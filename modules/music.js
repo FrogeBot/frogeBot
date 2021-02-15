@@ -5,6 +5,7 @@ const ytdl = require("ytdl-core");
 const queue = new Map();
 
 const { google } = require("googleapis");
+const { resize } = require("jimp");
 let Youtube = google.youtube({
     version: 'v3',
     auth: process.env.YOUTUBE_API_KEY
@@ -118,6 +119,7 @@ async function execute(message, serverQueue, args) {
         }
 
         if(isPlaylist) {
+            playlist.id = args.replace(/https?:\/\/www.youtube.com\/playlist\?list=(.+)/, '$1')
             if (!serverQueue) {
                 const queueConstruct = {
                     textChannel: message.channel,
@@ -126,25 +128,12 @@ async function execute(message, serverQueue, args) {
                     songs: [],
                     volume: 5,
                     playing: true,
-                    leaveTimeout: null,
-                    songIndex: 0,
-                    isPlaying: false
+                    leaveTimeout: null
                 };
             
                 queue.set(message.guild.id, queueConstruct);
 
-                for (let i = 0; i < results.data.items.length; i++) {
-                    const songPlaceholder = {
-                        title: 'Pending...',
-                        url: '',
-                        duration: 0,
-                        user: message.author.id,
-                        i,
-                        playlistId: playlist.id
-                    };
-                    queueConstruct.songs.push(songPlaceholder)
-                }
-                queueConstruct.songIndex += results.data.items.length;
+                let playlistSongs = await playlistToSongs(playlist.id, message.author.id);
                 message.channel.send({
                     embed: {
                         "title": "Queued Playlist",
@@ -157,41 +146,22 @@ async function execute(message, serverQueue, args) {
                         }
                     }
                 });
-                for (let i = 0; i < results.data.items.length; i++) {
-                    setImmediate(async () => {
-                        const songInfo = await ytdl.getInfo(results.data.items[i].contentDetails.videoId);
-                        const song = {
-                            title: songInfo.videoDetails.title,
-                            url: songInfo.videoDetails.video_url,
-                            duration: Number(songInfo.videoDetails.lengthSeconds)
-                        };
-                        queueConstruct.songs[queueConstruct.songs.findIndex(s => s.i == i && s.playlistId == playlist.id)] = song
-                        if(i == 0) {
-                            try {
-                                var connection = await voiceChannel.join();
-                                queueConstruct.connection = connection;
-                                playTrack(message.guild, queueConstruct.songs[0]);
-                            } catch (err) {
-                                console.log(err);
-                                queue.delete(message.guild.id);
-                                return message.channel.send(err);
-                            }
+                for (let i = 0; i < playlistSongs.length; i++) {
+                    queueConstruct.songs.push(playlistSongs[i])
+                    if(i == 0) {
+                        try {
+                            var connection = await voiceChannel.join();
+                            queueConstruct.connection = connection;
+                            playTrack(message.guild, queueConstruct.songs[0]);
+                        } catch (err) {
+                            console.log(err);
+                            queue.delete(message.guild.id);
+                            return message.channel.send(err);
                         }
-                    });
+                    }
                 }
             } else {
-                for (let i = 0; i < results.data.items.length; i++) {
-                    const songPlaceholder = {
-                        title: 'Pending...',
-                        url: '',
-                        duration: 0,
-                        user: message.author.id,
-                        i,
-                        playlistId: playlist.id
-                    };
-                    serverQueue.songs.push(songPlaceholder)
-                }
-                serverQueue.songIndex += results.data.items.length;
+                let playlistSongs = await playlistToSongs(playlist.id, message.author.id);
                 message.channel.send({
                     embed: {
                         "title": "Queued Playlist",
@@ -204,19 +174,11 @@ async function execute(message, serverQueue, args) {
                         }
                     }
                 });
-                for (let i = 0; i < results.data.items.length; i++) {
-                    setImmediate(async () => {
-                        const songInfo = await ytdl.getInfo(results.data.items[i].contentDetails.videoId);
-                        const song = {
-                            title: songInfo.videoDetails.title,
-                            url: songInfo.videoDetails.video_url,
-                            duration: Number(songInfo.videoDetails.lengthSeconds)
-                        };
-                        serverQueue.songs[serverQueue.songs.findIndex(s => s.i == i && s.playlistId == playlist.id)] = song
-                        if(i == 0 && !serverQueue.isPlaying) {
-                            playTrack(message.guild, serverQueue.songs[0]);
-                        }
-                    });
+                for (let i = 0; i < playlistSongs.length; i++) {
+                    queueConstruct.songs.push(playlistSongs[i])
+                    if(serverQueue.songs.length == 1) {
+                        playTrack(message.guild, serverQueue.songs[0]);
+                    }
                 }
             }
             return
@@ -443,7 +405,6 @@ function stop(message, serverQueue) {
             }
         })
         serverQueue.songs = [];
-        serverQueue.isPlaying = false;
         serverQueue.connection.dispatcher.end();
     } else {
         message.channel.send({
@@ -627,14 +588,12 @@ function shuffle(message, serverQueue) {
 function playTrack(guild, song) {
     let serverQueue = queue.get(guild.id);
     if (!song) {
-        serverQueue.isPlaying = false;
         serverQueue.leaveTimeout = setTimeout(() => {
             serverQueue.voiceChannel.leave();
             queue.delete(guild.id);
         }, 120000)
         return;
     }
-    serverQueue.isPlaying = true;
 
     serverQueue.skips = 0;
 
@@ -856,6 +815,78 @@ async function getPlaylistVideos(playlistId, pageToken) {
             reject(e)
         }
     })
+}
+async function getVideosFromPlaylist(playlistItems, startIdx = 0) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let videoIds = playlistItems.data.items.slice(startIdx).map(p => p.contentDetails.videoId)
+            let results = await Youtube.videos.list({
+                part: 'snippet, contentDetails',
+                id: videoIds.slice(0,49).join(","),
+                maxResults: 50
+            })
+            let items = results.data.items;
+            if(videoIds.length > 50) {
+                let newResults = await getVideosFromPlaylist(playlistItems, 50+startIdx)
+                items = items.concat(newResults.data.items)
+                results.data.items = items
+            }
+            resolve(results)
+        } catch(e) {
+            reject(e)
+        }
+    })
+}
+async function playlistToSongs(playlistId, userId) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let results = await getVideosFromPlaylist(await getPlaylistVideos(playlistId));
+            let songs = results.data.items.map(v => {
+                return {
+                    title: v.snippet.title,
+                    url: 'https://youtube.com/watch?v='+v.id,
+                    duration: convert_time(v.contentDetails.duration),
+                    userId
+                }
+            })
+            resolve(songs)
+        } catch(e) {
+            reject(e)
+        }
+    });
+}
+
+function convert_time(duration) {
+    var a = duration.match(/\d+/g);
+
+    if (duration.indexOf('M') >= 0 && duration.indexOf('H') == -1 && duration.indexOf('S') == -1) {
+        a = [0, a[0], 0];
+    }
+
+    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1) {
+        a = [a[0], 0, a[1]];
+    }
+    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1 && duration.indexOf('S') == -1) {
+        a = [a[0], 0, 0];
+    }
+
+    duration = 0;
+
+    if (a.length == 3) {
+        duration = duration + parseInt(a[0]) * 3600;
+        duration = duration + parseInt(a[1]) * 60;
+        duration = duration + parseInt(a[2]);
+    }
+
+    if (a.length == 2) {
+        duration = duration + parseInt(a[0]) * 60;
+        duration = duration + parseInt(a[1]);
+    }
+
+    if (a.length == 1) {
+        duration = duration + parseInt(a[0]);
+    }
+    return duration
 }
 
 module.exports = {

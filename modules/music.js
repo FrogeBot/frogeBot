@@ -100,7 +100,7 @@ async function execute(message, serverQueue, args) {
             results = await ytsr(filterUrl, { limit: 10 });
         }
 
-        if(args.length == 0 || results.items.length == 0) {
+        if(args.length == 0 || (results.items && results.items.length == 0) || results.data.pageInfo.totalResults == 0) {
             return message.channel.send({
                 embed: {
                     "title": "Error",

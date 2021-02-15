@@ -581,7 +581,10 @@ function playTrack(guild, song) {
             console.error(error)
             serverQueue.songs.shift();
             playTrack(guild, serverQueue.songs[0]);
-        });
+        })
+        .on("failed", error => {
+            console.error(error)
+        })
         dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
     
         serverQueue.textChannel.send({

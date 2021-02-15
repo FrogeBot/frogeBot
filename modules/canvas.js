@@ -3,6 +3,7 @@ const { fillTextWithTwemoji, measureText } = require('./emojiCanvasText');
 
 // Fonts
 registerFont(__dirname+'/../fonts/RobotoBlack.ttf', { family: 'Roboto' })
+registerFont(__dirname+'/../fonts/Matoran.ttf', { family: 'Matoran' })
 
 function canvasText(text, fontSize, fontFamily, width, align = "center", lineSpacing = 1.5, fillStyle = "black", bg = "transparent") {
     return new Promise(async (resolve, reject) => {

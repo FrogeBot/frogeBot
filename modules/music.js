@@ -120,91 +120,103 @@ async function execute(message, serverQueue, args) {
         if(isPlaylist) {
             if (!serverQueue) {
                 const queueConstruct = {
-                textChannel: message.channel,
-                voiceChannel: voiceChannel,
-                connection: null,
-                songs: [],
-                volume: 5,
-                playing: true,
-                leaveTimeout: null
+                    textChannel: message.channel,
+                    voiceChannel: voiceChannel,
+                    connection: null,
+                    songs: [],
+                    volume: 5,
+                    playing: true,
+                    leaveTimeout: null,
+                    songIndex: 0,
+                    isPlaying: false
                 };
             
                 queue.set(message.guild.id, queueConstruct);
 
-                let qMessage;
                 for (let i = 0; i < results.data.items.length; i++) {
-                    const songInfo = await ytdl.getInfo(results.data.items[i].contentDetails.videoId);
-                    const song = {
-                        title: songInfo.videoDetails.title,
-                        url: songInfo.videoDetails.video_url,
-                        duration: Number(songInfo.videoDetails.lengthSeconds)
+                    const songPlaceholder = {
+                        title: 'Pending...',
+                        url: '',
+                        duration: 0,
+                        user: message.author.id,
+                        i,
+                        playlistId: playlist.id
                     };
-                    queueConstruct.songs.push(song)
-                    if(i == 0) {
-                        try {
-                            var connection = await voiceChannel.join();
-                            queueConstruct.connection = connection;
-                            qMessage = await message.channel.send({
-                                embed: {
-                                    "title": "Queuing Playlist",
-                                    "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** is being added to the queue. (It may take a minute for all songs to be added)`,
-                                    "color": Number(process.env.EMBED_COLOUR),
-                                    "timestamp": new Date(),
-                                    "author": {
-                                        "name": process.env.BOT_NAME,
-                                        "icon_url": message.client.user.displayAvatarURL()
-                                    }
-                                }
-                            });
-                            playTrack(message.guild, queueConstruct.songs[0]);
-                        } catch (err) {
-                            console.log(err);
-                            queue.delete(message.guild.id);
-                            return message.channel.send(err);
+                    queueConstruct.songs.push(songPlaceholder)
+                }
+                queueConstruct.songIndex += results.data.items.length;
+                message.channel.send({
+                    embed: {
+                        "title": "Queued Playlist",
+                        "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue`,
+                        "color": Number(process.env.EMBED_COLOUR),
+                        "timestamp": new Date(),
+                        "author": {
+                            "name": process.env.BOT_NAME,
+                            "icon_url": message.client.user.displayAvatarURL()
                         }
                     }
-                }
-                if(qMessage) {
-                    qMessage.edit({
-                        embed: {
-                            "title": "Queued Playlist",
-                            "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue.`,
-                            "color": Number(process.env.EMBED_COLOUR),
-                            "timestamp": new Date(),
-                            "author": {
-                                "name": process.env.BOT_NAME,
-                                "icon_url": message.client.user.displayAvatarURL()
+                });
+                for (let i = 0; i < results.data.items.length; i++) {
+                    setImmediate(async () => {
+                        const songInfo = await ytdl.getInfo(results.data.items[i].contentDetails.videoId);
+                        const song = {
+                            title: songInfo.videoDetails.title,
+                            url: songInfo.videoDetails.video_url,
+                            duration: Number(songInfo.videoDetails.lengthSeconds)
+                        };
+                        queueConstruct.songs[queueConstruct.songs.findIndex(s => s.i == i && s.playlistId == playlist.id)] = song
+                        if(i == 0) {
+                            try {
+                                var connection = await voiceChannel.join();
+                                queueConstruct.connection = connection;
+                                playTrack(message.guild, queueConstruct.songs[0]);
+                            } catch (err) {
+                                console.log(err);
+                                queue.delete(message.guild.id);
+                                return message.channel.send(err);
                             }
                         }
                     });
                 }
             } else {
                 for (let i = 0; i < results.data.items.length; i++) {
-                    const songInfo = await ytdl.getInfo(results.data.items[i].contentDetails.videoId);
-                    const song = {
-                        title: songInfo.videoDetails.title,
-                        url: songInfo.videoDetails.video_url,
-                        duration: Number(songInfo.videoDetails.lengthSeconds)
+                    const songPlaceholder = {
+                        title: 'Pending...',
+                        url: '',
+                        duration: 0,
+                        user: message.author.id,
+                        i,
+                        playlistId: playlist.id
                     };
-                    serverQueue.songs.push(song)
-                    if(i == 0) {
-                        message.channel.send({
-                            embed: {
-                                "title": "Queued Playlist",
-                                "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue`,
-                                "color": Number(process.env.EMBED_COLOUR),
-                                "timestamp": new Date(),
-                                "author": {
-                                    "name": process.env.BOT_NAME,
-                                    "icon_url": message.client.user.displayAvatarURL()
-                                },
-                                "footer": {
-                                    "text": song.duration.durationFormat()
-                                }
-                            }
-                        });
-                        if(serverQueue.songs.length == 1) playTrack(message.guild, serverQueue.songs[0]);
+                    serverQueue.songs.push(songPlaceholder)
+                }
+                serverQueue.songIndex += results.data.items.length;
+                message.channel.send({
+                    embed: {
+                        "title": "Queued Playlist",
+                        "description": `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue`,
+                        "color": Number(process.env.EMBED_COLOUR),
+                        "timestamp": new Date(),
+                        "author": {
+                            "name": process.env.BOT_NAME,
+                            "icon_url": message.client.user.displayAvatarURL()
+                        }
                     }
+                });
+                for (let i = 0; i < results.data.items.length; i++) {
+                    setImmediate(async () => {
+                        const songInfo = await ytdl.getInfo(results.data.items[i].contentDetails.videoId);
+                        const song = {
+                            title: songInfo.videoDetails.title,
+                            url: songInfo.videoDetails.video_url,
+                            duration: Number(songInfo.videoDetails.lengthSeconds)
+                        };
+                        serverQueue.songs[serverQueue.songs.findIndex(s => s.i == i && s.playlistId == playlist.id)] = song
+                        if(i == 0 && !serverQueue.isPlaying) {
+                            playTrack(message.guild, serverQueue.songs[0]);
+                        }
+                    });
                 }
             }
             return
@@ -231,7 +243,8 @@ async function execute(message, serverQueue, args) {
         
             queue.set(message.guild.id, queueConstruct);
         
-            queueConstruct.songs.push(song);
+            queueConstruct.songs[queueConstruct.songIndex] = song;
+            serverQueue.songIndex += 1;
         
             try {
                 var connection = await voiceChannel.join();
@@ -243,7 +256,8 @@ async function execute(message, serverQueue, args) {
                 return message.channel.send(err);
             }
         } else {
-            serverQueue.songs.push(song);
+            serverQueue.songs[serverQueue.songIndex] = song;
+            serverQueue.songIndex += 1;
             if(serverQueue.songs.length == 1) {
                 playTrack(message.guild, serverQueue.songs[0]);
             }
@@ -429,6 +443,7 @@ function stop(message, serverQueue) {
             }
         })
         serverQueue.songs = [];
+        serverQueue.isPlaying = false;
         serverQueue.connection.dispatcher.end();
     } else {
         message.channel.send({
@@ -612,12 +627,14 @@ function shuffle(message, serverQueue) {
 function playTrack(guild, song) {
     let serverQueue = queue.get(guild.id);
     if (!song) {
+        serverQueue.isPlaying = false;
         serverQueue.leaveTimeout = setTimeout(() => {
             serverQueue.voiceChannel.leave();
             queue.delete(guild.id);
         }, 120000)
         return;
     }
+    serverQueue.isPlaying = true;
 
     serverQueue.skips = 0;
 
@@ -627,11 +644,13 @@ function playTrack(guild, song) {
       .play(ytdl(song.url, {filter: "audio", quality: "lowestaudio"}))
       .on("finish", () => {
         serverQueue.songs.shift();
+        serverQueue.songIndex -= 1;
         playTrack(guild, serverQueue.songs[0]);
       })
       .on("error", error => {
           console.error(error)
           serverQueue.songs.shift();
+          serverQueue.songIndex -= 1;
           playTrack(guild, serverQueue.songs[0]);
       });
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);

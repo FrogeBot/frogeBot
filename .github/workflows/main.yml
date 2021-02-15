@@ -19,32 +19,8 @@ on:
     - cron: 0 0 * * 0
 
 jobs:
-  prettier:
-    name: Prettify
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        # Make sure the actual branch is checked out when running on pull requests
-        ref: ${{ github.head_ref }}
-        # This is important to fetch the changes to the previous commit
-        fetch-depth: 0
-
-    - name: Prettify code
-      uses: creyD/prettier_action@v3.1
-      with:
-        # This part is also where you can pass other options, for example:
-        prettier_options: --write **/*.js
-        only_changed: false
-        same_commit: true
-        commit_options: --force
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   analyze:
     name: Analyze
-    needs: prettier
     runs-on: ubuntu-latest
 
     strategy:
@@ -87,3 +63,27 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+  prettier:
+    name: Prettify
+    needs: analyze
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        # Make sure the actual branch is checked out when running on pull requests
+        ref: ${{ github.head_ref }}
+        # This is important to fetch the changes to the previous commit
+        fetch-depth: 0
+
+    - name: Prettify code
+      uses: creyD/prettier_action@v3.1
+      with:
+        # This part is also where you can pass other options, for example:
+        prettier_options: --write **/*.js
+        only_changed: false
+        same_commit: true
+        commit_options: --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

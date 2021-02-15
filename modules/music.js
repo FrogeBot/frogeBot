@@ -172,7 +172,7 @@ async function execute(message, serverQueue, args) {
                     }
                 });
                 for (let i = 0; i < playlistSongs.length; i++) {
-                    queueConstruct.songs.push(playlistSongs[i])
+                    serverQueue.songs.push(playlistSongs[i])
                     if(serverQueue.songs.length == 1) {
                         playTrack(message.guild, serverQueue.songs[0]);
                     }

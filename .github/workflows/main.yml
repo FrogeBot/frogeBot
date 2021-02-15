@@ -21,6 +21,7 @@ on:
 jobs:
   prettier:
     name: Prettify
+    if: github.ref != 'ref/head/master'
     runs-on: ubuntu-latest
 
     steps:

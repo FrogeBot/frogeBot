@@ -6,8 +6,6 @@ var ytpl = require('ytpl');
 
 const queue = new Map();
 
-const { google } = require("googleapis");
-
 async function cmdFunc(msg, args, action) {
     const serverQueue = queue.get(msg.guild.id);
     if (action == "play") {

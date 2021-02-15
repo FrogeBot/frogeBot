@@ -24,6 +24,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Log ref
+      if: github.ref != 'ref/head/master'
+      run: echo "$GITHUB_REF"
+      
     - name: Checkout
       uses: actions/checkout@v2
       if: github.ref != 'ref/head/master'

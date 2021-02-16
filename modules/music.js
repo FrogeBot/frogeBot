@@ -67,16 +67,11 @@ async function execute(message, serverQueue, args) {
     let playlist;
     if (isLinkOrId) {
       results = {
-        data: {
-          pageInfo: {
-            totalResults: 1,
+        items: [
+          {
+            id: ytdl.getVideoID(args),
           },
-          items: [
-            {
-              id: ytdl.getVideoID(args),
-            },
-          ],
-        },
+        ],
       };
     } else if (!isPlaylist) {
       let filterUrl = (await ytsr.getFilters(args)).get("Type").get("Video")

@@ -73,12 +73,7 @@ async function execute(message, serverQueue, args) {
           },
           items: [
             {
-              id: {
-                videoId: ytdl.getVideoID(args),
-              },
-              contentDetails: {
-                videoId: ytdl.getVideoID(args),
-              },
+              id: ytdl.getVideoID(args),
             },
           ],
         },

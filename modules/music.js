@@ -363,7 +363,8 @@ function stop(message, serverQueue) {
     process.env.USE_MUSIC_ROLE != "true" ||
     message.member.roles.cache.find(
       (r) => r.name == process.env.MUSIC_ROLE_NAME
-    ) != undefined
+    ) != undefined ||
+    serverQueue.voiceChannel.members.size <= 2
   ) {
     message.channel.send({
       embed: {
@@ -489,7 +490,8 @@ function remove(message, serverQueue, args) {
         message.member.roles.cache.find(
           (r) => r.name == process.env.MUSIC_ROLE_NAME
         ) != undefined ||
-        song.user == message.author.id
+        song.user == message.author.id ||
+        serverQueue.voiceChannel.members.size <= 2
       ) {
         serverQueue.songs.splice(Number(args) - 1, 1);
         return message.channel.send({
@@ -554,7 +556,8 @@ function shuffle(message, serverQueue) {
       process.env.USE_MUSIC_ROLE != "true" ||
       message.member.roles.cache.find(
         (r) => r.name == process.env.MUSIC_ROLE_NAME
-      ) != undefined
+      ) != undefined ||
+      serverQueue.voiceChannel.members.size <= 2
     ) {
       let shuffled = [serverQueue.songs[0]].concat(
         serverQueue.songs.slice(1).shuffle()
@@ -760,7 +763,8 @@ function disconnect(message, guildId) {
     message.member.roles.cache.find(
       (r) => r.name == process.env.MUSIC_ROLE_NAME
     ) != undefined ||
-    serverQueue.songs.length == 0
+    serverQueue.songs.length == 0 ||
+    serverQueue.voiceChannel.members.size <= 2
   ) {
     clearTimeout(serverQueue.leaveTimeout);
     serverQueue.voiceChannel.leave();

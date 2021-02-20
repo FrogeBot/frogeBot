@@ -103,7 +103,7 @@ async function sendImage(
   extension = await new Promise((resolve, reject) => {
     gm(img).format({ bufferStream: true }, function (err, format) {
       if (err) {
-        resolve(extension);
+        resolve(extension.toLowerCase());
       } else {
         resolve(extensions[format] || format.toLowerCase());
       }

@@ -1,6 +1,6 @@
 const { GifFrame, GifUtil, GifCodec } = require("gifwrap");
 const { isMainThread, parentPort, Worker } = require("worker_threads");
-let { readBuffer, readURL } = require("./image.js");
+let { readBuffer, readURL } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK);
 require("dotenv").config();
 var gm = require("gm");
 if (process.env.USE_IMAGEMAGICK == "true") {

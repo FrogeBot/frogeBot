@@ -23,7 +23,7 @@ const YAML = require('yaml')
 
 const commands = YAML.parse(fs.readFileSync('./commands.yml', 'utf8'))
 
-let { exec, execGM, getFormat } = require("./modules/image.js")
+let { exec, execGM, getFormat } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
 let { findImage, sendImage } = require("./modules/utils.js")
 
 client.on('message', async msg => {

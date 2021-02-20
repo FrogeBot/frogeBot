@@ -3,8 +3,7 @@ require("dotenv").config();
 delete require.cache[require.resolve("../../modules/utils.js")];
 let { sendImage } = require("../../modules/utils.js");
 
-delete require.cache[require.resolve("../../modules/image.js")];
-let { gmToBuffer } = require("../../modules/image.js");
+let { gmToBuffer } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
 let { canvasText } = require("../../modules/canvas.js");
 
 var gm = require("gm");

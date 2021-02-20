@@ -1,7 +1,6 @@
 require("dotenv").config()
 
 const { Worker } = require('worker_threads');
-const { readBuffer } = require("../../modules/image.js");
 
 delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")

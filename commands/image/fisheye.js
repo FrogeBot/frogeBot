@@ -3,8 +3,7 @@ require("dotenv").config()
 delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 
-delete require.cache[require.resolve("../../modules/image.js")];
-let { exec } = require("../../modules/image.js")
+let { exec } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
 
 let procMsg
 let imageUrl

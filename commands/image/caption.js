@@ -4,8 +4,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
-delete require.cache[require.resolve("../../modules/image.js")];
-let { exec, jimpReadURL, readBuffer } = require("../../modules/image.js")
+let { exec, execGM, getFormat } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
 let { canvasText, canvasRect } = require("../../modules/canvas.js")
 
 let procMsg

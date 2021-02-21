@@ -4,7 +4,7 @@ delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
-let { exec, jimpReadURL } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
+let { exec, jimpReadURL, readBuffer } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
 let { canvasText, canvasRect } = require("../../modules/canvas.js")
 
 let procMsg
@@ -22,6 +22,8 @@ async function cmdFunc(msg, args, startTime) {
         let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
 
         let rectCanvas = await canvasRect(imgFG.bitmap.width, offset, "transparent", 0, "white")
+
+        textCanvas[0] = await (await readBuffer(textCanvas[0])).crop(0, 0, Math.round(imgFG.bitmap.width*0.9), textCanvas[1]).getBufferAsync(Jimp.AUTO)
 
         let img = await exec(imageUrl, [
             ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, 'transparent', 0, 0]],

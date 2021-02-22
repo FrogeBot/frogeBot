@@ -1,6 +1,8 @@
 const { GifFrame, GifUtil, GifCodec } = require("gifwrap");
 const { isMainThread, parentPort, Worker } = require("worker_threads");
-let { readBuffer, readURL } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK);
+let { readBuffer, readURL } = require("@frogebot/image")(
+  process.env.USE_IMAGEMAGICK
+);
 require("dotenv").config();
 var gm = require("gm");
 if (process.env.USE_IMAGEMAGICK == "true") {
@@ -37,7 +39,7 @@ parentPort.once("message", async (msg) => {
       for (let i = 0; i < gif.frames.length; i++) {
         if (i % frameSkip == 0) {
           if (
-            gif.frames[i].disposalMethod == 1 &&
+            gif.frames[i].disposalMethod != 2 &&
             frameSkip > 1 &&
             i >= frameSkip
           ) {
@@ -124,7 +126,7 @@ async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
     worker.postMessage({
       buffer: await newImg.getBufferAsync(Jimp.AUTO),
       list,
-      allowBackgrounds: i == 0 || frameData[i].disposalMethod != 1,
+      allowBackgrounds: i == 0 || frameData[i].disposalMethod == 2,
     });
 
     worker.on("message", async (img) => {

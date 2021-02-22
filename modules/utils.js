@@ -57,16 +57,16 @@ function formatDuration(millis) {
   let str = [];
   switch (true) {
     case millis >= timeVals.day:
-      str.push(Math.floor(millis / timeVals.day) + "d");
+      str.push(Math.floor(millis / timeVals.day) + "d"); // Days
       millis = millis % timeVals.day;
     case millis >= timeVals.hour:
-      str.push(Math.floor(millis / timeVals.hour) + "h");
+      str.push(Math.floor(millis / timeVals.hour) + "h"); // Hours
       millis = millis % timeVals.hour;
     case millis >= timeVals.minute:
-      str.push(Math.floor(millis / timeVals.minute) + "m");
+      str.push(Math.floor(millis / timeVals.minute) + "m"); // Minutes
       millis = millis % timeVals.minute;
     default:
-      str.push(millis / timeVals.second + "s");
+      str.push(millis / timeVals.second + "s"); // Seconds (with decimal)
   }
   return str.join(" ");
 }
@@ -100,7 +100,7 @@ async function sendImage(
 ) {
   if (procMsg) procMsg.edit(process.env.MSG_UPLOADING);
 
-  extension = await new Promise((resolve, reject) => {
+  extension = await new Promise((resolve, reject) => { // Get extension from file type
     gm(img).format({ bufferStream: true }, function (err, format) {
       if (err) {
         resolve(extension.toLowerCase());
@@ -110,12 +110,13 @@ async function sendImage(
     });
   });
 
-  const attachment = new MessageAttachment(img, "image." + extension);
-  let timeTaken = formatDuration(new Date().getTime() - startTime);
+  const attachment = new MessageAttachment(img, "image." + extension); // Create attachment
+  let timeTaken = formatDuration(new Date().getTime() - startTime); // Time elapsed since command call
 
-  if (forceWeb) {
-    attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg);
+  if (forceWeb) { // Skip Discord CDN entirely
+    attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg); // Send image via local web host
   } else {
+    // Send image on Discord
     let embed = new MessageEmbed({
       title: cmdName,
       description: `<@${msg.author.id}> ${process.env.MSG_SUCCESS}`,
@@ -138,7 +139,7 @@ async function sendImage(
         if (procMsg) procMsg.delete();
       })
       .catch(async () => {
-        attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg);
+        attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg); // If send fails, try with local web host
       });
   }
 }
@@ -151,18 +152,18 @@ async function attemptSendImageWeb(
   extension,
   procMsg
 ) {
-  if (process.env.WEB_ENABLED == "true") {
+  if (process.env.WEB_ENABLED == "true") { // If web enabled
     await fs.writeFile(
       path.join(__dirname, `/../web_images/${msg.id}.${extension}`),
       img
-    );
+    ); // Save file to web_images
     setTimeout(
       () =>
         fs.unlink(
           path.join(__dirname, `/../web_images/${msg.id}.${extension}`)
         ),
       timeVals.minute * Number(process.env.WEB_SAVE_MINS)
-    );
+    ); // Remove file after process.env.WEB_SAVE_MINS minutes
     let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${
       process.env.WEB_HOSTNAME
     }/images/${msg.id}.${extension}${
@@ -172,7 +173,8 @@ async function attemptSendImageWeb(
             .replace(/[^a-z]+/g, "")
             .substr(0, 8)}`
         : ""
-    }`;
+    }`; // Generate image URL to send via Discord
+    // Send image (hosted locally) on Discord
     let embed = new MessageEmbed({
       title: cmdName,
       description: `<@${msg.author.id}> - ${process.env.MSG_SEND_LOCAL}\nImage will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](${imgUrl})`,
@@ -194,6 +196,7 @@ async function attemptSendImageWeb(
       if (procMsg) procMsg.delete();
     });
   } else {
+    // If web isn't enabled, just act like a regular failure
     msg.channel
       .send({
         embed: {

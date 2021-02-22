@@ -3,7 +3,7 @@ require("dotenv").config()
 delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 
-let { jimpReadURL, execGM, gmToBuffer } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
+let { jimpReadURL, execGM, gmToBuffer } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
 let { canvasText, canvasWindow } = require("../../modules/canvas.js");
 
 var gm = require('gm');
@@ -23,7 +23,6 @@ async function cmdFunc(msg, args, startTime) {
 
         let imgFG = await jimpReadURL(imageUrl);
 
-        
         let height = Math.round(imgFG.bitmap.height+imgFG.bitmap.width*0.05);
         let width = ( height * 4/3 > imgFG.bitmap.width*1.2 ) ? Math.round(height * 4/3) : Math.round(imgFG.bitmap.width*1.2);
 

@@ -3,7 +3,7 @@ require("dotenv").config()
 delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 
-let { exec } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK)
+let { exec } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
 
 let procMsg
 let imageUrl

@@ -60,7 +60,7 @@ async function execute(message, serverQueue, args) {
     if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
       return message.channel.send(makeEmbed(
         "Error",
-        `<@${message.author.id}> - ${process.env.MSG_UNVIBING} ${process.env.BOT_NAME} lacks permissions to join and speak in your voice channel`,,
+        `<@${message.author.id}> - ${process.env.MSG_UNVIBING} ${process.env.BOT_NAME} lacks permissions to join and speak in your voice channel`,
         process.env.BOT_NAME,
         message.client.user.displayAvatarURL()
       ));

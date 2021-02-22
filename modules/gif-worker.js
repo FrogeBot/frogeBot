@@ -23,12 +23,12 @@ parentPort.once("message", async (msg) => {
     let { imgUrl, list, frameSkip, speed, jimp } = msg;
     try {
       const codec = new GifCodec();
-      let gif = await codec.decodeGif(await readURL(imgUrl));
-      async function cb() {
+      let gif = await codec.decodeGif(await readURL(imgUrl)); // Decode GIF
+      async function cb() { // Callback function
         codec
-          .encodeGif(frames.filter((f) => f != undefined))
+          .encodeGif(frames.filter((f) => f != undefined)) // Encode GIF
           .then((gif) => {
-            parentPort.postMessage(gif.buffer);
+            parentPort.postMessage(gif.buffer); // Send GIF back to parent
             clearInterval(workerInterval);
           })
           .catch((e) => {
@@ -38,8 +38,8 @@ parentPort.once("message", async (msg) => {
           });
       }
       framesProcessed = 0;
-      for (let i = 0; i < gif.frames.length; i++) {
-        if (i % frameSkip == 0) {
+      for (let i = 0; i < gif.frames.length; i++) { // Iterate frames
+        if (i % frameSkip == 0) { // If frameSkip is defined, skip frames
           if (
             gif.frames[i].disposalMethod != 2 &&
             frameSkip > 1 &&
@@ -48,8 +48,8 @@ parentPort.once("message", async (msg) => {
             let frameImg = await GifUtil.copyAsJimp(
               Jimp,
               gif.frames[i + 1 - frameSkip]
-            );
-            for (let j = 1; j <= frameSkip; j++) {
+            ); // Create Jimp image from frame
+            for (let j = 1; j <= frameSkip; j++) { // Stack frames when they are skipped
               let newFrameImg = await GifUtil.copyAsJimp(
                 Jimp,
                 gif.frames[i + j - frameSkip]
@@ -58,7 +58,7 @@ parentPort.once("message", async (msg) => {
             }
             gif.frames[i].bitmap = frameImg.bitmap;
           }
-          queueWorker(list, i, speed, gif.frames, frameSkip, jimp, cb);
+          queueWorker(list, i, speed, gif.frames, frameSkip, jimp, cb); // Queue the worker to be spawned
         }
       }
     } catch (e) {
@@ -71,10 +71,10 @@ parentPort.once("message", async (msg) => {
 let workers = [];
 
 async function queueWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
-  workers.push({ list, i, speed, frameData, frameSkip, jimp, cb });
+  workers.push({ list, i, speed, frameData, frameSkip, jimp, cb }); // Add worker to the list
 }
 
-async function workerQueuer() {
+async function workerQueuer() { // Every 0.5s, check if new workers can be spawned
   if (concurrent < cpuCount && workers.length > 0) {
     let startConcurrent = concurrent;
     for (let i = 0; i < cpuCount - startConcurrent; i++) {
@@ -82,45 +82,45 @@ async function workerQueuer() {
       let { list, i, speed, frameData, frameSkip, jimp, cb } = workers.shift();
       concurrent++;
       setImmediate(() => {
-        spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb);
+        spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb); // Spawn worker
       });
     }
   }
 }
 let workerInterval = setInterval(workerQueuer, 500);
 
-async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
+async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) { // Spawn worker
   let { width, height } = frameData[0].bitmap;
   let frame = await frameData[i];
-  if (list == null) {
+  if (list == null) { // If no list
     let newImg = new Jimp(width, height, "transparent").composite(
       await GifUtil.copyAsJimp(Jimp, frame),
       frame.xOffset,
       frame.yOffset
-    );
+    ); // Create Jimp image from frame
     maxSize = Number(process.env.MAX_GIF_SIZE);
     if (newImg.bitmap.width > maxSize || newImg.bitmap.height > maxSize) {
-      await newImg.scaleToFit(maxSize, maxSize);
+      await newImg.scaleToFit(maxSize, maxSize); // Scale to max size if exceeded
     }
     let newFrame = new GifFrame(newImg.bitmap, {
       disposalMethod: frame.disposalMethod,
       delayCentisecs: Math.max(2, Math.round(frame.delayCentisecs / speed)),
       interlaced: frame.interlaced,
-    });
-    GifUtil.quantizeDekker(newFrame);
+    }); // Create frame from bitmap
+    GifUtil.quantizeDekker(newFrame); // Quantize colours in frame
     frames[i] = newFrame;
     framesProcessed += frameSkip;
-    if (framesProcessed >= frameData.length) cb();
+    if (framesProcessed >= frameData.length) cb(); // If all frames procesed, run callback
     concurrent--;
   } else {
     let newImg = await new Jimp(width, height).composite(
       await GifUtil.copyAsJimp(Jimp, frame),
       frame.xOffset,
       frame.yOffset
-    );
+    ); // Create Jimp image from frame
     maxSize = Number(process.env.MAX_GIF_SIZE);
     if (newImg.bitmap.width > maxSize || newImg.bitmap.height > maxSize) {
-      await newImg.scaleToFit(maxSize, maxSize);
+      await newImg.scaleToFit(maxSize, maxSize); // Scale to max size if exceeded
     }
     let worker = new Worker(
       __dirname + `/image-worker${jimp ? "-jimp" : ""}.js`
@@ -129,21 +129,21 @@ async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
       buffer: await newImg.getBufferAsync(Jimp.AUTO),
       list,
       allowBackgrounds: i == 0 || frameData[i].disposalMethod == 2,
-    });
+    }); // Run image manipulation using worker
 
-    worker.on("message", async (img) => {
+    worker.on("message", async (img) => { // Result recieved from worker
       if (img == null) return;
       let newImg = await readBuffer(Buffer.from(img));
       let newFrame = new GifFrame(newImg.bitmap, {
         disposalMethod: frame.disposalMethod,
         delayCentisecs: Math.max(2, Math.round(frame.delayCentisecs / speed)),
         interlaced: frame.interlaced,
-      });
+      }); // Create frame from bitmap
 
-      GifUtil.quantizeDekker(newFrame);
+      GifUtil.quantizeDekker(newFrame); // Quantize colours in frame
       frames[i] = newFrame;
       framesProcessed += frameSkip;
-      if (framesProcessed >= frameData.length) cb();
+      if (framesProcessed >= frameData.length) cb(); // If all frames procesed, run callback
       concurrent--;
     });
   }

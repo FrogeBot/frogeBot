@@ -24,7 +24,8 @@ parentPort.once("message", async (msg) => {
     try {
       const codec = new GifCodec();
       let gif = await codec.decodeGif(await readURL(imgUrl)); // Decode GIF
-      async function cb() { // Callback function
+      async function cb() {
+        // Callback function
         codec
           .encodeGif(frames.filter((f) => f != undefined)) // Encode GIF
           .then((gif) => {
@@ -38,8 +39,10 @@ parentPort.once("message", async (msg) => {
           });
       }
       framesProcessed = 0;
-      for (let i = 0; i < gif.frames.length; i++) { // Iterate frames
-        if (i % frameSkip == 0) { // If frameSkip is defined, skip frames
+      for (let i = 0; i < gif.frames.length; i++) {
+        // Iterate frames
+        if (i % frameSkip == 0) {
+          // If frameSkip is defined, skip frames
           if (
             gif.frames[i].disposalMethod != 2 &&
             frameSkip > 1 &&
@@ -49,7 +52,8 @@ parentPort.once("message", async (msg) => {
               Jimp,
               gif.frames[i + 1 - frameSkip]
             ); // Create Jimp image from frame
-            for (let j = 1; j <= frameSkip; j++) { // Stack frames when they are skipped
+            for (let j = 1; j <= frameSkip; j++) {
+              // Stack frames when they are skipped
               let newFrameImg = await GifUtil.copyAsJimp(
                 Jimp,
                 gif.frames[i + j - frameSkip]
@@ -74,7 +78,8 @@ async function queueWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
   workers.push({ list, i, speed, frameData, frameSkip, jimp, cb }); // Add worker to the list
 }
 
-async function workerQueuer() { // Every 0.5s, check if new workers can be spawned
+async function workerQueuer() {
+  // Every 0.5s, check if new workers can be spawned
   if (concurrent < cpuCount && workers.length > 0) {
     let startConcurrent = concurrent;
     for (let i = 0; i < cpuCount - startConcurrent; i++) {
@@ -89,10 +94,12 @@ async function workerQueuer() { // Every 0.5s, check if new workers can be spawn
 }
 let workerInterval = setInterval(workerQueuer, 500);
 
-async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) { // Spawn worker
+async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) {
+  // Spawn worker
   let { width, height } = frameData[0].bitmap;
   let frame = await frameData[i];
-  if (list == null) { // If no list
+  if (list == null) {
+    // If no list
     let newImg = new Jimp(width, height, "transparent").composite(
       await GifUtil.copyAsJimp(Jimp, frame),
       frame.xOffset,
@@ -131,7 +138,8 @@ async function spawnWorker(list, i, speed, frameData, frameSkip, jimp, cb) { // 
       allowBackgrounds: i == 0 || frameData[i].disposalMethod == 2,
     }); // Run image manipulation using worker
 
-    worker.on("message", async (img) => { // Result recieved from worker
+    worker.on("message", async (img) => {
+      // Result recieved from worker
       if (img == null) return;
       let newImg = await readBuffer(Buffer.from(img));
       let newFrame = new GifFrame(newImg.bitmap, {

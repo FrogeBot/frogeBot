@@ -21,7 +21,8 @@ function canvasText(
     const canvas = createCanvas(width, maxHeight);
     const ctx = canvas.getContext("2d");
 
-    if (bg != "transparent") { // Handle background colour
+    if (bg != "transparent") {
+      // Handle background colour
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }

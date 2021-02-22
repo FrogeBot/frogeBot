@@ -100,7 +100,8 @@ async function sendImage(
 ) {
   if (procMsg) procMsg.edit(process.env.MSG_UPLOADING);
 
-  extension = await new Promise((resolve, reject) => { // Get extension from file type
+  extension = await new Promise((resolve, reject) => {
+    // Get extension from file type
     gm(img).format({ bufferStream: true }, function (err, format) {
       if (err) {
         resolve(extension.toLowerCase());
@@ -113,7 +114,8 @@ async function sendImage(
   const attachment = new MessageAttachment(img, "image." + extension); // Create attachment
   let timeTaken = formatDuration(new Date().getTime() - startTime); // Time elapsed since command call
 
-  if (forceWeb) { // Skip Discord CDN entirely
+  if (forceWeb) {
+    // Skip Discord CDN entirely
     attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg); // Send image via local web host
   } else {
     // Send image on Discord
@@ -152,7 +154,8 @@ async function attemptSendImageWeb(
   extension,
   procMsg
 ) {
-  if (process.env.WEB_ENABLED == "true") { // If web enabled
+  if (process.env.WEB_ENABLED == "true") {
+    // If web enabled
     await fs.writeFile(
       path.join(__dirname, `/../web_images/${msg.id}.${extension}`),
       img

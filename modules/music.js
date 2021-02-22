@@ -27,36 +27,43 @@ async function cmdFunc(msg, args, action) {
   }
 }
 
+// Shorthand embed function
+function makeEmbed(title, description, name, icon_url, footerText) {
+  return {
+    embed: {
+      title,
+      description,
+      color: Number(process.env.EMBED_COLOUR),
+      timestamp: new Date(),
+      author: {
+        name,
+        icon_url,
+      },
+      footer: {
+        text: footerText
+      }
+    },
+  }
+}
+
 async function execute(message, serverQueue, args) {
   try {
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel)
-      return message.channel.send({
-        embed: {
-          title: "Error",
-          description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You need to be in a voice channel to play music`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: message.client.user.displayAvatarURL(),
-          },
-        },
-      });
+      return message.channel.send(makeEmbed(
+        "Error",
+        `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You need to be in a voice channel to play music`,
+        process.env.BOT_NAME,
+        message.client.user.displayAvatarURL()
+      ));
     const permissions = voiceChannel.permissionsFor(message.client.user);
     if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
-      return message.channel.send({
-        embed: {
-          title: "Error",
-          description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} ${process.env.BOT_NAME} lacks permissions to join and speak in your voice channel`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: message.client.user.displayAvatarURL(),
-          },
-        },
-      });
+      return message.channel.send(makeEmbed(
+        "Error",
+        `<@${message.author.id}> - ${process.env.MSG_UNVIBING} ${process.env.BOT_NAME} lacks permissions to join and speak in your voice channel`,,
+        process.env.BOT_NAME,
+        message.client.user.displayAvatarURL()
+      ));
     }
 
     let results;
@@ -64,7 +71,6 @@ async function execute(message, serverQueue, args) {
     let isPlaylist = ytpl.validateID(args);
     let isLinkOrId = ytdl.validateURL(args);
 
-    let playlist;
     if (isLinkOrId) {
       results = {
         items: [
@@ -85,18 +91,12 @@ async function execute(message, serverQueue, args) {
         (results.items && results.items.length == 0) ||
         (results.data && results.data.pageInfo.totalResults == 0))
     ) {
-      return message.channel.send({
-        embed: {
-          title: "Error",
-          description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No videos found`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: message.client.user.displayAvatarURL(),
-          },
-        },
-      });
+      return message.channel.send(makeEmbed(
+        "Error",
+        `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No videos found`,
+        process.env.BOT_NAME,
+        message.client.user.displayAvatarURL()
+      ));
     }
 
     if (isPlaylist) {
@@ -115,18 +115,12 @@ async function execute(message, serverQueue, args) {
 
         let playlist = await getPlaylist(args, message.author.id);
         let playlistSongs = playlist.songs;
-        message.channel.send({
-          embed: {
-            title: "Queued Playlist",
-            description: `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue`,
-            color: Number(process.env.EMBED_COLOUR),
-            timestamp: new Date(),
-            author: {
-              name: process.env.BOT_NAME,
-              icon_url: message.client.user.displayAvatarURL(),
-            },
-          },
-        });
+        message.channel.send(makeEmbed(
+          "Queued Playlist",
+          `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue`,
+          process.env.BOT_NAME,
+          message.client.user.displayAvatarURL()
+        ));
         for (let i = 0; i < playlistSongs.length; i++) {
           queueConstruct.songs.push(playlistSongs[i]);
           if (i == 0) {
@@ -144,18 +138,12 @@ async function execute(message, serverQueue, args) {
       } else {
         let playlist = await getPlaylist(args, message.author.id);
         let playlistSongs = playlist.songs;
-        message.channel.send({
-          embed: {
-            title: "Queued Playlist",
-            description: `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue`,
-            color: Number(process.env.EMBED_COLOUR),
-            timestamp: new Date(),
-            author: {
-              name: process.env.BOT_NAME,
-              icon_url: message.client.user.displayAvatarURL(),
-            },
-          },
-        });
+        message.channel.send(makeEmbed(
+          "Queued Playlist",
+          `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${playlist.title}](https://www.youtube.com/playlist?list=${playlist.id})** has been added to the queue`,
+          process.env.BOT_NAME,
+          message.client.user.displayAvatarURL()
+        ));
         for (let i = 0; i < playlistSongs.length; i++) {
           serverQueue.songs.push(playlistSongs[i]);
           if (serverQueue.songs.length == 1) {
@@ -203,81 +191,51 @@ async function execute(message, serverQueue, args) {
       if (serverQueue.songs.length == 1) {
         playTrack(message.guild, serverQueue.songs[0]);
       }
-      return message.channel.send({
-        embed: {
-          title: "Queued Track",
-          description: `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${song.title}](${song.url})** has been added to the queue`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: message.client.user.displayAvatarURL(),
-          },
-          footer: {
-            text: song.duration.durationFormat(),
-          },
-        },
-      });
+      
+      return message.channel.send(makeEmbed(
+        "Queued Track",
+        `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${song.title}](${song.url})** has been added to the queue`,
+        process.env.BOT_NAME,
+        message.client.user.displayAvatarURL(),
+        song.duration.durationFormat()
+      ));
     }
   } catch (e) {
     console.log(e);
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} Something went wrong`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} Something went wrong`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
 }
 
 function skip(message, serverQueue) {
   if (!message.member.voice.channel) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You have to be in a voice channel to skip`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You have to be in a voice channel to skip`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (!serverQueue || serverQueue.songs.length == 0) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (message.member.voice.channel.id != serverQueue.voiceChannel.id) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You're not in the same voice channel as the bot`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You're not in the same voice channel as the bot`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   let sPercent = Number(process.env.SKIP_PERCENT);
   let members = serverQueue.voiceChannel.members.size - 1;
@@ -285,79 +243,47 @@ function skip(message, serverQueue) {
   if (!serverQueue.skips) serverQueue.skips = 0;
   serverQueue.skips += 1;
   if (serverQueue.skips >= toSkip) {
-    message.channel.send({
-      embed: {
-        title: `Skipped (${Math.round((members * sPercent) / 100)}/${Math.round(
-          (members * sPercent) / 100
-        )})`,
-        description: `<@${message.author.id}> - ${process.env.MSG_VIBING} Skipped song`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    message.channel.send(makeEmbed(
+      `Skipped (${toSkip}/${toSkip})`,
+      `<@${message.author.id}> - ${process.env.MSG_VIBING} Skipped song`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
     serverQueue.connection.dispatcher.end();
   } else {
-    message.channel.send({
-      embed: {
-        title: `Skipping (${serverQueue.skips}/${toSkip})`,
-        description: `<@${message.author.id}> - ${process.env.MSG_VIBING} Skipped song`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    message.channel.send(makeEmbed(
+      `Skipping (${serverQueue.skips}/${toSkip})`,
+      `<@${message.author.id}> - ${process.env.MSG_VIBING} Skipped song`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
 }
 
 function stop(message, serverQueue) {
   if (!message.member.voice.channel) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You have to be in a voice channel to stop the music`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You have to be in a voice channel to stop the music`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (!serverQueue || serverQueue.songs.length == 0) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (message.member.voice.channel.id != serverQueue.voiceChannel.id) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You're not in the same voice channel as the bot`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You're not in the same voice channel as the bot`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (
     process.env.USE_MUSIC_ROLE != "true" ||
@@ -366,50 +292,32 @@ function stop(message, serverQueue) {
     ) != undefined ||
     serverQueue.voiceChannel.members.size <= 2
   ) {
-    message.channel.send({
-      embed: {
-        title: `Stopping`,
-        description: `<@${message.author.id}> - ${process.env.MSG_VIBING} Stopped music`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+     message.channel.send(makeEmbed(
+      "Stopping",
+      `<@${message.author.id}> - ${process.env.MSG_VIBING} Stopped music`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
     serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
   } else {
-    message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
 }
 
 function getQueue(message, serverQueue, args) {
   if (!serverQueue || serverQueue.songs.length == 0) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   } else {
     let perPage = 12;
     let pages = Math.floor(serverQueue.songs.length / perPage);
@@ -428,42 +336,24 @@ function getQueue(message, serverQueue, args) {
       )
       .slice(perPage * page, perPage * (page + 1));
 
-    return message.channel.send({
-      embed: {
-        title: "Server Queue",
-        description: `<@${message.author.id}> - ${
-          process.env.MSG_VIBING
-        }\n\`\`\`nim\n${songsMapped.join("\n")}\n\`\`\``,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-        footer: {
-          text: `Page ${page + 1} of ${pages + 1} • ${
-            serverQueue.songs.length
-          } songs`,
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Server Queue",
+      `<@${message.author.id}> - ${process.env.MSG_VIBING}\n\`\`\`nim\n${songsMapped.join("\n")}\n\`\`\``,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL(),
+      `Page ${page + 1} of ${pages + 1} • ${serverQueue.songs.length} songs`
+    ));
   }
 }
 
 function remove(message, serverQueue, args) {
   if (!serverQueue || serverQueue.songs.length == 0) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   } else {
     if (
       args.length > 0 &&
@@ -471,18 +361,12 @@ function remove(message, serverQueue, args) {
       serverQueue.songs[Number(args) - 1] != undefined
     ) {
       if (Number(args) - 1 == 0) {
-        return message.channel.send({
-          embed: {
-            title: "Unable to remove",
-            description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You can't remove the currently playing song`,
-            color: Number(process.env.EMBED_COLOUR),
-            timestamp: new Date(),
-            author: {
-              name: process.env.BOT_NAME,
-              icon_url: message.client.user.displayAvatarURL(),
-            },
-          },
-        });
+        return message.channel.send(makeEmbed(
+          "Unable to remove",
+          `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You can't remove the currently playing song`,
+          process.env.BOT_NAME,
+          message.client.user.displayAvatarURL()
+        ));
       }
       let song = serverQueue.songs[Number(args) - 1];
       if (
@@ -494,63 +378,39 @@ function remove(message, serverQueue, args) {
         serverQueue.voiceChannel.members.size <= 2
       ) {
         serverQueue.songs.splice(Number(args) - 1, 1);
-        return message.channel.send({
-          embed: {
-            title: "Removed",
-            description: `<@${message.author.id}> - ${process.env.MSG_VIBING} Removed **[${song.title}](${song.url})** from the queue`,
-            color: Number(process.env.EMBED_COLOUR),
-            timestamp: new Date(),
-            author: {
-              name: process.env.BOT_NAME,
-              icon_url: message.client.user.displayAvatarURL(),
-            },
-          },
-        });
+        return message.channel.send(makeEmbed(
+          "Removed",
+          `<@${message.author.id}> - ${process.env.MSG_VIBING} Removed **[${song.title}](${song.url})** from the queue`,
+          process.env.BOT_NAME,
+          message.client.user.displayAvatarURL()
+        ));
       } else {
-        return message.channel.send({
-          embed: {
-            title: "Error",
-            description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
-            color: Number(process.env.EMBED_COLOUR),
-            timestamp: new Date(),
-            author: {
-              name: process.env.BOT_NAME,
-              icon_url: message.client.user.displayAvatarURL(),
-            },
-          },
-        });
+        return message.channel.send(makeEmbed(
+          "Error",
+          `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+          process.env.BOT_NAME,
+          message.client.user.displayAvatarURL()
+        ));
       }
     } else {
-      return message.channel.send({
-        embed: {
-          title: "Error",
-          description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} There is no song at that index`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: message.client.user.displayAvatarURL(),
-          },
-        },
-      });
+      return message.channel.send(makeEmbed(
+        "Error",
+        `<@${message.author.id}> - ${process.env.MSG_UNVIBING} There is no song at that index`,
+        process.env.BOT_NAME,
+        message.client.user.displayAvatarURL()
+      ));
     }
   }
 }
 
 function shuffle(message, serverQueue) {
   if (!serverQueue || serverQueue.songs.length == 0) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   } else {
     if (
       process.env.USE_MUSIC_ROLE != "true" ||
@@ -563,31 +423,19 @@ function shuffle(message, serverQueue) {
         serverQueue.songs.slice(1).shuffle()
       );
       serverQueue.songs = shuffled;
-      return message.channel.send({
-        embed: {
-          title: "Shuffled",
-          description: `<@${message.author.id}> - ${process.env.MSG_VIBING} Shuffled the music`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: message.client.user.displayAvatarURL(),
-          },
-        },
-      });
+      return message.channel.send(makeEmbed(
+        "Shuffled",
+        `<@${message.author.id}> - ${process.env.MSG_VIBING} Shuffled the music`,
+        process.env.BOT_NAME,
+        message.client.user.displayAvatarURL()
+      ));
     } else {
-      message.channel.send({
-        embed: {
-          title: "Error",
-          description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: message.client.user.displayAvatarURL(),
-          },
-        },
-      });
+      message.channel.send(makeEmbed(
+        "Error",
+        `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+        process.env.BOT_NAME,
+        message.client.user.displayAvatarURL()
+      ));
     }
   }
 }
@@ -625,21 +473,13 @@ function playTrack(guild, song) {
       });
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 
-    serverQueue.textChannel.send({
-      embed: {
-        title: "Now Playing",
-        description: `${process.env.MSG_VIBING} **[${song.title}](${song.url})**`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: guild.client.user.displayAvatarURL(),
-        },
-        footer: {
-          text: song.duration.durationFormat(),
-        },
-      },
-    });
+    serverQueue.textChannel.send(makeEmbed(
+      "Now Playing",
+      `${process.env.MSG_VIBING} **[${song.title}](${song.url})**`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL(),
+      song.duration.durationFormat()
+    ));
 
     serverQueue.songs[0].startTime = Math.round(new Date().getTime() / 1000);
   } catch (e) {
@@ -649,18 +489,12 @@ function playTrack(guild, song) {
 
 function nowPlaying(message, serverQueue) {
   if (!serverQueue || serverQueue.songs.length == 0) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
 
   try {
@@ -677,86 +511,48 @@ function nowPlaying(message, serverQueue) {
       Math.round((elapsed / song.duration) * barLength) - 1
     );
 
-    serverQueue.textChannel.send({
-      embed: {
-        title: "Now Playing",
-        description: `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${
-          song.title
-        }](${song.url})**\n \`\`\`nim\n[${(
-          "―".repeat(elapsedBars) +
-          "⬤" +
-          "―".repeat(barLength - elapsedBars - 1)
-        ).substr(0, barLength)}] -${remaining.durationFormat()}\n\`\`\``,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-        footer: {
-          text: song.duration.durationFormat(),
-        },
-      },
-    });
+    let bar = ("―".repeat(elapsedBars) + "⬤" + "―".repeat(barLength - elapsedBars - 1)).substr(0, barLength)
+    serverQueue.textChannel.send(makeEmbed(
+      "Now Playing",
+      `<@${message.author.id}> - ${process.env.MSG_VIBING} **[${song.title}](${song.url})**\n \`\`\`nim\n[${bar}] -${remaining.durationFormat()}\n\`\`\``,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   } catch (e) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} Something went wrong`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} Something went wrong`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
 }
 
 function disconnect(message, guildId) {
   let serverQueue = queue.get(guildId);
   if (!serverQueue) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} No music is playing this server`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (!message.member.voice.channel) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You have to be in a voice channel to stop the music`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You have to be in a voice channel to stop the music`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (message.member.voice.channel.id != serverQueue.voiceChannel.id) {
-    return message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You're not in the same voice channel as the bot`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    return message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You're not in the same voice channel as the bot`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
   if (
     process.env.USE_MUSIC_ROLE != "true" ||
@@ -769,31 +565,19 @@ function disconnect(message, guildId) {
     clearTimeout(serverQueue.leaveTimeout);
     serverQueue.voiceChannel.leave();
     queue.delete(guildId);
-    message.channel.send({
-      embed: {
-        title: "Disconnected",
-        description: `<@${message.author.id}> - ${process.env.MSG_VIBING}`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    message.channel.send(makeEmbed(
+      "Disconnected",
+      `<@${message.author.id}> - ${process.env.MSG_VIBING}`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   } else {
-    message.channel.send({
-      embed: {
-        title: "Error",
-        description: `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
-        color: Number(process.env.EMBED_COLOUR),
-        timestamp: new Date(),
-        author: {
-          name: process.env.BOT_NAME,
-          icon_url: message.client.user.displayAvatarURL(),
-        },
-      },
-    });
+    message.channel.send(makeEmbed(
+      "Error",
+      `<@${message.author.id}> - ${process.env.MSG_UNVIBING} You don't have the **${process.env.MUSIC_ROLE_NAME}** role`,
+      process.env.BOT_NAME,
+      message.client.user.displayAvatarURL()
+    ));
   }
 }
 

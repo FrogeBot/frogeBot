@@ -1,6 +1,6 @@
 const { GifFrame, GifUtil, GifCodec } = require("gifwrap");
 const { isMainThread, parentPort, Worker } = require("worker_threads");
-let { readBuffer, readURL } = require("@frogebot/image")(process.env.USE_IMAGEMAGICK);
+let { readBuffer, readURL } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE });
 require("dotenv").config();
 var gm = require("gm");
 if (process.env.USE_IMAGEMAGICK == "true") {

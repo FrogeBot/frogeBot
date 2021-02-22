@@ -179,6 +179,37 @@ matoran:
   path: commands/image/matoran.js
   category: Image
   description: "Creates matoran text (usage: `matoran <text>`)"
+scale:
+  type: image
+  library: jimp
+  list:
+    - scale:
+        params:
+          - 2
+  title: Scale
+  category: Image
+  description: "Scales the image by 2"
+nscale:
+  type: image
+  library: jimp
+  list:
+    - scale:
+        params:
+          - 2
+          - nearestNeighbor
+  title: Nearest Neighbor Scale
+  category: Image
+  description: "Scales the image by 2 using nearest neighbor scaling"
+shrink:
+  type: image
+  library: jimp
+  list:
+    - scale:
+        params:
+          - 0.5
+  title: Shrink
+  category: Image
+  description: "Scales the image by 0.5"
 
 booba:
   type: script

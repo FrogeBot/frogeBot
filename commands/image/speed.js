@@ -17,8 +17,8 @@ async function cmdFunc(msg, args, startTime) {
 
         if(imgUrl.match(/(\.gif)/gi)) {
             try {
-                let worker = new Worker(__dirname+"/../../modules/gif-worker.js")
-                worker.postMessage({ imgUrl, list: null, frameSkip: 1, speed: 2 })
+                let worker = new Worker(require.resolve("@frogebot/image/workers/gif"))
+                worker.postMessage({ imgUrl, list: null, frameSkip: 1, speed: 2, options: { imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE }  })
     
                 worker.on('message', async (img) => {
                     if(img != null) {

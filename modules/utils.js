@@ -3,11 +3,11 @@ require("dotenv").config();
 function findImage(msg) {
   return new Promise(async (resolve, reject) => {
     try {
-      if (msg.attachments.size > 0) {
+      if (msg.attachments && msg.attachments.size > 0) {
         // If message has image attachment
         let imgUrl = await msg.attachments.first();
         resolve(imgUrl.proxyURL); // Resolve image URL
-      } else if (msg.embeds[0] && msg.embeds[0].type == "image") {
+      } else if (msg.embeds && msg.embeds[0] && msg.embeds[0].type == "image") {
         // If message has image embed
         let imgUrl = msg.embeds[0].url;
         resolve(imgUrl); // Resolve image URL
@@ -207,10 +207,50 @@ async function attemptSendImageWeb(
   }
 }
 
+const interactionTypes = {
+  sub: 1,
+  subGroup: 2,
+  str: 3,
+  int: 4,
+  bool: 5,
+  user: 6,
+  channel: 7,
+  role: 8,
+}
+async function slashCommandInit(client, commands, scope, guildID = null) {
+  if(process.env.MUSIC_ENABLED != "true") {
+    Object.keys(commands).forEach(cmd => {
+      if(commands[cmd].type == "music") delete commands[cmd] 
+    });
+  }
+  if(scope == "guild") {
+    try{
+      client.api.applications(client.user.id).guilds(guildID).commands.get().then(slashCmds => {
+        Object.keys(slashCmds).forEach(cmd => {
+          if(Object.keys(commands).indexOf(slashCmds[cmd].name) == -1) client.api.applications(client.user.id).guilds(guildID).commands(slashCmds[cmd].id).delete()
+        });
+        Object.keys(commands).forEach(cmd => {
+          if(commands[cmd].hidden || commands[cmd].description.length < 1) return
+          client.api.applications(client.user.id).guilds(guildID).commands.post({
+            data: {
+              name: cmd,
+              description: commands[cmd].description.replace(/\`/g, ""),
+              options: commands[cmd].options ? commands[cmd].options.map(o => { return Object.assign({required: false, type: 3}, o, {type: interactionTypes[o.type] || 3}) }) : undefined,
+            },
+          });
+        });
+      });
+    } catch(e) { }
+  }
+}
+
 // Exports
 module.exports = {
   findImage,
   sendImage,
   formatDuration,
   clamp,
+  slashCommands: {
+    init: slashCommandInit
+  }
 };

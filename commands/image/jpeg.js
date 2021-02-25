@@ -18,7 +18,7 @@ async function cmdFunc(msg, args, startTime) {
         let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 10;
         let img = await execGM(imageUrl, [ ["jpeg", [clamp(r, 0, 100)]] ]);
         
-        sendImage(msg, "JPEG", startTime, img, "jpg", procMsg)
+        sendImage(msg, "JPEG", startTime, img, ( extension == "gif" ? "gif" : "jpg" ), procMsg)
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

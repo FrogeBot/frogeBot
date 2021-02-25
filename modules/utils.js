@@ -89,6 +89,8 @@ const extensions = {
   MPEG: "mp4",
 };
 
+const { Readable } = require('stream');
+
 async function sendImage(
   msg,
   cmdName,
@@ -109,8 +111,7 @@ async function sendImage(
       }
     });
   });
-
-  const attachment = new MessageAttachment(img, "image." + extension);
+  const attachment = new MessageAttachment(Buffer.from(img), "image." + extension);
   let timeTaken = formatDuration(new Date().getTime() - startTime);
 
   if (forceWeb) {
@@ -137,7 +138,7 @@ async function sendImage(
         msg.channel.stopTyping();
         if (procMsg) procMsg.delete();
       })
-      .catch(async () => {
+      .catch(async (err) => {
         attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg);
       });
   }
@@ -152,27 +153,19 @@ async function attemptSendImageWeb(
   procMsg
 ) {
   if (process.env.WEB_ENABLED == "true") {
+    let imgName = `${msg.id}_${Math.random().toString(36).replace(/[^a-z]+/g, "").substr(0, 4)}.${extension}`
     await fs.writeFile(
-      path.join(__dirname, `/../web_images/${msg.id}.${extension}`),
+      path.join(__dirname, `/../web_images/${imgName}`),
       img
     );
     setTimeout(
       () =>
         fs.unlink(
-          path.join(__dirname, `/../web_images/${msg.id}.${extension}`)
+          path.join(__dirname, `/../web_images/${imgName}`)
         ),
       timeVals.minute * Number(process.env.WEB_SAVE_MINS)
     );
-    let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${
-      process.env.WEB_HOSTNAME
-    }/images/${msg.id}.${extension}${
-      process.env.WEB_REFRESH_CACHE == "true"
-        ? `?q=${Math.random()
-            .toString(36)
-            .replace(/[^a-z]+/g, "")
-            .substr(0, 8)}`
-        : ""
-    }`;
+    let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${imgName}`;
     let embed = new MessageEmbed({
       title: cmdName,
       description: `<@${msg.author.id}> - ${process.env.MSG_SEND_LOCAL}\nImage will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](${imgUrl})`,

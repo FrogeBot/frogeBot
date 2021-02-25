@@ -23,17 +23,17 @@ parentPort.on("message", async (data) => {
     let { msgId, channelId, args, cmd, interaction } = data;
     try {
       let channel = await client.channels.fetch(channelId);
-      let msg
-      if(msgId) {
+      let msg;
+      if (msgId) {
         msg = await channel.messages.fetch(msgId);
       } else {
         msg = {
-            client,
-            author: await client.users.fetch(interaction.member.user.id),
-            channel,
-            member: await channel.guild.members.fetch(interaction.member.user.id),
-            guild: channel.guild,
-        }
+          client,
+          author: await client.users.fetch(interaction.member.user.id),
+          channel,
+          member: await channel.guild.members.fetch(interaction.member.user.id),
+          guild: channel.guild,
+        };
       }
       setImmediate(async () => {
         cmdFunc(msg, args, cmd.action); // Runs command function

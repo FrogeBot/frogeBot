@@ -89,7 +89,7 @@ const extensions = {
   MPEG: "mp4",
 };
 
-const { Readable } = require('stream');
+const { Readable } = require("stream");
 
 async function sendImage(
   msg,
@@ -111,7 +111,10 @@ async function sendImage(
       }
     });
   });
-  const attachment = new MessageAttachment(Buffer.from(img), "image." + extension);
+  const attachment = new MessageAttachment(
+    Buffer.from(img),
+    "image." + extension
+  );
   let timeTaken = formatDuration(new Date().getTime() - startTime);
 
   if (forceWeb) {
@@ -153,19 +156,18 @@ async function attemptSendImageWeb(
   procMsg
 ) {
   if (process.env.WEB_ENABLED == "true") {
-    let imgName = `${msg.id}_${Math.random().toString(36).replace(/[^a-z]+/g, "").substr(0, 4)}.${extension}`
-    await fs.writeFile(
-      path.join(__dirname, `/../web_images/${imgName}`),
-      img
-    );
+    let imgName = `${msg.id}_${Math.random()
+      .toString(36)
+      .replace(/[^a-z]+/g, "")
+      .substr(0, 4)}.${extension}`;
+    await fs.writeFile(path.join(__dirname, `/../web_images/${imgName}`), img);
     setTimeout(
-      () =>
-        fs.unlink(
-          path.join(__dirname, `/../web_images/${imgName}`)
-        ),
+      () => fs.unlink(path.join(__dirname, `/../web_images/${imgName}`)),
       timeVals.minute * Number(process.env.WEB_SAVE_MINS)
     );
-    let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${process.env.WEB_HOSTNAME}/images/${imgName}`;
+    let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${
+      process.env.WEB_HOSTNAME
+    }/images/${imgName}`;
     let embed = new MessageEmbed({
       title: cmdName,
       description: `<@${msg.author.id}> - ${process.env.MSG_SEND_LOCAL}\nImage will be available for ${process.env.WEB_SAVE_MINS} minutes.\n[Open Image](${imgUrl})`,
@@ -216,31 +218,50 @@ const interactionTypes = {
   user: 6,
   channel: 7,
   role: 8,
-}
+};
 async function slashCommandInit(client, commands, scope, guildID = null) {
-  if(process.env.MUSIC_ENABLED != "true") {
-    Object.keys(commands).forEach(cmd => {
-      if(commands[cmd].type == "music") delete commands[cmd] 
+  if (process.env.MUSIC_ENABLED != "true") {
+    Object.keys(commands).forEach((cmd) => {
+      if (commands[cmd].type == "music") delete commands[cmd];
     });
   }
-  if(scope == "guild") {
-    try{
-      client.api.applications(client.user.id).guilds(guildID).commands.get().then(slashCmds => {
-        Object.keys(slashCmds).forEach(cmd => {
-          if(Object.keys(commands).indexOf(slashCmds[cmd].name) == -1) client.api.applications(client.user.id).guilds(guildID).commands(slashCmds[cmd].id).delete()
-        });
-        Object.keys(commands).forEach(cmd => {
-          if(commands[cmd].hidden || commands[cmd].description.length < 1) return
-          client.api.applications(client.user.id).guilds(guildID).commands.post({
-            data: {
-              name: cmd,
-              description: commands[cmd].description.replace(/\`/g, ""),
-              options: commands[cmd].options ? commands[cmd].options.map(o => { return Object.assign({required: false, type: 3}, o, {type: interactionTypes[o.type] || 3}) }) : undefined,
-            },
+  if (scope == "guild") {
+    try {
+      client.api
+        .applications(client.user.id)
+        .guilds(guildID)
+        .commands.get()
+        .then((slashCmds) => {
+          Object.keys(slashCmds).forEach((cmd) => {
+            if (Object.keys(commands).indexOf(slashCmds[cmd].name) == -1)
+              client.api
+                .applications(client.user.id)
+                .guilds(guildID)
+                .commands(slashCmds[cmd].id)
+                .delete();
+          });
+          Object.keys(commands).forEach((cmd) => {
+            if (commands[cmd].hidden || commands[cmd].description.length < 1)
+              return;
+            client.api
+              .applications(client.user.id)
+              .guilds(guildID)
+              .commands.post({
+                data: {
+                  name: cmd,
+                  description: commands[cmd].description.replace(/\`/g, ""),
+                  options: commands[cmd].options
+                    ? commands[cmd].options.map((o) => {
+                        return Object.assign({ required: false, type: 3 }, o, {
+                          type: interactionTypes[o.type] || 3,
+                        });
+                      })
+                    : undefined,
+                },
+              });
           });
         });
-      });
-    } catch(e) { }
+    } catch (e) {}
   }
 }
 
@@ -251,6 +272,6 @@ module.exports = {
   formatDuration,
   clamp,
   slashCommands: {
-    init: slashCommandInit
-  }
+    init: slashCommandInit,
+  },
 };

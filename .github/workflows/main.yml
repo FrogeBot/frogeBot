@@ -67,6 +67,7 @@ jobs:
   prettier:
     name: Prettify
     runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/master' || github.event_name == "pull_request" }}
 
     steps:
     - name: Checkout

@@ -264,7 +264,7 @@ play:
   category: Music
   description: Play a song
   options:
-    - name: q
+    - name: song
       description: "Song to play, supports YouTube links, playlists and search"
       required: true
 p: # Alias of play

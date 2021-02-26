@@ -3,10 +3,19 @@ require("dotenv").config();
 queue = new Map();
 client = undefined;
 
-var { execute, skip, stop, disconnect, getQueue, nowPlaying, remove, shuffle } = require("./music/actions");
+var {
+  execute,
+  skip,
+  stop,
+  disconnect,
+  getQueue,
+  nowPlaying,
+  remove,
+  shuffle,
+} = require("./music/actions");
 
 async function cmdFunc(msg, args, action) {
-  client = msg.client
+  client = msg.client;
   const serverQueue = queue.get(msg.guild.id);
   if (action == "play") {
     execute(msg, serverQueue, args);

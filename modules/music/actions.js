@@ -213,7 +213,7 @@ function skip(message, serverQueue) {
     message.channel.send(
       makeEmbed(
         `Skipping (${serverQueue.skips}/${toSkip})`,
-        `<@${message.author.id}> - ${process.env.MSG_VIBING} ${toSkip-serverQueue.skips} more skips required`
+        `<@${message.author.id}> - ${process.env.MSG_VIBING} ${toSkip-serverQueue.skips} more skip${(toSkip-serverQueue.skips>1)?"s":""} required`
       )
     );
   }

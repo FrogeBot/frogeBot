@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-delete require.cache[require.resolve("../../modules/utils.js")];
 let { sendImage } = require("../../modules/utils.js");
 
 let { gmToBuffer } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
@@ -14,6 +13,7 @@ if (process.env.USE_IMAGEMAGICK == "true") {
 let procMsg;
 async function cmdFunc(msg, args, startTime) {
   try {
+    // Send processing message
     procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
     msg.channel.startTyping();
 
@@ -26,13 +26,13 @@ async function cmdFunc(msg, args, startTime) {
       "left",
       1.25,
       "white"
-    );
+    ); // Create text
 
     textCanvas[0] = await gmToBuffer(
       gm(textCanvas[0]).crop(width, textCanvas[1])
-    );
+    ); // Crop text canvas
 
-    sendImage(msg, "Matoran", startTime, textCanvas[0], "png", procMsg);
+    sendImage(msg, "Matoran", startTime, textCanvas[0], "png", procMsg); // Send image
   } catch (e) {
     console.log(e);
     msg.channel.stopTyping();

@@ -1,6 +1,6 @@
 {
   "name": "frogebot",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "description": "",
   "main": "client.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "^0.4.0",
-    "@frogebot/image": "^1.1.1",
+    "@frogebot/image": "^1.1.6",
     "canvas": "^2.6.1",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",

@@ -1,4 +1,4 @@
-# Commands: Info can be found here https://github.com/barnabwhy/frogeBot/wiki/Commands
+# Commands: Info can be found here https://github.com/FrogeBot/frogeBot/wiki/Commands
 help:
   type: script
   path: commands/misc/help.js

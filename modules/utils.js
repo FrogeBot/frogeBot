@@ -99,7 +99,6 @@ async function sendImage(
   forceWeb = false
 ) {
   if (procMsg) procMsg.edit(process.env.MSG_UPLOADING);
-
   extension = await new Promise((resolve, reject) => {
     // Get extension from file type
     gm(img).format({ bufferStream: true }, function (err, format) {
@@ -110,7 +109,10 @@ async function sendImage(
       }
     });
   });
-  const attachment = new MessageAttachment(img, "image." + extension); // Create attachment
+  const attachment = new MessageAttachment(
+    Buffer.from(img),
+    "image." + extension
+  ); // Create attachment
   let timeTaken = formatDuration(new Date().getTime() - startTime); // Time elapsed since command call
 
   if (forceWeb) {
@@ -139,7 +141,7 @@ async function sendImage(
         msg.channel.stopTyping();
         if (procMsg) procMsg.delete();
       })
-      .catch(async () => {
+      .catch(async (err) => {
         attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg); // If send fails, try with local web host
       });
   }
@@ -155,10 +157,11 @@ async function attemptSendImageWeb(
 ) {
   if (process.env.WEB_ENABLED == "true") {
     // If web enabled
-    await fs.writeFile(
-      path.join(__dirname, `/../web_images/${msg.id}.${extension}`),
-      img
-    ); // Save file to web_images
+    let imgName = `${msg.id}_${Math.random()
+      .toString(36)
+      .replace(/[^a-z]+/g, "")
+      .substr(0, 4)}.${extension}`;
+    await fs.writeFile(path.join(__dirname, `/../web_images/${imgName}`), img);
     setTimeout(
       () => fs.unlink(path.join(__dirname, `/../web_images/${imgName}`)),
       timeVals.minute * Number(process.env.WEB_SAVE_MINS)

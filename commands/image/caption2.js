@@ -1,6 +1,5 @@
 require("dotenv").config()
 
-delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
@@ -11,27 +10,28 @@ let procMsg
 let imageUrl
 async function cmdFunc(msg, args, startTime) {
     try {
+        // Send processing message
         procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
         msg.channel.startTyping()
         
-        imageUrl = await findImage(msg)
-        let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
+        imageUrl = await findImage(msg) // Find image in channel
+        let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1]; // Get extension of image
         
-        let imgFG = await jimpReadURL(imageUrl);
-        let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.05), "Arial", Math.round(imgFG.bitmap.width*0.9), "left")
-        let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075);
+        let imgFG = await jimpReadURL(imageUrl); // imageUrl to Jimp image
+        let textCanvas = await canvasText(args, Math.round(imgFG.bitmap.width*0.05), "Arial", Math.round(imgFG.bitmap.width*0.9), "left") // Create text
+        let offset = textCanvas[1]+Math.round(imgFG.bitmap.width*0.075); // Calculate image offset
 
-        let rectCanvas = await canvasRect(imgFG.bitmap.width, offset, "transparent", 0, "white")
+        let rectCanvas = await canvasRect(imgFG.bitmap.width, offset, "transparent", 0, "white") // Create text background
 
-        textCanvas[0] = await (await readBuffer(textCanvas[0])).crop(0, 0, Math.round(imgFG.bitmap.width*0.9), textCanvas[1]).getBufferAsync(Jimp.AUTO)
+        textCanvas[0] = await (await readBuffer(textCanvas[0])).crop(0, 0, Math.round(imgFG.bitmap.width*0.9), textCanvas[1]).getBufferAsync(Jimp.AUTO) // Crop text canvas
 
         let img = await exec(imageUrl, [
             ["addBackground", [imgFG.bitmap.width, imgFG.bitmap.height+offset, 'transparent', 0, 0]],
             ["composite", [rectCanvas, 0, imgFG.bitmap.height]],
             ["composite", [textCanvas[0], Math.round(imgFG.bitmap.width*0.05), imgFG.bitmap.height+Math.round(imgFG.bitmap.width*0.05)]]
-        ]);
+        ]); // Execute image manipulation
 
-        sendImage(msg, "Caption 2", startTime, img, extension, procMsg)
+        sendImage(msg, "Caption 2", startTime, img, extension, procMsg) // Send image
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

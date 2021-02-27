@@ -1,9 +1,9 @@
 require("dotenv").config()
 
 async function cmdFunc(msg, args, startTime) {
-    if(process.env.ENABLE_SUPER_SECRET_TROLE_COMMANDS != "true") return
+    if(process.env.ENABLE_SUPER_SECRET_TROLE_COMMANDS != "true") return // If troll commands are not emabled
     
-    msg.channel.send({
+    msg.channel.send({ // Send "booba"
         embed: {
             "title": "Booba",
             "description": `<@${msg.author.id}> ${process.env.MSG_SUCCESS}`,
@@ -17,7 +17,7 @@ async function cmdFunc(msg, args, startTime) {
                 url: "attachment://booba.png"
             }
         },
-        files: [{ attachment: __dirname+"/../../assets/booba.png", name: "booba.png" }]
+        files: [{ attachment: __dirname+"/../../assets/booba.png", name: "booba.png" }] // "Booba" APNG for the funny
     })
 }
 

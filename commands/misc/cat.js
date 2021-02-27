@@ -3,9 +3,9 @@ require("dotenv").config()
 const request = require("request")
 
 async function cmdFunc(msg, args, startTime) {
-    let catUrl = `https://api.thecatapi.com/v1/images/search`
-    request(catUrl, function(error, response, body){
-        if (error)
+    let catUrl = `https://api.thecatapi.com/v1/images/search` // Cat API URL
+    request(catUrl, function(error, response, body){ // Request response
+        if (error) // Send an error message if the request fails
             msg.channel.send({
                 embed: {
                     "title": "Error",
@@ -19,8 +19,9 @@ async function cmdFunc(msg, args, startTime) {
                 }
             })
         else {
-            let catJSON = JSON.parse(response.body)
+            let catJSON = JSON.parse(response.body) // Parse JSON of response
             
+            // Send cat image
             msg.channel.send({
                 embed: {
                     "title": "Cat",

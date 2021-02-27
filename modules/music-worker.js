@@ -1,5 +1,6 @@
 const { isMainThread, parentPort } = require("worker_threads");
 
+// Create discord.js client
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
@@ -18,14 +19,15 @@ client.login(process.env.TOKEN); // discord.js connect to discord bot
 const musicCmdPath = "music.js";
 let { cmdFunc } = require("./" + musicCmdPath); // Gets function of music commands
 
+// On worker message (music command passthrough)
 parentPort.on("message", async (data) => {
   if (!isMainThread && ready) {
     let { msgId, channelId, args, cmd, interaction } = data;
     try {
-      let channel = await client.channels.fetch(channelId);
+      let channel = await client.channels.fetch(channelId); // Get channel from ID
       let msg;
       if (msgId) {
-        msg = await channel.messages.fetch(msgId);
+        msg = await channel.messages.fetch(msgId); // Get message from ID
       } else {
         msg = {
           client,
@@ -33,7 +35,7 @@ parentPort.on("message", async (data) => {
           channel,
           member: await channel.guild.members.fetch(interaction.member.user.id),
           guild: channel.guild,
-        };
+        }; // Make a fake message object from ineraction data (supposedly message data will exis for interactions in future but for now this must be done)
       }
       setImmediate(async () => {
         cmdFunc(msg, args, cmd.action); // Runs command function
@@ -44,6 +46,7 @@ parentPort.on("message", async (data) => {
   }
 });
 
+// Catch process errors
 process.on("uncaughtException", function (err) {
   console.log(err);
 });

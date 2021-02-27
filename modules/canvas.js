@@ -22,6 +22,7 @@ function canvasText(
     const ctx = canvas.getContext("2d");
 
     if (bg != "transparent") {
+      // Handle background colour
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -56,7 +57,7 @@ function printAtWordWrap(context, text, x, y, lineHeight, fitWidth) {
   return new Promise(async (resolve, reject) => {
     fitWidth = fitWidth || 0;
 
-    let forcedLines = text.split("\n");
+    let forcedLines = text.split("\n"); // Create new lines where they exist in the input text
 
     if (fitWidth <= 0 && forcedLines.length <= 1) {
       await fillTextWithTwemoji(context, text, x, y, {
@@ -119,11 +120,13 @@ function canvasRect(
       const canvas = createCanvas(width, height);
       const ctx = canvas.getContext("2d");
 
+      // Draw outline
       ctx.beginPath();
       ctx.rect(0, 0, width, height);
       ctx.fillStyle = strokeStyle;
       ctx.fill();
 
+      // Clear area within outline
       ctx.clearRect(
         strokeWidth,
         strokeWidth,
@@ -131,6 +134,7 @@ function canvasRect(
         height - strokeWidth * 2
       );
 
+      // Draw filled rect
       ctx.beginPath();
       ctx.rect(
         strokeWidth,
@@ -165,9 +169,11 @@ function canvasWindow(
       const canvas = createCanvas(width, height);
       const ctx = canvas.getContext("2d");
 
+      // Background
       ctx.fillStyle = fillStyle;
       ctx.fillRect(0, 0, width, height);
 
+      // Outline
       ctx.rect(0, 0, width, height);
       ctx.strokeStyle = strokeStyle;
       ctx.lineWidth = strokeWidth;
@@ -178,6 +184,7 @@ function canvasWindow(
         holeHeight + strokeOffset * 2
       );
 
+      // Cut hole ("window")
       ctx.clearRect(x, y, holeWidth, holeHeight);
 
       resolve(await canvas.toBuffer()); // Resolve canvas image buffer

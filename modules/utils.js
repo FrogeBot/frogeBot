@@ -57,16 +57,16 @@ function formatDuration(millis) {
   let str = [];
   switch (true) {
     case millis >= timeVals.day:
-      str.push(Math.floor(millis / timeVals.day) + "d");
+      str.push(Math.floor(millis / timeVals.day) + "d"); // Days
       millis = millis % timeVals.day;
     case millis >= timeVals.hour:
-      str.push(Math.floor(millis / timeVals.hour) + "h");
+      str.push(Math.floor(millis / timeVals.hour) + "h"); // Hours
       millis = millis % timeVals.hour;
     case millis >= timeVals.minute:
-      str.push(Math.floor(millis / timeVals.minute) + "m");
+      str.push(Math.floor(millis / timeVals.minute) + "m"); // Minutes
       millis = millis % timeVals.minute;
     default:
-      str.push(millis / timeVals.second + "s");
+      str.push(millis / timeVals.second + "s"); // Seconds (with decimal)
   }
   return str.join(" ");
 }
@@ -99,8 +99,8 @@ async function sendImage(
   forceWeb = false
 ) {
   if (procMsg) procMsg.edit(process.env.MSG_UPLOADING);
-
   extension = await new Promise((resolve, reject) => {
+    // Get extension from file type
     gm(img).format({ bufferStream: true }, function (err, format) {
       if (err) {
         resolve(extension.toLowerCase());
@@ -112,12 +112,14 @@ async function sendImage(
   const attachment = new MessageAttachment(
     Buffer.from(img),
     "image." + extension
-  );
-  let timeTaken = formatDuration(new Date().getTime() - startTime);
+  ); // Create attachment
+  let timeTaken = formatDuration(new Date().getTime() - startTime); // Time elapsed since command call
 
   if (forceWeb) {
-    attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg);
+    // Skip Discord CDN entirely
+    attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg); // Send image via local web host
   } else {
+    // Send image on Discord
     let embed = new MessageEmbed({
       title: cmdName,
       description: `<@${msg.author.id}> ${process.env.MSG_SUCCESS}`,
@@ -140,7 +142,7 @@ async function sendImage(
         if (procMsg) procMsg.delete();
       })
       .catch(async (err) => {
-        attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg);
+        attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg); // If send fails, try with local web host
       });
   }
 }
@@ -154,6 +156,7 @@ async function attemptSendImageWeb(
   procMsg
 ) {
   if (process.env.WEB_ENABLED == "true") {
+    // If web enabled
     let imgName = `${msg.id}_${Math.random()
       .toString(36)
       .replace(/[^a-z]+/g, "")
@@ -162,7 +165,7 @@ async function attemptSendImageWeb(
     setTimeout(
       () => fs.unlink(path.join(__dirname, `/../web_images/${imgName}`)),
       timeVals.minute * Number(process.env.WEB_SAVE_MINS)
-    );
+    ); // Remove file after process.env.WEB_SAVE_MINS minutes
     let imgUrl = `http${process.env.WEB_SECURE == "true" ? "s" : ""}://${
       process.env.WEB_HOSTNAME
     }/images/${imgName}`;
@@ -187,6 +190,7 @@ async function attemptSendImageWeb(
       if (procMsg) procMsg.delete();
     });
   } else {
+    // If web isn't enabled, just act like a regular failure
     msg.channel
       .send({
         embed: {

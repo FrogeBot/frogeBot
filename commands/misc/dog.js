@@ -3,9 +3,9 @@ require("dotenv").config()
 const request = require("request")
 
 async function cmdFunc(msg, args, startTime) {
-    let dogUrl = "https://www.reddit.com/r/DOG.json";
-    request(dogUrl, function(error, response, body){
-        if (error)
+    let dogUrl = "https://www.reddit.com/r/DOG.json"; // Subreddit JSON url
+    request(dogUrl, function(error, response, body){ // Request response
+        if (error) // Send an error message if the request fails
             msg.channel.send({
                 embed: {
                     "title": "Error",
@@ -19,12 +19,13 @@ async function cmdFunc(msg, args, startTime) {
                 }
             })
         else {
-            let dogJSON = JSON.parse(response.body)
+            let dogJSON = JSON.parse(response.body) // Parse JSON of response
             
-            let dogImages = dogJSON.data.children.filter(f => (!f.data.over_18 && f.data.url.startsWith("https://i.redd.it")))
+            let dogImages = dogJSON.data.children.filter(f => (!f.data.over_18 && f.data.url.startsWith("https://i.redd.it"))) // Filter JSON to only include images that aren't NSFW
 
-            let randomDog = dogImages[Math.floor(Math.random()*dogImages.length)];
+            let randomDog = dogImages[Math.floor(Math.random()*dogImages.length)]; // Get random image
 
+            // Send image
             msg.channel.send({
                 embed: {
                     "title": "Dog",

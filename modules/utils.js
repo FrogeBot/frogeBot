@@ -89,8 +89,6 @@ const extensions = {
   MPEG: "mp4",
 };
 
-const { Readable } = require("stream");
-
 async function sendImage(
   msg,
   cmdName,

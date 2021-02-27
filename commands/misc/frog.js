@@ -3,9 +3,9 @@ require("dotenv").config()
 const request = require("request")
 
 async function cmdFunc(msg, args, startTime) {
-    let frogUrl = "https://www.reddit.com/r/frogs.json";
-    request(frogUrl, function(error, response, body){
-        if (error)
+    let frogUrl = "https://www.reddit.com/r/frogs.json"; // Subreddit JSON url
+    request(frogUrl, function(error, response, body){ // Request response
+        if (error) // Send an error message if the request fails
             msg.channel.send({
                 embed: {
                     "title": "Error",
@@ -19,12 +19,13 @@ async function cmdFunc(msg, args, startTime) {
                 }
             })
         else {
-            let frogJSON = JSON.parse(response.body)
+            let frogJSON = JSON.parse(response.body) // Parse JSON of response
             
-            let frogImages = frogJSON.data.children.filter(f => (!f.data.over_18 && f.data.url.startsWith("https://i.redd.it")))
+            let frogImages = frogJSON.data.children.filter(f => (!f.data.over_18 && f.data.url.startsWith("https://i.redd.it"))) // Filter JSON to only include images that aren't NSFW
 
-            let randomFrog = frogImages[Math.floor(Math.random()*frogImages.length)];
+            let randomFrog = frogImages[Math.floor(Math.random()*frogImages.length)]; // Get random image
 
+            // Send image
             msg.channel.send({
                 embed: {
                     "title": "Frog",

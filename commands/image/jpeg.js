@@ -1,6 +1,5 @@
 require("dotenv").config()
 
-delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage, clamp } = require("../../modules/utils.js")
 
 let { execGM } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
@@ -9,16 +8,17 @@ let procMsg
 let imageUrl
 async function cmdFunc(msg, args, startTime) {
     try {
+        // Send processing message
         procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
         msg.channel.startTyping()
         
-        imageUrl = await findImage(msg)
-        let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1];
+        imageUrl = await findImage(msg) // Find image in channel
+        let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1]; // Get extension of image
 
         let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 10;
-        let img = await execGM(imageUrl, [ ["jpeg", [clamp(r, 0, 100)]] ]);
+        let img = await execGM(imageUrl, [ ["jpeg", [clamp(r, 0, 100)]] ]); // Execute image manipulation
         
-        sendImage(msg, "JPEG", startTime, img, ( extension == "gif" ? "gif" : "jpg" ), procMsg)
+        sendImage(msg, "JPEG", startTime, img, ( extension == "gif" ? "gif" : "jpg" ), procMsg) // Send image
     } catch(e) {
         console.log(e)
         msg.channel.stopTyping()

@@ -3,17 +3,17 @@ require("dotenv").config()
 async function cmdFunc(msg, args) {
     let idMember;
     try {
-        idMember = await msg.guild.members.fetch(args)
+        idMember = await msg.guild.members.fetch(args) // Attempt to get member from ID. idMember will stay undefined if the supplied arguments are not an ID
     } catch (e) {}
     
-    let member = ( args == "" ? msg.member : ( idMember != undefined ? idMember : (await msg.guild.members.fetch({ query: args, limit: 1 })).first() ) )
+    let member = ( args == "" ? msg.member : ( idMember != undefined ? idMember : (await msg.guild.members.fetch({ query: args, limit: 1 })).first() ) ) // Either use idMember or search for member in guild
 
     const regex = /(\<\@!?[0-9]+\>)/g;
     const regex2 = /([0-9]+)/g;
-    if(args.match(regex)) {
-        member = msg.guild.members.resolve(args.match(regex)[0].match(regex2)[0]);
+    if(args.match(regex)) { // If args is a mention
+        member = msg.guild.members.resolve(args.match(regex)[0].match(regex2)[0]); // Get ID from mention and use to get member
     }
-    if(member == undefined)  {
+    if(member == undefined)  { // If no member found
         msg.channel.send({
             "embed": {
                 "title": "Avatar",
@@ -26,7 +26,7 @@ async function cmdFunc(msg, args) {
                 }
             }
         })
-    } else {
+    } else { // If member was successfully found
         msg.channel.send({
             "embed": {
                 "title": "Avatar",

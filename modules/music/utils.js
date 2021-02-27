@@ -22,7 +22,7 @@ function makeEmbed(title, description, footerText) {
 
 function playTrack(guild, song) {
   let serverQueue = queue.get(guild.id);
-  if (!song) {
+  if (!song) { // If song is undefined, stop the music in 2 minutes
     serverQueue.leaveTimeout = setTimeout(() => {
       serverQueue.voiceChannel.leave();
       queue.delete(guild.id);
@@ -30,28 +30,29 @@ function playTrack(guild, song) {
     return;
   }
 
+  // Reset skips when the next song is played
   serverQueue.skips = 0;
 
-  clearTimeout(serverQueue.leaveTimeout);
+  clearTimeout(serverQueue.leaveTimeout); // Cancel leave timeout
 
   try {
     const dispatcher = serverQueue.connection
-      .play(ytdl(song.url, { filter: "audio", quality: "lowestaudio" }), {
+      .play(ytdl(song.url, { filter: "audio" }), { // Play YouTube audio in vc
         bitrate: "auto",
       })
-      .on("finish", () => {
+      .on("finish", () => { // When playback finishes, call the function again to try and play the next song
         serverQueue.songs.shift();
         playTrack(guild, serverQueue.songs[0]);
       })
-      .on("error", (error) => {
+      .on("error", (error) => { // When playback has an error, call the function again to try and play the next song
         console.error(error);
         serverQueue.songs.shift();
         playTrack(guild, serverQueue.songs[0]);
       })
-      .on("failed", (error) => {
+      .on("failed", (error) => { // When starting playback fails, log the error
         console.error(error);
       });
-    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5); // Set the volume
 
     serverQueue.textChannel.send(
       makeEmbed(
@@ -59,20 +60,23 @@ function playTrack(guild, song) {
         `${process.env.MSG_VIBING} **[${song.title}](${song.url})**`,
         song.duration.durationFormat()
       )
-    );
+    ); // Send a message saying that the song is now playing
 
-    serverQueue.songs[0].startTime = Math.round(new Date().getTime() / 1000);
+    serverQueue.songs[0].startTime = Math.round(new Date().getTime() / 1000); // Set start time of song (used in nowPlaying)
   } catch (e) {
     console.log(e);
   }
 }
 
+// Function to convert from playlist ID to playlist object with array of parsed song objects
 async function getPlaylist(args, userId) {
   return new Promise(async (resolve, reject) => {
     try {
+      // Get playlist from YouTube
       const results = await ytpl(await ytpl.getPlaylistID(args), {
         limit: Infinity,
       });
+      // Map videos to "songs"
       let songs = results.items.map((v) => {
         return {
           title: v.title,
@@ -81,6 +85,7 @@ async function getPlaylist(args, userId) {
           userId,
         };
       });
+      // Resolve playlist object
       resolve({
         title: results.title,
         id: results.id,
@@ -92,6 +97,7 @@ async function getPlaylist(args, userId) {
   });
 }
 
+// Exports
 module.exports = {
   makeEmbed,
   playTrack,

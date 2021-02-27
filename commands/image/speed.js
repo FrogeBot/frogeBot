@@ -2,27 +2,27 @@ require("dotenv").config()
 
 const { Worker } = require('worker_threads');
 
-delete require.cache[require.resolve("../../modules/utils.js")];
 let { findImage, sendImage } = require("../../modules/utils.js")
 
 let procMsg
 let imgUrl
 async function cmdFunc(msg, args, startTime) {
     try {
+        // Send processing message
         procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
         msg.channel.startTyping()
         
-        imgUrl = await findImage(msg)
-        let extension = imgUrl.split("?")[0].split(".")[imgUrl.split(".").length-1];
+        imgUrl = await findImage(msg) // Find image in channel
+        let extension = imgUrl.split("?")[0].split(".")[imgUrl.split(".").length-1]; // Get extension of image
 
-        if(imgUrl.match(/(\.gif)/gi)) {
+        if(imgUrl.match(/(\.gif)/gi)) { // If type is GIF
             try {
-                let worker = new Worker(require.resolve("@frogebot/image/workers/gif"))
-                worker.postMessage({ imgUrl, list: null, frameSkip: 1, speed: 2, options: { imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE }  })
+                let worker = new Worker(require.resolve("@frogebot/image/workers/gif")) // Spawn GIF worker
+                worker.postMessage({ imgUrl, list: null, frameSkip: 1, speed: 2, options: { imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE }  }) // Send message to GIF worker
     
-                worker.on('message', async (img) => {
+                worker.on('message', async (img) => { // When a response is recieved
                     if(img != null) {
-                        sendImage(msg, "Speed", startTime, img, extension, procMsg)
+                        sendImage(msg, "Speed", startTime, img, extension, procMsg) // Send image
                     } else {
                         msg.channel.stopTyping()
                         msg.channel.send({

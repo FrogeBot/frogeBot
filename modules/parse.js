@@ -23,7 +23,7 @@ function isCmd(msg) {
         resolve(false); // Resolve false if isn't a command
       }
     } else {
-      resolve(false); // Resolve false if isn'y a command
+      resolve(false); // Resolve false if isn't a command
     }
   });
 }

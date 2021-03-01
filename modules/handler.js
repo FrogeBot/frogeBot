@@ -32,7 +32,7 @@ async function handleCmd(msg, cmd, args, musicWorker) {
   if (cmd.type == "script") {
     // If command is set as script type
     let { cmdFunc } = require("../" + cmd.path); // Gets function of command
-    if(cmdFunc) {
+    if (cmdFunc) {
       setImmediate(async () => {
         cmdFunc(msg, args, startTime); // Runs command function
       });
@@ -173,16 +173,12 @@ async function handleReaction(reaction, user, musicWorker, remove) {
     }
   });
 }
-async function handleMemberJoin(member, musicWorker) {
-  
-}
-async function handleMemberLeave(member, musicWorker) {
-  
-}
+async function handleMemberJoin(member, musicWorker) {}
+async function handleMemberLeave(member, musicWorker) {}
 
 module.exports = {
   handleCmdMsg,
   handleReaction,
   handleMemberJoin,
   handleMemberLeave,
-}
+};

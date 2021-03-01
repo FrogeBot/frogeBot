@@ -32,7 +32,7 @@ async function handleCmd(msg, cmd, args, musicWorker) {
   if (cmd.type == "script") {
     // If command is set as script type
     let { cmdFunc } = require("../" + cmd.path); // Gets function of command
-    if(cmdFunc) {
+    if (cmdFunc) {
       setImmediate(async () => {
         cmdFunc(msg, args, startTime); // Runs command function
       });
@@ -137,35 +137,49 @@ async function handleCmd(msg, cmd, args, musicWorker) {
   }
 }
 
-const { getShortcode } = require("discord-emoji-converter")
+const { getShortcode } = require("discord-emoji-converter");
 async function handleReaction(reaction, user, musicWorker, remove) {
   if (reaction.partial) {
-		try {
-			await reaction.fetch();
-		} catch (error) {
-			return;
-		}
-	}
+    try {
+      await reaction.fetch();
+    } catch (error) {
+      return;
+    }
+  }
 
   let startTime = new Date().getTime();
 
-  let emoji = `<${reaction.emoji.animated ? "a" : ""}:${reaction.emoji.name}:${reaction.emoji.id}>`
-  if(reaction.emoji.id == null) emoji = getShortcode(reaction.emoji.name, true)
-  let toExec = triggers.reaction.filter(t => (t.emoji == emoji || (reaction.emoji.id == null && t.emoji == reaction.emoji.id)))
-  if(toExec.length == 0) return
+  let emoji = `<${reaction.emoji.animated ? "a" : ""}:${reaction.emoji.name}:${
+    reaction.emoji.id
+  }>`;
+  if (reaction.emoji.id == null)
+    emoji = getShortcode(reaction.emoji.name, true);
+  let toExec = triggers.reaction.filter(
+    (t) =>
+      t.emoji == emoji ||
+      (reaction.emoji.id == null && t.emoji == reaction.emoji.id)
+  );
+  if (toExec.length == 0) return;
 
-  let member = reaction.message.guild.members.resolve(user.id)
-  toExec.forEach(t => {
-    if(t.type == "script") {
+  let member = reaction.message.guild.members.resolve(user.id);
+  toExec.forEach((t) => {
+    if (t.type == "script") {
       // If trigger is set as script type
       let { reactionAddFunc, reactionRemoveFunc } = require("../" + t.path); // Gets function of trigger
-      if(!remove && ["add", "both"].indexOf(t.event) != -1 && reactionAddFunc) {
+      if (
+        !remove &&
+        ["add", "both"].indexOf(t.event) != -1 &&
+        reactionAddFunc
+      ) {
         setImmediate(async () => {
           reactionAddFunc(reaction, member, t.data, startTime); // Runs reaction function
-          
         });
       }
-      if(remove && ["remove", "both"].indexOf(t.event) != -1 && reactionRemoveFunc) {
+      if (
+        remove &&
+        ["remove", "both"].indexOf(t.event) != -1 &&
+        reactionRemoveFunc
+      ) {
         setImmediate(async () => {
           reactionRemoveFunc(reaction, member, t.data, startTime); // Runs reaction function
         });
@@ -173,16 +187,12 @@ async function handleReaction(reaction, user, musicWorker, remove) {
     }
   });
 }
-async function handleMemberJoin(member, musicWorker) {
-  
-}
-async function handleMemberLeave(member, musicWorker) {
-  
-}
+async function handleMemberJoin(member, musicWorker) {}
+async function handleMemberLeave(member, musicWorker) {}
 
 module.exports = {
   handleCmdMsg,
   handleReaction,
   handleMemberJoin,
   handleMemberLeave,
-}
+};

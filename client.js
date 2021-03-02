@@ -28,32 +28,23 @@ let { handleCmdMsg, handleReaction, handleMemberJoin, handleMemberLeave } = requ
 
 // On message handle command
 client.on('message', async msg => {
-    handleCmdMsg(msg, musicWorker)
+    handleCmdMsg(msg)
 });
 // Handle reactions
 client.on('messageReactionAdd', async (reaction, user) => {
-    handleReaction(reaction, user, musicWorker, false)
+    handleReaction(reaction, user, false)
 });
 client.on('messageReactionRemove', async (reaction, user) => {
-    handleReaction(reaction, user, musicWorker, true)
+    handleReaction(reaction, user, true)
 });
 // Handle member join
 client.on('guildMemberAdd', async member => {
-    handleMemberJoin(member, musicWorker)
+    handleMemberJoin(member)
 });
 // Handle member leave
 client.on('guildMemberRemove', async member => {
-    handleMemberLeave(member, musicWorker)
+    handleMemberLeave(member)
 });
-
-// Create music worker
-let musicWorker;
-if(process.env.MUSIC_ENABLED == "true") {
-    const { Worker } = require('worker_threads');
-
-    const musicWorkerPath = '/modules/music-worker.js'
-    musicWorker = new Worker(__dirname+musicWorkerPath) // Spawn worker
-}
 
 var path = require('path'); 
 

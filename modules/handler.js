@@ -15,7 +15,21 @@ let { findImage, sendImage } = require("./utils");
 
 const { parseMsg, isCmd } = require("./parse");
 
-async function handleCmdMsg(msg, musicWorker) {
+let runMusicCmd;
+if(process.env.MUSIC_ENABLED == "true") {
+    runMusicCmd = require("@frogebot/music")({
+      BOT_NAME: process.env.BOT_NAME,
+      EMBED_COLOUR: process.env.EMBED_COLOUR,
+      MSG_VIBING: process.env.MSG_VIBING,
+      MSG_UNVIBING: process.env.MSG_UNVIBING,
+      SKIP_PERCENT: process.env.SKIP_PERCENT,
+      USE_MUSIC_ROLE: process.env.USE_MUSIC_ROLE,
+      MUSIC_ROLE_NAME: process.env.MUSIC_ROLE_NAME,
+      TOKEN: process.env.TOKEN
+    })
+}
+
+async function handleCmdMsg(msg) {
   if (msg.author.bot || !(await isCmd(msg))) return; // If not command or called by bot
 
   let parsed = await parseMsg(msg); // Parses message, returns [0: Prefix, 1: Command, 2: Args string]
@@ -23,10 +37,10 @@ async function handleCmdMsg(msg, musicWorker) {
   let cmd = commands[parsed[1]];
   let args = parsed[2];
 
-  handleCmd(msg, cmd, args, musicWorker);
+  handleCmd(msg, cmd, args);
 }
 
-async function handleCmd(msg, cmd, args, musicWorker) {
+async function handleCmd(msg, cmd, args) {
   let startTime = new Date().getTime();
 
   if (cmd.type == "script") {
@@ -126,19 +140,12 @@ async function handleCmd(msg, cmd, args, musicWorker) {
       procMsg.delete();
     }
   } else if (cmd.type == "music" && process.env.MUSIC_ENABLED == "true") {
-    // If command is set as music type
-    musicWorker.postMessage({
-      msgId: msg.id,
-      interaction: msg.interaction,
-      channelId: msg.channel.id,
-      args,
-      cmd,
-    });
+    runMusicCmd(msg, args, cmd);
   }
 }
 
 const { getShortcode } = require("discord-emoji-converter");
-async function handleReaction(reaction, user, musicWorker, remove) {
+async function handleReaction(reaction, user, remove) {
   if (reaction.partial) {
     try {
       await reaction.fetch();
@@ -187,8 +194,8 @@ async function handleReaction(reaction, user, musicWorker, remove) {
     }
   });
 }
-async function handleMemberJoin(member, musicWorker) {}
-async function handleMemberLeave(member, musicWorker) {}
+async function handleMemberJoin(member) {}
+async function handleMemberLeave(member) {}
 
 module.exports = {
   handleCmdMsg,

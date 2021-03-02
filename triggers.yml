@@ -1,0 +1,10 @@
+# Commands: Info can be found here https://github.com/FrogeBot/frogeBot/wiki/Commands
+reaction:
+  - emoji: ":star:"
+    event: both
+    data:
+      count: 3
+      channel: "815249192754741318"
+      colour: 15844367
+    type: script
+    path: commands/reactions/starboard.js

@@ -105,17 +105,22 @@ client.on('message', async msg => {
             procMsg.delete();
         }
     } else if (cmd.type == 'music' && process.env.MUSIC_ENABLED == "true") { // If command is set as music type
-        musicWorker.postMessage({ msgId: msg.id, channelId: msg.channel.id, args, cmd }) // Post message to music worker
+        runMusicCmd(msg, args, cmd)
     }
 });
 
-// Create music worker
-let musicWorker;
+let runMusicCmd;
 if(process.env.MUSIC_ENABLED == "true") {
-    const { Worker } = require('worker_threads');
-
-    const musicWorkerPath = '/modules/music-worker.js'
-    musicWorker = new Worker(__dirname+musicWorkerPath) // Spawn worker
+    runMusicCmd = require("@frogebot/music")({
+      BOT_NAME: process.env.BOT_NAME,
+      EMBED_COLOUR: process.env.EMBED_COLOUR,
+      MSG_VIBING: process.env.MSG_VIBING,
+      MSG_UNVIBING: process.env.MSG_UNVIBING,
+      SKIP_PERCENT: process.env.SKIP_PERCENT,
+      USE_MUSIC_ROLE: process.env.USE_MUSIC_ROLE,
+      MUSIC_ROLE_NAME: process.env.MUSIC_ROLE_NAME,
+      TOKEN: process.env.TOKEN
+    })
 }
 
 var path = require('path'); 

@@ -24,6 +24,11 @@ dog:
   path: commands/misc/dog.js
   category: Misc
   description: "Gets a random dog image"
+stats:
+  type: script
+  path: commands/misc/stats.js
+  category: Misc
+  description: "Shows bot stats"
   
 pixelate:
   type: image

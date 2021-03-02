@@ -1,5 +1,7 @@
 require("dotenv").config() // Get .env
 
+cmdUses = 0;
+
 // Init discord.js
 const Discord = require('discord.js');
 const client = new Discord.Client();
@@ -39,6 +41,8 @@ client.on('message', async msg => {
     let cmd = commands[parsed[1]]
     let args = parsed[2]
     let startTime = new Date().getTime()
+
+    cmdUses++;
 
     if(cmd.type == 'script') { // If command is set as script type
         let { cmdFunc } = require('./'+cmd.path) // Gets function of command

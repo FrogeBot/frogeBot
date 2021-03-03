@@ -4,7 +4,7 @@ let { findImage, sendImage } = require("../../modules/utils.js")
 var Jimp = require('jimp');
 
 let { exec, jimpReadURL, readBuffer } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
-let { canvasText, canvasRect } = require("../../modules/canvas.js")
+let { canvasText, canvasRect } = require("@frogebot/canvas")
 
 let procMsg
 let imageUrl

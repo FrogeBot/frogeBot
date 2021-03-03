@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "^0.4.0",
+    "@frogebot/canvas": "^1.0.1",
     "@frogebot/image": "^1.1.6",
     "@frogebot/music": "^1.0.0",
     "canvas": "^2.7.0",

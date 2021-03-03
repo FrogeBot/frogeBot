@@ -148,6 +148,11 @@ motivate:
   path: commands/image/motivate.js
   category: Image
   description: "Adds a demotivational poster caption to an image (usage: `motivate <text> | [text]`)"
+impact:
+  type: script
+  path: commands/image/impact.js
+  category: Image
+  description: "Adds top and bottom text in the impact font (usage: `motivate <text> | [text]`)"
 evenframes:
   type: script
   path: commands/image/evenframes.js

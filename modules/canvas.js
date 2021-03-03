@@ -1,9 +1,10 @@
 const { createCanvas, loadImage, registerFont } = require("canvas");
-const { fillTextWithTwemoji, measureText } = require("./emojiCanvasText");
+const { fillTextWithTwemoji, strokeTextWithTwemoji, measureText } = require("./emojiCanvasText");
 
 // Fonts
 registerFont(__dirname + "/../fonts/RobotoBlack.ttf", { family: "Roboto" });
 registerFont(__dirname + "/../fonts/Matoran.ttf", { family: "Matoran" });
+registerFont(__dirname + "/../fonts/Impact.ttf", { family: "Impact Condensed" });
 
 function canvasText(
   text,
@@ -13,7 +14,9 @@ function canvasText(
   align = "center",
   lineSpacing = 1.5,
   fillStyle = "black",
-  bg = "transparent"
+  bg = "transparent",
+  strokeStyle = "transparent",
+  lineWidth = 0
 ) {
   return new Promise(async (resolve, reject) => {
     // Init canvas
@@ -28,6 +31,10 @@ function canvasText(
     }
 
     // Text styling
+    ctx.strokeStyle = strokeStyle
+    ctx.lineWidth = lineWidth;
+    ctx.lineJoin="miter";
+	  ctx.miterLimit=2;
     ctx.fillStyle = fillStyle;
     ctx.textAlign = align;
     ctx.font = fontSize + "px " + fontFamily;
@@ -60,6 +67,9 @@ function printAtWordWrap(context, text, x, y, lineHeight, fitWidth) {
     let forcedLines = text.split("\n"); // Create new lines where they exist in the input text
 
     if (fitWidth <= 0 && forcedLines.length <= 1) {
+      await strokeTextWithTwemoji(context, text, x, y, {
+        emojiTopMarginPercent: 0.1,
+      }); // Strokes text using Twemoji support
       await fillTextWithTwemoji(context, text, x, y, {
         emojiTopMarginPercent: 0.1,
       }); // Fills text using Twemoji support
@@ -77,6 +87,14 @@ function printAtWordWrap(context, text, x, y, lineHeight, fitWidth) {
           if (idx == 1) {
             idx = 2;
           }
+          await strokeTextWithTwemoji(
+            context,
+            words.slice(0, idx - 1).join(" "),
+            lineHeight,
+            x,
+            y + lineHeight * currentLine,
+            { emojiTopMarginPercent: 0.15 }
+          ); // Strokes text using Twemoji support
           await fillTextWithTwemoji(
             context,
             words.slice(0, idx - 1).join(" "),
@@ -93,6 +111,14 @@ function printAtWordWrap(context, text, x, y, lineHeight, fitWidth) {
         }
       }
       if (idx > 0)
+        await strokeTextWithTwemoji(
+          context,
+          words.join(" "),
+          lineHeight,
+          x,
+          y + lineHeight * currentLine,
+          { emojiTopMarginPercent: 0.15 }
+        ); // Strokes text using Twemoji support
         await fillTextWithTwemoji(
           context,
           words.join(" "),

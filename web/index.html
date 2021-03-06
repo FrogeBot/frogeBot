@@ -28,42 +28,30 @@
             <p>And it's open-source.</p>
             <b style="font-family: 'Open Sans', sans-serif;">It's also froge.</b>
         </div>
-        <div id="commands" style="padding-top: 96px;">
+        <div id="commands" style="padding-top: 48px;">
             <h1>Commands</h1>
             <div id="commandList"></div>
-        </div>
-        <div id="footer" style="padding-top: 96px;">
-            <p style="color: var(--color-secondary-light)">Made by Barnaby</p>
-        </div> 
-        
+        </div>        
     </div>
     <script>
-        let helpList = {
-            "help": "Shows the list of commands",
-            "avatar": "Shows the avatar of the mentioned user (usage: `avatar [user]`)",
-            "pixelate": "Pixelates the supplied image (usage: `pixelate [amount = 0+]`)",
-            "blur": "Blurs the supplied image (usage: `blur [amount = 0+]`)",
-            "fliph": "Flips an image horizontally",
-            "flipv": "Flips an image vertically",
-            "fisheye": "Applies a fisheye effect to an image (usage: `fisheye [amount = 0+]`)",
-            "implode": "Implodes and image",
-            "explode": "Explodes an image",
-            "invert": "Inverts an image",
-            "greyscale": "Applies a greyscale filter to the image",
-            "jpeg": "Runs JPEG compression on an image (usage: `jpeg [quality = 0-100]`)",
-            "jpeg2": "Pixelates and applies colour banding to an image",
-            "caption": "Adds a caption to an image (usage: `caption <text>`)",
-            "caption2": "Adds a caption of an alternate style to an image (usage: `caption2 <text>`)",
-            "motivate": "Adds a demotivational poster caption to an image (usage: `motivate <text> | [text]`)",
-            "evenframes": "Returns a GIF image with only its even frames, preserving the speed of the GIF.",
-            "speed": "Doubles the speed of a GIF",
-            "slow": "Halves the speed of a GIF",
-            "square": "Crops the image to a square",
-            "sepia": "Applies a sepia filter to the image",
-            "cat": "Gets a random cat image",
-            "frog": "Gets a random frog image"
-        }
-        document.getElementById("commandList").innerHTML = Object.keys(helpList).map((key) => { return `<div><b>${key}</b> <p>${helpList[key].replace(/`(.+)`/g, "<code>$1</code>").replace(/<text>/g, "&lt;text&gt;")}`}).join("<hr>");
+        fetch('./commands.json')
+        .then(
+            function(response) {
+            if (response.status !== 200) {
+                console.log('Looks like there was a problem. Status Code: ' +
+                response.status);
+                return;
+            }
+
+            // Examine the text in the response
+            response.json().then(function(helpList) {
+                document.getElementById("commandList").innerHTML = Object.keys(helpList).map((key) => { return `<div data-category=${helpList[key].category}><b>${key}</b> <p>${helpList[key].description.replace(/<(.+)>/g, "&lt;$1&gt;").replace(/`(.+)`/g, "<code>$1</code>")}</div>`}).join("<hr>");
+            });
+            }
+        )
+        .catch(function(err) {
+            console.log('Fetch Error :-S', err);
+        });
     </script>
 </body>
 </html>

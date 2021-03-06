@@ -3,7 +3,7 @@ help:
   type: script
   path: commands/misc/help.js
   category: Misc
-  description: "Shows the list of commands"
+  description: "Shows the list of commands (usage: `help [page]`)"
 avatar:
   type: script
   path: commands/misc/avatar.js
@@ -86,7 +86,7 @@ implode:
           - (r)
   title: Implode
   category: Image
-  description: "Implodes and image"
+  description: "Implodes and image (usage: `implode [amount]`)"
 explode:
   type: image
   library: magick
@@ -98,7 +98,7 @@ explode:
           - (r)
   title: Explode
   category: Image
-  description: "Explodes and image"
+  description: "Explodes and image (usage: `explode [amount]`)"
 invert:
   type: image
   library: jimp
@@ -234,7 +234,7 @@ play:
   type: music
   action: play
   category: Music
-  description: Play a song
+  description: "Play a song (usage: `play <query>`)"
 p: # Alias of play
   type: music
   action: play
@@ -243,7 +243,7 @@ queue:
   type: music
   action: queue
   category: Music
-  description: Show the queued tracks
+  description: "Show the queued tracks (usage: `queue [page]`)"
 q: # Alias of queue
   type: music
   action: queue
@@ -252,17 +252,17 @@ np:
   type: music
   action: nowPlaying
   category: Music
-  description: Show what's currently playing
+  description: "Show what's currently playing"
 shuffle:
   type: music
   action: shuffle
   category: Music
-  description: Shuffles the queue
+  description: "Shuffles the queue"
 skip:
   type: music
   action: next
   category: Music
-  description: Skip to the next song
+  description: "Skip to the next song"
 s: # Alias of skip
   type: music
   action: next
@@ -271,12 +271,12 @@ stop:
   type: music
   action: stop
   category: Music
-  description: Stops the music and clears the queue
+  description: "Stops the music and clears the queue"
 leave:
   type: music
   action: disconnect
   category: Music
-  description: Leave the voice channel if in one
+  description: "Leave the voice channel if in one"
 dc: # Alias of leave
   type: music
   action: disconnect

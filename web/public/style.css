@@ -81,3 +81,21 @@ code {
     padding: 4px;
     border-radius: 4px;
 }
+
+#commandList > div {
+    position: relative;
+}
+
+#commandList > div:after {
+    content: attr(data-category);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 16px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+    background-color: rgba(0,0,0,0.5);
+    padding: 2px 4px;
+    border-radius: 3px;
+}

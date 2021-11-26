@@ -6,17 +6,17 @@ async function cmdFunc(msg, args, startTime) {
     let frogUrl = "https://www.reddit.com/r/frogs.json"; // Subreddit JSON url
     request(frogUrl, function(error, response, body){ // Request response
         if (error) // Send an error message if the request fails
-            msg.channel.send({
-                embed: {
+            msg.reply({
+                embeds: [{
                     "title": "Error",
-                    "description": `<@${msg.author.id}> - ${process.env.MSG_SEND_FAIL}`,
+                    "description": `<@${msg.member.id}> - ${process.env.MSG_SEND_FAIL}`,
                     "color": Number(process.env.EMBED_COLOUR),
                     "timestamp": new Date(),
                     "author": {
                         "name": process.env.BOT_NAME,
                         "icon_url": msg.client.user.displayAvatarURL()
                     }
-                }
+                }]
             })
         else {
             let frogJSON = JSON.parse(response.body) // Parse JSON of response
@@ -26,10 +26,10 @@ async function cmdFunc(msg, args, startTime) {
             let randomFrog = frogImages[Math.floor(Math.random()*frogImages.length)]; // Get random image
 
             // Send image
-            msg.channel.send({
-                embed: {
+            msg.reply({
+                embeds: [{
                     "title": "Frog",
-                    "description": `<@${msg.author.id}> ${process.env.MSG_SUCCESS}`,
+                    "description": `<@${msg.member.id}> ${process.env.MSG_SUCCESS}`,
                     "color": Number(process.env.EMBED_COLOUR),
                     "timestamp": new Date(),
                     "author": {
@@ -42,7 +42,7 @@ async function cmdFunc(msg, args, startTime) {
                     "image": {
                         "url": randomFrog.data.url
                     }
-                }
+                }]
             })
         }
     });

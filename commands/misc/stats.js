@@ -3,12 +3,12 @@ const { formatDuration } = require("../../modules/utils")
 
 async function cmdFunc(msg, args, startTime) {
   // Send the stats embed
-  msg.channel.send({
-    "embed": {
+  msg.reply({
+    "embeds": [{
         "title": `Stats`,
         "color": Number(process.env.EMBED_COLOUR),
         "footer": {
-          "text": `FrogeBot v${process.env.npm_package_version}`
+          "text": `FrogeBot v${require('../../package.json').version}`
         },
         "fields": [
           { 
@@ -32,7 +32,7 @@ async function cmdFunc(msg, args, startTime) {
             "name": process.env.BOT_NAME,
             "icon_url": msg.client.user.displayAvatarURL()
         }
-    }
+    }]
 })
 }
 

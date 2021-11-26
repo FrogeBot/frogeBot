@@ -34,11 +34,11 @@ function cmdFunc(msg, args) {
         })
     })
 
-    let page = (args.length > 0 && Number.isInteger(Number(args)) && Number(args) >= 1 && Number(args) <= pages.length) ? Number(args) : 1; // Determine which page to show
+    let page = (args[0] && Number.isInteger(Number(args[0])) && Number(args[0]) >= 1 && Number(args[0]) <= pages.length) ? Number(args[0]) : 1; // Determine which page to show
 
     // Send the help page
-    msg.channel.send({
-        "embed": {
+    msg.reply({
+        "embeds": [{
             "title": `Help - ${pages[page-1].title}`,
             "description": pages[page-1].cmds.map(key => { return "**"+key+"**" + ' ' + commands[key].description }).join('\n'),
             "color": Number(process.env.EMBED_COLOUR),
@@ -49,7 +49,7 @@ function cmdFunc(msg, args) {
                 "name": process.env.BOT_NAME,
                 "icon_url": msg.client.user.displayAvatarURL()
             }
-        }
+        }]
     })
 }
 

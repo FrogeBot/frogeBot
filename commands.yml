@@ -4,11 +4,23 @@ help:
   path: commands/misc/help.js
   category: Misc
   description: "Shows the list of commands (usage: `help [page]`)"
+  options:
+    - type: INTEGER
+      name: page
+      description: The page of help to view
+      min_value: 1
 avatar:
+  interactions:
+    - COMMAND
+    - USER
   type: script
   path: commands/misc/avatar.js
   category: Misc
   description: "Shows the avatar of the mentioned user (usage: `avatar [user]`)"
+  options:
+    - type: USER
+      name: user
+      description: The user to get the avatar of
 cat:
   type: script
   path: commands/misc/cat.js
@@ -39,9 +51,14 @@ pixelate:
     - pixelate:
         params:
           - (r)
-  title: Blur
+  title: Pixelate
   category: Image
   description: "Pixelates the supplied image (usage: `pixelate [amount = 0+]`)"
+  options:
+    - type: NUMBER
+      name: amount
+      description: The pixelation size to apply
+      min_value: 0
 fliph:
   type: image
   library: magick
@@ -60,7 +77,7 @@ flipv:
   description: "Flips an image vertically"
 blur:
   type: image
-  library: magick
+  library: jimp
   r: (input:0) || 8
   r_type: int>0
   list:
@@ -70,11 +87,21 @@ blur:
   title: Blur
   category: Image
   description: "Blurs the supplied image (usage: `blur [amount = 0+]`)"
+  options:
+    - type: NUMBER
+      name: amount
+      description: The blur radius to apply
+      min_value: 0
 fisheye:
   type: script
   path: commands/image/fisheye.js
   category: Image
   description: "Applies a fisheye effect to an image (usage: `fisheye [amount = 0+]`)"
+  options:
+    - type: NUMBER
+      name: amount
+      description: The fisheye strength to apply
+      min_value: 0
 implode:
   type: image
   library: magick
@@ -87,6 +114,11 @@ implode:
   title: Implode
   category: Image
   description: "Implodes and image (usage: `implode [amount]`)"
+  options:
+    - type: NUMBER
+      name: amount
+      description: The implosion strength to apply
+      min_value: 0
 explode:
   type: image
   library: magick
@@ -99,6 +131,11 @@ explode:
   title: Explode
   category: Image
   description: "Explodes and image (usage: `explode [amount]`)"
+  options:
+    - type: NUMBER
+      name: amount
+      description: The explosion strength size to apply
+      min_value: 0
 invert:
   type: image
   library: jimp
@@ -120,6 +157,12 @@ jpeg:
   path: commands/image/jpeg.js
   category: Image
   description: "Runs JPEG compression on an image (usage: `jpeg [quality = 0-100]`)"
+  options:
+    - type: NUMBER
+      name: amount
+      description: The JPEG quality to apply
+      min_value: 0
+      max_value: 100
 jpeg2:
   type: image
   library: jimp
@@ -138,21 +181,43 @@ caption:
   path: commands/image/caption.js
   category: Image
   description: "Adds a caption to an image (usage: `caption <text>`)"
+  options:
+    - type: STRING
+      name: text
+      description: The text to add to the image
 caption2:
   type: script
   path: commands/image/caption2.js
   category: Image
   description: "Adds a caption of an alternate style to an image (usage: `caption2 <text>`)"
+  options:
+    - type: STRING
+      name: text
+      description: The text to add to the image
 motivate:
   type: script
   path: commands/image/motivate.js
   category: Image
-  description: "Adds a demotivational poster caption to an image (usage: `motivate <text> | [text]`)"
+  description: "Adds a demotivational poster caption to an image (usage: `motivate <text> [bottom_text]`)"
+  options:
+    - type: STRING
+      name: text
+      description: The text to add to the image
+    - type: STRING
+      name: bottom_text
+      description: The second line of text to add to the image
 impact:
   type: script
   path: commands/image/impact.js
   category: Image
-  description: "Adds top and bottom text in the impact font (usage: `motivate <text> | [text]`)"
+  description: "Adds top and bottom text in the impact font (usage: `impact <text> [bottom_text]`)"
+  options:
+    - type: STRING
+      name: text
+      description: The text to add to the image
+    - type: STRING
+      name: bottom_text
+      description: The second line of text to add to the image
 evenframes:
   type: script
   path: commands/image/evenframes.js
@@ -189,6 +254,11 @@ matoran:
   path: commands/image/matoran.js
   category: Image
   description: "Creates matoran text (usage: `matoran <text>`)"
+  options:
+    - type: STRING
+      name: text
+      description: The text to use in the image
+      required: true
 scale:
   type: image
   library: jimp

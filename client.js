@@ -3,8 +3,11 @@ require("dotenv").config() // Get .env
 cmdUses = 0;
 
 // Init discord.js
-const Discord = require('discord.js');
-const client = new Discord.Client();
+const { Client, Intents } = require('discord.js');
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS] });
+
+
+let { slashCommands } = require("./modules/utils")
 
 // Log when client is ready
 client.on('ready', () => {
@@ -31,11 +34,11 @@ process.on('uncaughtException', function (err) {
     console.log(err);
 })
 
-const { handleCmdMsg } = require("./modules/commands")
+const { handleCmdMsg, handleCmdInteraction } = require("./modules/commands")
 
 // On message handle command
-client.on('message', async msg => {
-    handleCmdMsg(msg)
+client.on('interactionCreate', async interaction => {
+    handleCmdInteraction(interaction)
 });
 
 const fs = require("fs")
@@ -54,7 +57,7 @@ function gracefulShutdown() { // When the bot is shut down, it does it politely
     client.destroy(); // Disconnect from Discord
     console.log("Destroyed client")
     if(process.env.WEB_ENABLED == "true") { // If using web
-        fs.rmdir("web_images", { recursive: true }, () => { // Remove web_images directory
+        fs.rm("web_images", { recursive: true }, () => { // Remove web_images directory
             console.log('Removed web_images directory.');
             process.exit(); // Exit node process
         })

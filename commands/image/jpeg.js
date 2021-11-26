@@ -9,32 +9,32 @@ let imageUrl
 async function cmdFunc(msg, args, startTime) {
     try {
         // Send processing message
-        procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
-        msg.channel.startTyping()
+        procMsg = await msg.reply(process.env.MSG_PROCESSING);
+        // msg.channel.startTyping()
         
         imageUrl = await findImage(msg) // Find image in channel
         let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1]; // Get extension of image
 
-        let r = (args.length > 0 && Number.isInteger(Number(args.split(" ")[0]))) ? Number(args.split(" ")[0]) : 10;
+        let r = (args[0] && Number.isInteger(Number(args[0]))) ? Number(args[0]) : 10;
         let img = await execGM(imageUrl, [ ["jpeg", [clamp(r, 0, 100)]] ]); // Execute image manipulation
         
         sendImage(msg, "JPEG", startTime, img, ( extension == "gif" ? "gif" : "jpg" ), procMsg) // Send image
     } catch(e) {
         console.log(e)
-        msg.channel.stopTyping()
-        msg.channel.send({
-            embed: {
+        // msg.channel.stopTyping()
+        msg.followUp({
+            embeds: [{
                 "title": "Error",
-                "description": `<@${msg.author.id}> - ${ imageUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
+                "description": `<@${msg.member.id}> - ${ imageUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
                     "name": process.env.BOT_NAME,
                     "icon_url": msg.client.user.displayAvatarURL()
                 }
-            }
+            }]
         })
-        procMsg.delete();
+        // procMsg.delete();
     }
 }
 

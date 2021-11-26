@@ -9,8 +9,8 @@ let imgUrl
 async function cmdFunc(msg, args, startTime) {
     try {
         // Send processing message
-        procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
-        msg.channel.startTyping()
+        procMsg = await msg.reply(process.env.MSG_PROCESSING);
+        // msg.channel.startTyping()
         
         imgUrl = await findImage(msg) // Find image in channel
         let extension = imgUrl.split("?")[0].split(".")[imgUrl.split(".").length-1]; // Get extension of image
@@ -24,20 +24,20 @@ async function cmdFunc(msg, args, startTime) {
                     if(img != null) {
                         sendImage(msg, "Speed", startTime, img, extension, procMsg) // Send image
                     } else {
-                        msg.channel.stopTyping()
-                        msg.channel.send({
-                            embed: {
+                        // msg.channel.stopTyping()
+                        msg.followUp({
+                            embeds: [ {
                                 "title": "Error",
-                                "description": `<@${msg.author.id}> - ${ imgUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
+                                "description": `<@${msg.member.id}> - ${ imgUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
                                 "color": Number(process.env.EMBED_COLOUR),
                                 "timestamp": new Date(),
                                 "author": {
                                     "name": process.env.BOT_NAME,
                                     "icon_url": msg.client.user.displayAvatarURL()
                                 }
-                            }
+                            }]
                         })
-                        procMsg.delete();
+                        // procMsg.delete();
                     }
                 });
             } catch(e) {
@@ -45,37 +45,37 @@ async function cmdFunc(msg, args, startTime) {
                 reject(e)
             }
         } else {
-            msg.channel.stopTyping()
-            msg.channel.send({
-                embed: {
+            // msg.channel.stopTyping()
+            msg.followUp({
+                embeds: [ {
                     "title": "Error",
-                    "description": `<@${msg.author.id}> - Not a GIF image`,
+                    "description": `<@${msg.member.id}> - Not a GIF image`,
                     "color": Number(process.env.EMBED_COLOUR),
                     "timestamp": new Date(),
                     "author": {
                         "name": process.env.BOT_NAME,
                         "icon_url": msg.client.user.displayAvatarURL()
                     }
-                }
+                }]
             })
-            procMsg.delete();
+            // procMsg.delete();
         }
     } catch(e) {
         console.log(e)
-        msg.channel.stopTyping()
-        msg.channel.send({
-            embed: {
+        // msg.channel.stopTyping()
+        msg.followUp({
+            embeds: [ {
                 "title": "Error",
-                "description": `<@${msg.author.id}> - ${ imgUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
+                "description": `<@${msg.member.id}> - ${ imgUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
                     "name": process.env.BOT_NAME,
                     "icon_url": msg.client.user.displayAvatarURL()
                 }
-            }
+            }]
         })
-        procMsg.delete();
+        // procMsg.delete();
     }
 }
 

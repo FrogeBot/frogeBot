@@ -15,8 +15,8 @@ let imageUrl
 async function cmdFunc(msg, args, startTime) {
     try {
         // Send processing message
-        procMsg = await msg.channel.send(process.env.MSG_PROCESSING);
-        msg.channel.startTyping()
+        procMsg = await msg.reply(process.env.MSG_PROCESSING);
+        // msg.channel.startTyping()
 
         imageUrl = await findImage(msg) // Find image in channel
         let extension = imageUrl.split(".")[imageUrl.split(".").length-1].split("?")[0];
@@ -29,8 +29,8 @@ async function cmdFunc(msg, args, startTime) {
         let x = Math.round(width/2-imgFG.bitmap.width/2); // Calculate x offset of image
         let y = Math.round(width*0.05) // Calculate y offset of image
 
-        let textCanvas = await canvasText(args.split("|")[0].trim(), Math.round(width*0.1), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white") // Create top text
-        let textCanvas2 = await canvasText(args.split("|").slice(1).join("|").trim(), Math.round(width*0.07), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white") // Create bottom text
+        let textCanvas = await canvasText(args[0] ? args[0] : "", Math.round(width*0.1), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white") // Create top text
+        let textCanvas2 = await canvasText(args[1] ? args[1] : "", Math.round(width*0.07), "Times New Roman", Math.round(width*0.9), "center", 1.5, "white") // Create bottom text
 
         textCanvas[0] = await gmToBuffer(gm(textCanvas[0]).crop(width, textCanvas[1])) // Crop top text
         textCanvas2[0] = await gmToBuffer(gm(textCanvas2[0]).crop(width, textCanvas2[1])) // Crop bottom text
@@ -49,20 +49,20 @@ async function cmdFunc(msg, args, startTime) {
         sendImage(msg, "Motivate", startTime, img, extension, procMsg) // Send image
     } catch(e) {
         console.log(e)
-        msg.channel.stopTyping()
-        msg.channel.send({
-            embed: {
+        // msg.channel.stopTyping()
+        msg.followUp({
+            embeds: [{
                 "title": "Error",
-                "description": `<@${msg.author.id}> - ${ imageUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
+                "description": `<@${msg.member.id}> - ${ imageUrl != undefined ? process.env.MSG_ERROR : process.env.MSG_NO_IMAGE}`,
                 "color": Number(process.env.EMBED_COLOUR),
                 "timestamp": new Date(),
                 "author": {
                     "name": process.env.BOT_NAME,
                     "icon_url": msg.client.user.displayAvatarURL()
                 }
-            }
+            }]
         })
-        procMsg.delete();
+        // procMsg.delete();
     }
 }
 

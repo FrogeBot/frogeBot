@@ -9,6 +9,16 @@ const client = new Discord.Client();
 // Log when client is ready
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+
+  if(process.env.SLASH_COMMANDS_ENABLED == "true") {
+    if(process.env.SLASH_COMMANDS_SCOPE == "guild") {
+      JSON.parse(process.env.SLASH_COMMANDS_GUILDS).forEach(guildID => { // Parse the list of guilds
+        slashCommands.init(client, commands, process.env.SLASH_COMMANDS_SCOPE, guildID.toString()) // Initialise slash commands on a per-guild basis
+      });
+    } else {
+      slashCommands.init(client, commands, process.env.SLASH_COMMANDS_SCOPE) // Initialise slash commands globally
+    }
+  }
 });
 
 // Catch discord.js errors

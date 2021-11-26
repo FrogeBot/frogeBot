@@ -211,6 +211,136 @@ async function attemptSendImageWeb(
   }
 }
 
+const interactionTypes = ["COMMAND", "USER", "MESSAGE"];
+const optionTypes = ["SUB_COMMAND", "SUB_COMMAND_GROUP", "STRING", "INTEGER", "BOOLEAN", "USER", "CHANNEL", "ROLE", "MENTIONABLE", "NUMBER"];
+async function slashCommandInit(client, commands, scope, guildID = null) {
+  if (process.env.MUSIC_ENABLED != "true") {
+    Object.keys(commands).forEach((cmd) => {
+      if (commands[cmd].type == "music") delete commands[cmd];
+    });
+  }
+  if (scope == "guild") {
+    try {
+      client.application.commands.holds.transformOption = function(option, received) {
+        const stringType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
+        const channelTypesKey = received ? 'channelTypes' : 'channel_types';
+        return {
+          type: typeof option.type === 'number' && !received ? option.type : ApplicationCommandOptionTypes[option.type],
+          name: option.name,
+          description: option.description,
+          min_value: option.min_value,
+          max_value: option.max_value,
+          required:
+            option.required ?? (stringType === 'SUB_COMMAND' || stringType === 'SUB_COMMAND_GROUP' ? undefined : false),
+          autocomplete: option.autocomplete,
+          choices: option.choices,
+          options: option.options?.map(o => this.transformOption(o, received)),
+          [channelTypesKey]: received
+            ? option.channel_types?.map(type => ChannelTypes[type])
+            : option.channelTypes?.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)) ??
+              // When transforming to API data, accept API data
+              option.channel_types,
+        };
+      }
+      let cmdsList = []
+      Object.keys(commands).forEach((cmd) => {
+        if (!commands[cmd].hidden && commands[cmd].description.length >= 1) {
+          if(commands[cmd].interactions) {
+            for(let i = 0; i < commands[cmd].interactions.length; i++) {
+              let type = Math.max(1, interactionTypes.indexOf(commands[cmd].interactions[i])+1);
+              let commandFormatted = {
+                name: cmd,
+                type,
+                description: type == 1 ? commands[cmd].description.replace(/\`/g, "") : undefined,
+                options: (commands[cmd].options && type == 1)
+                  ? commands[cmd].options.map((o) => {
+                    o.type = optionTypes.indexOf(o.type)+1;
+                    return o
+                  })
+                  : undefined,
+              };
+              cmdsList.push(commandFormatted);
+            }
+          } else {
+            let commandFormatted = {
+              name: cmd,
+              description: commands[cmd].description.replace(/\`/g, ""),
+              options: commands[cmd].options
+                ? commands[cmd].options.map((o) => {
+                  o.type = optionTypes.indexOf(o.type)+1;
+                  return o
+                })
+                : undefined,
+            };
+            cmdsList.push(commandFormatted);
+          }
+        }
+      });
+      client.application.commands.set(cmdsList, guildID);
+
+    } catch (e) { console.log(e) }
+  } else {
+    try {
+      client.application.commands.holds.transformOption = function(option, received) {
+        const stringType = typeof option.type === 'string' ? option.type : ApplicationCommandOptionTypes[option.type];
+        const channelTypesKey = received ? 'channelTypes' : 'channel_types';
+        return {
+          type: typeof option.type === 'number' && !received ? option.type : ApplicationCommandOptionTypes[option.type],
+          name: option.name,
+          description: option.description,
+          min_value: option.min_value,
+          max_value: option.max_value,
+          required:
+            option.required ?? (stringType === 'SUB_COMMAND' || stringType === 'SUB_COMMAND_GROUP' ? undefined : false),
+          autocomplete: option.autocomplete,
+          choices: option.choices,
+          options: option.options?.map(o => this.transformOption(o, received)),
+          [channelTypesKey]: received
+            ? option.channel_types?.map(type => ChannelTypes[type])
+            : option.channelTypes?.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)) ??
+              // When transforming to API data, accept API data
+              option.channel_types,
+        };
+      }
+      let cmdsList = []
+      Object.keys(commands).forEach((cmd) => {
+        if (!commands[cmd].hidden && commands[cmd].description.length >= 1) {
+          if(commands[cmd].interactions) {
+            for(let i = 0; i < commands[cmd].interactions.length; i++) {
+              let type = Math.max(1, interactionTypes.indexOf(commands[cmd].interactions[i])+1);
+              let commandFormatted = {
+                name: cmd,
+                type,
+                description: type == 1 ? commands[cmd].description.replace(/\`/g, "") : undefined,
+                options: (commands[cmd].options && type == 1)
+                  ? commands[cmd].options.map((o) => {
+                    o.type = optionTypes.indexOf(o.type)+1;
+                    return o
+                  })
+                  : undefined,
+              };
+              cmdsList.push(commandFormatted);
+            }
+          } else {
+            let commandFormatted = {
+              name: cmd,
+              description: commands[cmd].description.replace(/\`/g, ""),
+              options: commands[cmd].options
+                ? commands[cmd].options.map((o) => {
+                  o.type = optionTypes.indexOf(o.type)+1;
+                  return o
+                })
+                : undefined,
+            };
+            cmdsList.push(commandFormatted);
+          }
+        }
+      });
+      client.application.commands.set(cmdsList);
+    } catch (e) { console.log(e) }
+  }
+}
+
 // Exports
 module.exports = {
   findImage,

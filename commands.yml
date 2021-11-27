@@ -113,7 +113,7 @@ implode:
           - (r)
   title: Implode
   category: Image
-  description: "Implodes and image (usage: `implode [amount]`)"
+  description: "Implodes an image (usage: `implode [amount]`)"
   options:
     - type: NUMBER
       name: amount
@@ -130,7 +130,7 @@ explode:
           - (r)
   title: Explode
   category: Image
-  description: "Explodes and image (usage: `explode [amount]`)"
+  description: "Explodes an image (usage: `explode [amount]`)"
   options:
     - type: NUMBER
       name: amount

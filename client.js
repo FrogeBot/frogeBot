@@ -70,7 +70,7 @@ const YAML = require("yaml");
 const commands = YAML.parse(fs.readFileSync("./commands.yml", "utf8"));
 let commandDescs = {}
 Object.keys(commands).forEach(cmd => {
-    if(!commands[cmd].hidden) {
+    if(!commands[cmd].hidden && (process.env.MUSIC_ENABLED.toString() == "true" || commands[cmd].category != "Music")) {
         commandDescs[cmd] = {
             description: commands[cmd].description,
             category: commands[cmd].category

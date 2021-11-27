@@ -161,7 +161,7 @@ async function handleCmd(interaction, cmd, args) {
 
   if (cmd.type == "script") { // If command is set as script type
     // Debug clear cache
-    delete require.cache[require.resolve("../" + cmd.path)];
+    // delete require.cache[require.resolve("../" + cmd.path)];
 
     let { cmdFunc } = require("../" + cmd.path); // Gets function of command
     setImmediate(async () => {

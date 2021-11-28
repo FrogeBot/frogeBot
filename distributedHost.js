@@ -147,6 +147,8 @@ async function start() {
     // 'connection' listener.
     c.on('data', (data) => {
       let jsonData = JSON.parse(data);
+      console.log(process.env.DIST_WHITELIST.indexOf(jsonData.id))
+      console.log(conns[jsonData.id] == undefined || conns[jsonData.id].connected == false);
       if(process.env.DIST_WHITELIST.indexOf(jsonData.id) != -1 && (conns[jsonData.id] == undefined || conns[jsonData.id].connected == false)) {
         id = jsonData.id
         console.log("Connection ID : " + id)

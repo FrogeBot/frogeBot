@@ -16,17 +16,17 @@ let { findImage, sendImage } = require("./utils");
 const { parseMsg, isCmd } = require("./parse");
 
 let runMusicCmd;
-if(process.env.MUSIC_ENABLED == "true") {
-    runMusicCmd = require("@frogebot/music")({
-      BOT_NAME: process.env.BOT_NAME,
-      EMBED_COLOUR: process.env.EMBED_COLOUR,
-      MSG_VIBING: process.env.MSG_VIBING,
-      MSG_UNVIBING: process.env.MSG_UNVIBING,
-      SKIP_PERCENT: process.env.SKIP_PERCENT,
-      USE_MUSIC_ROLE: process.env.USE_MUSIC_ROLE,
-      MUSIC_ROLE_NAME: process.env.MUSIC_ROLE_NAME,
-      TOKEN: process.env.TOKEN
-    })
+if (process.env.MUSIC_ENABLED == "true") {
+  runMusicCmd = require("@frogebot/music")({
+    BOT_NAME: process.env.BOT_NAME,
+    EMBED_COLOUR: process.env.EMBED_COLOUR,
+    MSG_VIBING: process.env.MSG_VIBING,
+    MSG_UNVIBING: process.env.MSG_UNVIBING,
+    SKIP_PERCENT: process.env.SKIP_PERCENT,
+    USE_MUSIC_ROLE: process.env.USE_MUSIC_ROLE,
+    MUSIC_ROLE_NAME: process.env.MUSIC_ROLE_NAME,
+    TOKEN: process.env.TOKEN,
+  });
 }
 
 async function handleCmdMsg(msg) {
@@ -40,12 +40,12 @@ async function handleCmdMsg(msg) {
   handleCmd(msg, cmd, args);
 }
 async function handleCmdInteraction(interaction) {
-  if(interaction.isCommand()) {
+  if (interaction.isCommand()) {
     let cmd = commands[interaction.commandName];
-    let args = interaction.options.data.map(a => a.value);
+    let args = interaction.options.data.map((a) => a.value);
     handleCmd(interaction, cmd, args);
   }
-  if(interaction.isContextMenu()) {
+  if (interaction.isContextMenu()) {
     let cmd = commands[interaction.commandName];
     let args = [interaction.targetId];
     handleCmd(interaction, cmd, args);
@@ -132,26 +132,28 @@ async function handleCmdOld(msg, cmd, args) {
       console.log(e);
       // msg.channel.stopTyping();
       msg.followUp({
-        embeds: [ {
-          title: "Error",
-          description: `<@${msg.member.id}> - ${
-            imageUrl != undefined
-              ? process.env.MSG_ERROR
-              : process.env.MSG_NO_IMAGE
-          }`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: msg.client.user.displayAvatarURL(),
+        embeds: [
+          {
+            title: "Error",
+            description: `<@${msg.member.id}> - ${
+              imageUrl != undefined
+                ? process.env.MSG_ERROR
+                : process.env.MSG_NO_IMAGE
+            }`,
+            color: Number(process.env.EMBED_COLOUR),
+            timestamp: new Date(),
+            author: {
+              name: process.env.BOT_NAME,
+              icon_url: msg.client.user.displayAvatarURL(),
+            },
           },
-        }],
+        ],
       });
       // procMsg.delete();
     }
   } else if (cmd.type == "music" && process.env.MUSIC_ENABLED == "true") {
     // If command is set as music type
-    runMusicCmd(msg, args, cmd)
+    runMusicCmd(msg, args, cmd);
   }
 }
 
@@ -159,7 +161,8 @@ async function handleCmd(interaction, cmd, args) {
   let startTime = new Date().getTime();
   cmdUses += 1;
 
-  if (cmd.type == "script") { // If command is set as script type
+  if (cmd.type == "script") {
+    // If command is set as script type
     // Debug clear cache
     delete require.cache[require.resolve("../" + cmd.path)];
 
@@ -171,7 +174,10 @@ async function handleCmd(interaction, cmd, args) {
     // If command is set as image type
     let imageUrl = await findImage(interaction); // Find image in channel
     try {
-      procMsg = await interaction.reply({ content: process.env.MSG_PROCESSING, fetchReply: true });
+      procMsg = await interaction.reply({
+        content: process.env.MSG_PROCESSING,
+        fetchReply: true,
+      });
       // msg.channel.startTyping();
 
       let r;
@@ -239,30 +245,31 @@ async function handleCmd(interaction, cmd, args) {
       // msg.channel.stopTyping();
       // procMsg.delete();
       interaction.reply({
-        embeds: [{
-          title: "Error",
-          description: `<@${interaction.member.id}> - ${
-            imageUrl != undefined
-              ? process.env.MSG_ERROR
-              : process.env.MSG_NO_IMAGE
-          }`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: msg.client.user.displayAvatarURL(),
+        embeds: [
+          {
+            title: "Error",
+            description: `<@${interaction.member.id}> - ${
+              imageUrl != undefined
+                ? process.env.MSG_ERROR
+                : process.env.MSG_NO_IMAGE
+            }`,
+            color: Number(process.env.EMBED_COLOUR),
+            timestamp: new Date(),
+            author: {
+              name: process.env.BOT_NAME,
+              icon_url: msg.client.user.displayAvatarURL(),
+            },
           },
-        }],
+        ],
       });
     }
   } else if (cmd.type == "music" && process.env.MUSIC_ENABLED == "true") {
     // If command is set as music type
-    runMusicCmd(msg, args, cmd)
+    runMusicCmd(msg, args, cmd);
   }
 }
 
-
 module.exports = {
   handleCmdMsg,
-  handleCmdInteraction
+  handleCmdInteraction,
 };

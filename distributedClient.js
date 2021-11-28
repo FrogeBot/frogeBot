@@ -7,7 +7,7 @@ const { ShardingManager } = require('discord.js');
 
 const { fetchRecommendedShards } = require("./node_modules/discord.js/src/util/Util.js");
 async function start() {
-  const client = net.createConnection({ port: process.env.DIST_SOCKET_PORT }, () => {
+  const client = net.createConnection({ port: process.env.DIST_SOCKET_PORT, host: process.env.DIST_SOCKET_HOST }, () => {
     // 'connect' listener.
     console.log('Connected to server');
     client.write(JSON.stringify({ id: process.env.DIST_ID, webEnabled: process.env.SHARD_WEB_ENABLED == "true", webHostname: process.env.SHARD_WEB_HOSTNAME, webPort: process.env.SHARD_WEB_PORT, weight: (process.env.DIST_WEIGHT == "AUTO" || !Number.isInteger(Number(process.env.DIST_WEIGHT)) ? os.cpus().length : Number(process.env.DIST_WEIGHT)) }));

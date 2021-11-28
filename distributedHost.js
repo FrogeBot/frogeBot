@@ -110,7 +110,7 @@ async function start() {
     async function getShardList(connIdx) {
       let list = [];
       let totalWeight = Object.values(conns).reduce((prev, current) => { return prev + current.weight }, 0);
-      let shardCountPrior = Object.values(conns).reduce((prev, current, idx) => { if(idx < connIdx) { return prev + Math.round(numShards*(current.weight/totalWeight)) } else { return prev } }, 0);
+      let shardCountPrior = Object.values(conns).reduce((prev, current, idx) => { if(idx < connIdx) { console.log(Math.round(numShards*(current.weight/totalWeight)); return prev + Math.round(numShards*(current.weight/totalWeight)) } else { return prev } }, 0);
       console.log(totalWeight);
       console.log(shardCountPrior);
       for(let i = shardCountPrior; i < shardCountPrior + Math.round((await numShards)*(Object.values(conns)[connIdx].weight/totalWeight)); i++) {

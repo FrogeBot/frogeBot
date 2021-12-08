@@ -32,10 +32,10 @@
         <br><br>
         <b>Shards:</b>
         <div id="shards"></div>
-        <br><br>
+        <br>
         <b>Activity log:</b>
         <div id="activityLog"></div>
-        <br><br>
+        <br>
       </div>
     </div>
     <div id="promptOverlay" onclick="closePrompt()"></div>
@@ -69,47 +69,53 @@
             document.getElementById("activityLog").innerHTML = "";
             body.forEach(element => {
               let text;
-              let system = false;
+              let color = "text";
               switch (element.msg) {
                 case "bind":
                   text = `Server bound`;
-                  system = true;
+                  color = "secondary";
                   break;
                 case "connect":
                   text = `Client [${element.id}] connected`;
+                  color = "success";
                   break;
                 case "shardOnline":
                   text = `Shard ${element.shardId} online`;
+                  color = "success-dull";
                   break;
                 case "shardOffline":
                   text = `Shard ${element.shardId} offline`;
+                  color = "error-dull";
                   break;
                 case "clientShutdown":
                   text = `Client [${element.id}] shutdown`;
+                  color = "error";
                   break;
                 case "disconnect":
                   text = `Client [${element.id}] disconnected`;
+                  color = "error";
                   break;
                 case "crash":
                   text = `Client [${element.id}] may have just crashed`
+                  color = "error";
                   break;
                 case "startShards":
                   text = `Starting shards`;
-                  system = true;
+                  color = "secondary";
                   break;
                 case "restartShards":
                   text = `Restarting shards`;
-                  system = true;
+                  color = "secondary";
                   break;
                 case "killShards":
                   text = `Killing shards`;
-                  system = true;
+                  color = "secondary";
                   break;
                 default:
                   text = JSON.stringify(element);
                   break;
               }
-              document.getElementById("activityLog").innerHTML = `<span class="${system ? 'system' : ''}">${text}</span>` + document.getElementById("activityLog").innerHTML;
+              document.getElementById("activityLog").innerHTML = `<span style="color: var(--color-${color});">${text}</span>` + document.getElementById("activityLog").innerHTML;
             });
           })
           .catch(err => console.error(err));

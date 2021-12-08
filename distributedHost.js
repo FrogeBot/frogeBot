@@ -39,7 +39,7 @@ async function start() {
       secret: process.env.DIST_WHITELIST[0],
       resave: true,
       saveUninitialized: false,
-      cookie: { secure: false, maxAge: 60000 }
+      cookie: { secure: false, maxAge: 300000 }
     }))
 
     // Set up rate limiter: maximum of 50 requests per minute
@@ -85,7 +85,7 @@ async function start() {
       if(req.session.authed) {
         let connCount = 0;
         if (conns) connCount = Object.values(conns).reduce((prev, current, idx) => { if(current.connected) { return prev+1 } else { return prev } }, 0)
-        res.send({ connCount, shardCount: await numShards })
+        res.send({ connCount, shardCount: await numShards, shards })
       } else {
         res.sendStatus(401)
       }
@@ -129,13 +129,48 @@ async function start() {
     app.post('/admin/startShards', (req, res) => {
       if(req.socket.remoteAddress == "::ffff:127.0.0.1") req.session.authed = true;
       if(req.session.authed) {
+        activityLog.push({ msg: 'startShards' })
         Object.values(conns).forEach(async (conn, idx) => {
           if(conn == undefined) return;
-          conn.c.write(JSON.stringify({
+          conn.c.sendMessage({
             msg: "spawn",
             numShards: await numShards,
             shardList: await getShardList(idx)
-          }))
+          })
+        });
+        res.sendStatus(200)
+      } else {
+        res.sendStatus(401)
+      }
+    });
+    app.post('/admin/killShards', (req, res) => {
+      if(req.socket.remoteAddress == "::ffff:127.0.0.1") req.session.authed = true;
+      if(req.session.authed) {
+        activityLog.push({ msg: 'killShards' })
+        Object.values(conns).forEach(async (conn, idx) => {
+          if(conn == undefined) return;
+          conn.c.sendMessage({
+            msg: "kill",
+            numShards: await numShards,
+            shardList: await getShardList(idx)
+          })
+        });
+        res.sendStatus(200)
+      } else {
+        res.sendStatus(401)
+      }
+    });
+    app.post('/admin/restartShards', (req, res) => {
+      if(req.socket.remoteAddress == "::ffff:127.0.0.1") req.session.authed = true;
+      if(req.session.authed) {
+        activityLog.push({ msg: 'restartShards' })
+        Object.values(conns).forEach(async (conn, idx) => {
+          if(conn == undefined) return;
+          conn.c.sendMessage({
+            msg: "restart",
+            numShards: await numShards,
+            shardList: await getShardList(idx)
+          })
         });
         res.sendStatus(200)
       } else {
@@ -148,16 +183,18 @@ async function start() {
     })
   }
 
-  var net = require('net');
+  var net = require('net'),
+      JsonSocket = require('json-socket');
   
   let activityLog = [];
   let conns = {};
   let shards = {};
   const server = net.createServer((c) => {
+    c = new JsonSocket(c);
     let id = "unknown";
     // 'connection' listener.
-    c.on('data', (data) => {
-      let jsonData = JSON.parse(data);
+    c.on('message', (jsonData) => {
+      //let jsonData = JSON.parse(data);
       if(jsonData.msg == "connect") {
         if(JSON.parse(process.env.DIST_WHITELIST).indexOf(jsonData.id) != -1 && (conns[jsonData.id] == undefined || conns[jsonData.id].connected == false)) {
           activityLog.push(Object.assign({}, jsonData))

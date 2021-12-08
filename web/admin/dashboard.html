@@ -27,10 +27,23 @@
         <b>Shard count:</b>
         <p id="shardCount">0</p>
         <button class="btn btn-outline-primary" onclick="startShards()">Start Shards</button>
+        <button class="btn btn-outline-danger" onclick="killShardsPrompt()">Kill Shards</button>
+        <button class="btn btn-outline-warning" onclick="restartShardsPrompt()">Restart Shards</button>
+        <br><br>
+        <b>Shards:</b>
+        <div id="shards"></div>
         <br><br>
         <b>Activity log:</b>
         <div id="activityLog"></div>
+        <br><br>
       </div>
+    </div>
+    <div id="promptOverlay" onclick="closePrompt()"></div>
+    <div id="prompt">
+      <h3>Danger - <b>ACTION</b></h3>
+      <p>Doing this may be inadvisable, are you certain you want to <b>ACTION</b>?</p>
+      <button class="btn btn-outline-danger continue">Yes, I'm Sure</button>
+      <button class="btn btn-outline-info" onclick="closePrompt()">Cancel</button>
     </div>
     <script>
       function getData() {
@@ -40,6 +53,11 @@
           .then(body => {
             document.getElementById("connCount").innerText = body.connCount;
             document.getElementById("shardCount").innerText = body.shardCount;
+
+            document.getElementById("shards").innerHTML = Object.keys(body.shards).map(id => { return `<span class="${body.shards[id].online ? 'online' : 'offline'}"><b>Shard ${id}</b><p>Host: [${body.shards[id].host}]</p></span>` }).join('');
+            if(Object.keys(body.shards).length == 0) {
+              document.getElementById("shards").innerHTML = `<span><b>No shards </b><p>Click <b>START SHARDS</b> to spawn them</p></span>`
+            }
           })
           .catch(err => console.error(err));
           
@@ -51,9 +69,11 @@
             document.getElementById("activityLog").innerHTML = "";
             body.forEach(element => {
               let text;
+              let system = false;
               switch (element.msg) {
                 case "bind":
                   text = `Server bound`;
+                  system = true;
                   break;
                 case "connect":
                   text = `Client [${element.id}] connected`;
@@ -62,7 +82,7 @@
                   text = `Shard ${element.shardId} online`;
                   break;
                 case "shardOffline":
-                  text = `Shard ${jsonData.shardId} offline`;
+                  text = `Shard ${element.shardId} offline`;
                   break;
                 case "clientShutdown":
                   text = `Client [${element.id}] shutdown`;
@@ -73,11 +93,23 @@
                 case "crash":
                   text = `Client [${element.id}] may have just crashed`
                   break;
+                case "startShards":
+                  text = `Starting shards`;
+                  system = true;
+                  break;
+                case "restartShards":
+                  text = `Restarting shards`;
+                  system = true;
+                  break;
+                case "killShards":
+                  text = `Killing shards`;
+                  system = true;
+                  break;
                 default:
                   text = JSON.stringify(element);
                   break;
               }
-              document.getElementById("activityLog").innerHTML = `<span>${text}</span>` + document.getElementById("activityLog").innerHTML;
+              document.getElementById("activityLog").innerHTML = `<span class="${system ? 'system' : ''}">${text}</span>` + document.getElementById("activityLog").innerHTML;
             });
           })
           .catch(err => console.error(err));
@@ -85,8 +117,61 @@
       getData();
       setInterval(getData, 5000);
       
+      function closePrompt() {
+        var elem = document.querySelector("#prompt > button.continue");
+        elem.replaceWith(elem.cloneNode(true));
+
+        document.getElementById("prompt").style.display = "none";
+        document.getElementById("prompt").style.visibility = "hidden";
+        document.getElementById("promptOverlay").style.display = "none";
+        document.getElementById("promptOverlay").style.visibility = "hidden";
+      }
+      function killShardsPrompt() {
+        var elem = document.querySelector("#prompt > button.continue");
+        elem.replaceWith(elem.cloneNode(true));
+
+        document.querySelector("#prompt > button.continue").addEventListener("click", closePrompt);
+        document.querySelector("#prompt > button.continue").addEventListener("click", killShards);
+
+        document.querySelector("#prompt > h3 > b").innerText = "KILL SHARDS";
+        document.querySelector("#prompt > p > b").innerText = "KILL ALL RUNNING SHARD PROCESSES";
+
+        document.getElementById("prompt").style.display = "block";
+        document.getElementById("prompt").style.visibility = "visible";
+        document.getElementById("promptOverlay").style.display = "block";
+        document.getElementById("promptOverlay").style.visibility = "visible";
+      }
+      function restartShardsPrompt() {
+        var elem = document.querySelector("#prompt > button.continue");
+        elem.replaceWith(elem.cloneNode(true));
+
+        document.querySelector("#prompt > button.continue").addEventListener("click", closePrompt);
+        document.querySelector("#prompt > button.continue").addEventListener("click", restartShards);
+
+        document.querySelector("#prompt > h3 > b").innerText = "RESTART SHARDS";
+        document.querySelector("#prompt > p > b").innerText = "KILL AND THEN RESPAWN ALL RUNNING SHARD PROCESSES";
+
+        document.getElementById("prompt").style.display = "block";
+        document.getElementById("prompt").style.visibility = "visible";
+        document.getElementById("promptOverlay").style.display = "block";
+        document.getElementById("promptOverlay").style.visibility = "visible";
+      }
       function startShards() {
         fetch("/admin/startShards", {
+          method: "POST"
+        }).then(res => {
+          console.log("Request complete! response:", res);
+        });
+      }
+      function killShards() {
+        fetch("/admin/killShards", {
+          method: "POST"
+        }).then(res => {
+          console.log("Request complete! response:", res);
+        });
+      }
+      function restartShards() {
+        fetch("/admin/restartShards", {
           method: "POST"
         }).then(res => {
           console.log("Request complete! response:", res);

@@ -107,7 +107,7 @@ async function start() {
       }
     });
     app.post('/admin/login', (req, res) => {
-      if(req.body.password == "password") {
+      if(req.body.password == process.env.DIST_WEB_PASSWORD) {
         req.session.authed = true;
         res.sendStatus(200)
       } else {

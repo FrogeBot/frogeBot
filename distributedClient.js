@@ -10,7 +10,7 @@ async function start() {
   const client = net.createConnection({ port: process.env.DIST_SOCKET_PORT, host: process.env.DIST_SOCKET_HOST }, () => {
     // 'connect' listener.
     console.log('Connected to server');
-    client.write(JSON.stringify({ id: process.env.DIST_ID, webEnabled: process.env.SHARD_WEB_ENABLED == "true", webHostname: process.env.SHARD_WEB_HOSTNAME, webPort: process.env.SHARD_WEB_PORT, weight: (process.env.DIST_WEIGHT == "AUTO" || !Number.isInteger(Number(process.env.DIST_WEIGHT)) ? os.cpus().length : Number(process.env.DIST_WEIGHT)) }));
+    client.write(JSON.stringify({ msg: "connect", id: process.env.DIST_ID, webEnabled: process.env.SHARD_WEB_ENABLED == "true", webHostname: process.env.SHARD_WEB_HOSTNAME, webPort: process.env.SHARD_WEB_PORT, weight: (process.env.DIST_WEIGHT == "AUTO" || !Number.isInteger(Number(process.env.DIST_WEIGHT)) ? os.cpus().length : Number(process.env.DIST_WEIGHT)) }));
   });
   client.on('data', (data) => {
     jsonData = JSON.parse(data);
@@ -18,7 +18,7 @@ async function start() {
     if(jsonData.msg == "spawn") {
       manager.totalShards = jsonData.numShards;
       manager.shardList = jsonData.shardList;
-      manager.spawn();
+      manager.spawn().catch(e => {})
     }
   });
   client.on('end', () => {
@@ -45,6 +45,7 @@ async function start() {
   });
 
   function gracefulShutdown() { // When the bot is shut down, it does it politely
+    client.write(JSON.stringify({ msg: "clientShutdown", id: process.env.DIST_ID }));
     if(process.env.SHARD_WEB_ENABLED == "true") { // If using web
         fs.rm("web_images", { recursive: true }, () => { // Remove web_images directory
             console.log('Removed web_images directory.');
@@ -54,6 +55,11 @@ async function start() {
         process.exit(); // Exit node process
     }
   }
+
+  // Catch process errors
+  process.on('uncaughtException', function (err) {
+    console.log(err);
+  })
 
   // e.g. kill
   process.on('SIGTERM', gracefulShutdown);
@@ -105,10 +111,11 @@ async function start() {
       })
   }
   
-  const manager = new ShardingManager('./client.js', { token: process.env.TOKEN });
+  const manager = new ShardingManager('./client.js', { token: process.env.TOKEN, respawn: true, mode: 'process' });
 
   manager.on('shardCreate', shard => {
     console.log(`Shard ${shard.id} : Launched`)
+    client.write(JSON.stringify({ msg: "shardOnline", shardId: shard.id }));
     shard.on('message', data => {
       if(data[0] == "log") console.log(`Shard ${shard.id} : ${data[1]}`)
       if(data[0] == "error") console.error(`Shard ${shard.id} : ${data[1]}`)
@@ -116,6 +123,9 @@ async function start() {
       if(data[0] == "warn") console.warn(`Shard ${shard.id} : ${data[1]}`)
       if(data[0] == "debug") console.debug(`Shard ${shard.id} : ${data[1]}`)
     });
+    shard.on('death', process => {
+      client.write(JSON.stringify({ msg: "shardOffline", shardId: shard.id }));
+    })
   });
 }
 start();

@@ -27,6 +27,9 @@
         <b>Shard count:</b>
         <p id="shardCount">0</p>
         <button class="btn btn-outline-primary" onclick="startShards()">Start Shards</button>
+        <br><br>
+        <b>Activity log:</b>
+        <div id="activityLog"></div>
       </div>
     </div>
     <script>
@@ -37,6 +40,45 @@
           .then(body => {
             document.getElementById("connCount").innerText = body.connCount;
             document.getElementById("shardCount").innerText = body.shardCount;
+          })
+          .catch(err => console.error(err));
+          
+        fetch('/admin/log')
+          // Retrieve its body as ReadableStream
+          .then(response => response.json())
+          .then(body => {
+            console.log(body)
+            document.getElementById("activityLog").innerHTML = "";
+            body.forEach(element => {
+              let text;
+              switch (element.msg) {
+                case "bind":
+                  text = `Server bound`;
+                  break;
+                case "connect":
+                  text = `Client [${element.id}] connected`;
+                  break;
+                case "shardOnline":
+                  text = `Shard ${element.shardId} online`;
+                  break;
+                case "shardOffline":
+                  text = `Shard ${jsonData.shardId} offline`;
+                  break;
+                case "clientShutdown":
+                  text = `Client [${element.id}] shutdown`;
+                  break;
+                case "disconnect":
+                  text = `Client [${element.id}] disconnected`;
+                  break;
+                case "crash":
+                  text = `Client [${element.id}] may have just crashed`
+                  break;
+                default:
+                  text = JSON.stringify(element);
+                  break;
+              }
+              document.getElementById("activityLog").innerHTML = `<span>${text}</span>` + document.getElementById("activityLog").innerHTML;
+            });
           })
           .catch(err => console.error(err));
       }

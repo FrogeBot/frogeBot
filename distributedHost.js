@@ -90,6 +90,15 @@ async function start() {
         res.sendStatus(401)
       }
     });
+    app.get('/admin/log', async (req, res) => {
+      if(req.socket.remoteAddress == "::ffff:127.0.0.1") req.session.authed = true;
+      if(req.session.authed) {
+        let shortLog = activityLog.slice(-Math.min(activityLog.length, 30))
+        res.send(shortLog)
+      } else {
+        res.sendStatus(401)
+      }
+    });
     app.get('/admin/login', (req, res) => {
       if(req.session.authed) {
         res.redirect('/admin')
@@ -111,8 +120,6 @@ async function start() {
       let list = [];
       let totalWeight = Object.values(conns).reduce((prev, current) => { return prev + current.weight }, 0);
       let shardCountPrior = await Object.values(conns).reduce(async (prev, current, idx) => { if(idx < connIdx) { return prev + Math.round((await numShards)*(current.weight/totalWeight)) } else { return prev } }, 0);
-      console.log(totalWeight);
-      console.log(shardCountPrior);
       for(let i = shardCountPrior; i < shardCountPrior + Math.round((await numShards)*(Object.values(conns)[connIdx].weight/totalWeight)); i++) {
         list.push(i);
       }
@@ -143,33 +150,71 @@ async function start() {
 
   var net = require('net');
   
+  let activityLog = [];
   let conns = {};
+  let shards = {};
   const server = net.createServer((c) => {
     let id = "unknown";
     // 'connection' listener.
     c.on('data', (data) => {
       let jsonData = JSON.parse(data);
-      if(JSON.parse(process.env.DIST_WHITELIST).indexOf(jsonData.id) != -1 && (conns[jsonData.id] == undefined || conns[jsonData.id].connected == false)) {
-        id = jsonData.id
-        console.log("Connection ID : " + id)
-        jsonData.connected = true;
-        jsonData.c = c;
-        conns[id] = jsonData;
-      } else {
-        c.end();
+      if(jsonData.msg == "connect") {
+        if(JSON.parse(process.env.DIST_WHITELIST).indexOf(jsonData.id) != -1 && (conns[jsonData.id] == undefined || conns[jsonData.id].connected == false)) {
+          activityLog.push(Object.assign({}, jsonData))
+          id = jsonData.id
+          console.log("Connection ID : " + id)
+          jsonData.connected = true;
+          conns[id] = jsonData;
+          conns[id].c = c;
+        } else {
+          c.end();
+        }
+      }
+      if(jsonData.msg == "shardOnline" && JSON.parse(process.env.DIST_WHITELIST).indexOf(id) != -1) {
+        activityLog.push(Object.assign({}, jsonData))
+        console.log(`Shard ${jsonData.shardId} online`)
+        shards[jsonData.shardId] = {
+          online: true,
+          host: id
+        }
+        // console.dir(shards)
+      }
+      if(jsonData.msg == "shardOffline" && JSON.parse(process.env.DIST_WHITELIST).indexOf(id) != -1) {
+        activityLog.push(Object.assign({}, jsonData))
+        console.log(`Shard ${jsonData.shardId} offline`)
+        shards[jsonData.shardId] = {
+          online: false,
+          host: id
+        }
+        // console.dir(shards)
+      }
+      if(jsonData.msg == "clientShutdown" && JSON.parse(process.env.DIST_WHITELIST).indexOf(id) != -1) {
+        activityLog.push(Object.assign({}, jsonData))
+        console.log(`Client [${id}] shutdown`)
+        conns[id].connected = false;
+        Object.keys(shards).forEach(shard => {
+          if(shards[shard].host == id) {
+            shards[shard].online = false;
+          }
+        })
       }
     });
     c.on('end', () => {
       if(conns[id]) {
         console.log(`Client [${id}] disconnected`);
+        activityLog.push({ msg: "disconnect", id })
         conns[id].connected = false;
       } else {
         console.log(`Unauthorised connection refused`);
+        // activityLog.push({ msg: "refusal" })
       }
     });
     c.on('error', (err) => {
-      console.error(`Client [${id}] may have just crashed`)
-      if(conns[id]) conns[id].connected = false;
+      if(conns[id] && conns[id].connected) {
+        console.error(`Client [${id}] may have just crashed`)
+        activityLog.push({ msg: "crash", id })
+        if(conns[id]) conns[id].connected = false;
+      }
     })
   });
   server.on('error', (err) => {
@@ -177,6 +222,7 @@ async function start() {
   });
   server.listen(process.env.DIST_SOCKET_PORT, () => {
     console.log('Server bound');
+    activityLog.push({ msg: "bind" })
   });
 }
 start();

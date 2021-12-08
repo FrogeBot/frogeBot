@@ -99,3 +99,17 @@ code {
     padding: 2px 4px;
     border-radius: 3px;
 }
+
+#activityLog {
+    margin-top: 8px;
+    border: 4px solid rgba(0,0,0,0.5);
+}
+#activityLog > span {
+    width: 100%;
+    padding: 12px;
+    background-color:rgba(0,0,0,0.2);
+    display: block;
+}
+#activityLog > span:nth-child(even) {
+    background-color:rgba(0,0,0,0.4);
+}

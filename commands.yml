@@ -138,7 +138,7 @@ explode:
       min_value: 0
 invert:
   type: image
-  library: jimp
+  library: native
   list:
     - invert
   title: Invert

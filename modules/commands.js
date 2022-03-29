@@ -6,7 +6,7 @@ const YAML = require("yaml");
 const commands = YAML.parse(fs.readFileSync("./commands.yml", "utf8"));
 
 require("@frogebot/canvas");
-let { exec, execGM, getFormat } = require("@frogebot/image")({
+let { exec, execGM, execGPU, getFormat } = require("@frogebot/image")({
   imageMagick: process.env.USE_IMAGEMAGICK,
   maxGifSize: process.env.MAX_GIF_SIZE,
   maxImageSize: process.env.MAX_IMAGE_SIZE,
@@ -122,6 +122,7 @@ async function handleCmdOld(msg, cmd, args) {
       let img;
       if (cmd.library == "jimp") img = await exec(imageUrl, list);
       if (cmd.library == "magick") img = await execGM(imageUrl, list);
+      if (cmd.library == "native") img = await execGPU(imageUrl, list);
 
       let extension = await getFormat(imageUrl);
 
@@ -228,6 +229,7 @@ async function handleCmd(interaction, cmd, args) {
       let img;
       if (cmd.library == "jimp") img = await exec(imageUrl, list);
       if (cmd.library == "magick") img = await execGM(imageUrl, list);
+      if (cmd.library == "native") img = await execGPU(imageUrl, list);
 
       let extension = await getFormat(imageUrl);
 
@@ -238,7 +240,8 @@ async function handleCmd(interaction, cmd, args) {
       console.log(e);
       // msg.channel.stopTyping();
       // procMsg.delete();
-      interaction.reply({
+      procMsg.edit({
+        content: `${process.env.MSG_UNVIBING} An error occurred`,
         embeds: [{
           title: "Error",
           description: `<@${interaction.member.id}> - ${
@@ -250,7 +253,7 @@ async function handleCmd(interaction, cmd, args) {
           timestamp: new Date(),
           author: {
             name: process.env.BOT_NAME,
-            icon_url: msg.client.user.displayAvatarURL(),
+            icon_url: interaction.client.user.displayAvatarURL(),
           },
         }],
       });

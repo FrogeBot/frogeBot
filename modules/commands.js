@@ -240,7 +240,7 @@ async function handleCmd(interaction, cmd, args) {
       console.log(e);
       // msg.channel.stopTyping();
       // procMsg.delete();
-      procMsg.edit({
+      interaction.editReply({
         content: `${process.env.MSG_UNVIBING} An error occurred`,
         embeds: [{
           title: "Error",

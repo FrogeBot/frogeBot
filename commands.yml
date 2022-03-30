@@ -61,7 +61,7 @@ pixelate:
       min_value: 0
 fliph:
   type: image
-  library: magick
+  library: native
   list:
     - flop
   title: Flip H
@@ -146,7 +146,7 @@ invert:
   description: "Inverts an image"
 greyscale:
   type: image
-  library: jimp
+  library: native
   list:
     - greyscale
   title: Greyscale
@@ -243,7 +243,7 @@ square:
   description: "Crops the image to a square"
 sepia:
   type: image
-  library: jimp
+  library: native
   list:
     - sepia
   title: Sepia

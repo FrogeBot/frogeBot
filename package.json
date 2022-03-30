@@ -11,7 +11,7 @@
   "dependencies": {
     "@discordjs/opus": "^0.4.0",
     "@frogebot/canvas": "^1.1.1",
-    "@frogebot/image": "file:../froge/image",
+    "@frogebot/image": "file:../image",
     "@frogebot/music": "^1.0.0",
     "discord.js": "^13.3.1",
     "dotenv": "^8.2.0",

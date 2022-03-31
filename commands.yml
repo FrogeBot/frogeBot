@@ -77,7 +77,7 @@ flipv:
   description: "Flips an image vertically"
 blur:
   type: image
-  library: jimp
+  library: native
   r: (input:0) || 8
   r_type: int>0
   list:

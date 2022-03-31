@@ -2,7 +2,7 @@ require("dotenv").config()
 
 let { findImage, sendImage } = require("../../modules/utils.js")
 
-let { jimpReadURL, execGM, gmToBuffer } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
+let { jimpReadURL, execGM, gmToBuffer } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxGifFrames: process.env.MAX_GIF_FRAMES, maxImageSize: process.env.MAX_IMAGE_SIZE })
 let { canvasText, canvasWindow } = require("@frogebot/canvas");
 
 var gm = require('gm');
@@ -35,7 +35,7 @@ async function cmdFunc(msg, args, startTime) {
         let img = await execGM(imageUrl, [
             ["composite", [textCanvas[0], Math.round(width*0.05), Math.round(width*0.05 - imgFG.bitmap.width*0.025)]],
             ["composite", [textCanvas2[0], Math.round(width*0.05), Math.round(height - width*0.05 + imgFG.bitmap.width*0.025)]]
-        ]) // Execute image manipulation
+        ], msg) // Execute image manipulation
         
         sendImage(msg, "Impact", startTime, img, extension, procMsg) // Send image
     } catch(e) {

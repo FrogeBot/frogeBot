@@ -69,7 +69,7 @@ fliph:
   description: "Flips an image horizontally"
 flipv:
   type: image
-  library: magick
+  library: native
   list:
     - flip
   title: Flip V

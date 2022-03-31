@@ -44,7 +44,7 @@ stats:
   
 pixelate:
   type: image
-  library: jimp
+  library: native
   r: (input:0) || 8
   r_type: int
   list:
@@ -165,7 +165,7 @@ jpeg:
       max_value: 100
 jpeg2:
   type: image
-  library: jimp
+  library: native
   list:
     - posterize:
         params: 

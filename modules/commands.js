@@ -43,7 +43,7 @@ async function handleCmdMsg(msg) {
 async function handleCmdInteraction(interaction) {
   if(interaction.isCommand()) {
     let cmd = commands[interaction.commandName];
-    let args = cmd.options.map(o => { if(interaction.options.get(o.name)) { return interaction.options.get(o.name).value } else { return undefined } })
+    let args = cmd.options ? cmd.options.map(o => { if(interaction.options.get(o.name)) { return interaction.options.get(o.name).value } else { return undefined } }) : []
     handleCmd(interaction, cmd, args);
   }
   if(interaction.isContextMenu()) {

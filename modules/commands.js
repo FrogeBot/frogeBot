@@ -6,9 +6,10 @@ const YAML = require("yaml");
 const commands = YAML.parse(fs.readFileSync("./commands.yml", "utf8"));
 
 require("@frogebot/canvas");
-let { exec, execGM, getFormat } = require("@frogebot/image")({
+let { exec, execGM, execGPU, getFormat } = require("@frogebot/image")({
   imageMagick: process.env.USE_IMAGEMAGICK,
   maxGifSize: process.env.MAX_GIF_SIZE,
+  maxGifFrames: process.env.MAX_GIF_FRAMES,
   maxImageSize: process.env.MAX_IMAGE_SIZE,
 });
 let { findImage, sendImage } = require("./utils");
@@ -42,116 +43,13 @@ async function handleCmdMsg(msg) {
 async function handleCmdInteraction(interaction) {
   if(interaction.isCommand()) {
     let cmd = commands[interaction.commandName];
-    let args = interaction.options.data.map(a => a.value);
+    let args = cmd.options ? cmd.options.map(o => { if(interaction.options.get(o.name)) { return interaction.options.get(o.name).value } else { return undefined } }) : []
     handleCmd(interaction, cmd, args);
   }
   if(interaction.isContextMenu()) {
     let cmd = commands[interaction.commandName];
     let args = [interaction.targetId];
     handleCmd(interaction, cmd, args);
-  }
-}
-
-async function handleCmdOld(msg, cmd, args) {
-  let startTime = new Date().getTime();
-
-  if (cmd.type == "script") {
-    // If command is set as script type
-    let { cmdFunc } = require("../" + cmd.path); // Gets function of command
-    setImmediate(async () => {
-      cmdFunc(msg, args, startTime); // Runs command function
-    });
-  } else if (cmd.type == "image") {
-    // If command is set as image type
-    let imageUrl = await findImage(msg); // Find image in channel
-    try {
-      procMsg = await msg.reply(process.env.MSG_PROCESSING);
-      // msg.channel.startTyping();
-
-      let r;
-      if (cmd.r) {
-        // Handle replacement of input args in "r" val of command
-        for (let i = cmd.r.split("||").length - 1; i >= 0; i--) {
-          newR = cmd.r.split("||")[i].trim();
-          if (newR.match(/\(input\)/) && args[i].length > 0) {
-            newR = newR.replace(/\(input\)/, args[i]);
-            if (cmd.r_type == "int" && Number.isInteger(Number(newR))) r = newR;
-            if (cmd.r_type == "num" && !Number.isNaN(Number(newR))) r = newR;
-          } else if (newR.match(/\(input\:[0-9]+\)/) && args[i].length > 0) {
-            newR = newR.replace(
-              /\(input:[0-9]+\)/,
-              args[newR.replace(")", "").split(":")[1]]
-            );
-            if (cmd.r_type.startsWith("int") && Number.isInteger(Number(newR)))
-              r = newR;
-            if (cmd.r_type.startsWith("num") && !Number.isNaN(Number(newR)))
-              r = newR;
-          } else if (
-            !newR.match(/\(input\)/) &&
-            !newR.match(/\(input\:[0-9]+\)/)
-          ) {
-            r = newR;
-          }
-        }
-      }
-      // Parse "r" as a number if required
-      if (cmd.r_type == "int") r = parseInt(r);
-      if (cmd.r_type == "num") r = Number(r);
-      if (cmd.r_type == "int>0") r = Math.max(0, parseInt(r));
-      if (cmd.r_type == "num>0") r = Math.max(0, Number(r));
-
-      // Replace "(r)" with the variable r in params
-      let list = cmd.list.map((l) => {
-        if (typeof l == "object") {
-          return [
-            Object.keys(l)[0],
-            l[Object.keys(l)[0]].params.map((p) => {
-              if (p == "(r)") {
-                return r;
-              } else {
-                return p;
-              }
-            }),
-          ];
-        } else {
-          return [l, []];
-        }
-      });
-
-      // Execute command
-      let img;
-      if (cmd.library == "jimp") img = await exec(imageUrl, list);
-      if (cmd.library == "magick") img = await execGM(imageUrl, list);
-
-      let extension = await getFormat(imageUrl);
-
-      // Send image
-      sendImage(msg, cmd.title, startTime, img, extension, procMsg);
-    } catch (e) {
-      // If error, catch it and let the user know
-      console.log(e);
-      // msg.channel.stopTyping();
-      msg.followUp({
-        embeds: [ {
-          title: "Error",
-          description: `<@${msg.member.id}> - ${
-            imageUrl != undefined
-              ? process.env.MSG_ERROR
-              : process.env.MSG_NO_IMAGE
-          }`,
-          color: Number(process.env.EMBED_COLOUR),
-          timestamp: new Date(),
-          author: {
-            name: process.env.BOT_NAME,
-            icon_url: msg.client.user.displayAvatarURL(),
-          },
-        }],
-      });
-      // procMsg.delete();
-    }
-  } else if (cmd.type == "music" && process.env.MUSIC_ENABLED == "true") {
-    // If command is set as music type
-    runMusicCmd(msg, args, cmd)
   }
 }
 
@@ -171,7 +69,7 @@ async function handleCmd(interaction, cmd, args) {
     // If command is set as image type
     let imageUrl = await findImage(interaction); // Find image in channel
     try {
-      procMsg = await interaction.reply({ content: process.env.MSG_PROCESSING, fetchReply: true });
+      let procMsg = await interaction.reply({ content: process.env.MSG_PROCESSING, fetchReply: true });
       // msg.channel.startTyping();
 
       let r;
@@ -226,8 +124,9 @@ async function handleCmd(interaction, cmd, args) {
 
       // Execute command
       let img;
-      if (cmd.library == "jimp") img = await exec(imageUrl, list);
-      if (cmd.library == "magick") img = await execGM(imageUrl, list);
+      if (cmd.library == "jimp") img = await exec(imageUrl, list, interaction);
+      if (cmd.library == "magick") img = await execGM(imageUrl, list, interaction);
+      if (cmd.library == "native") img = await execGPU(imageUrl, list, interaction);
 
       let extension = await getFormat(imageUrl);
 
@@ -235,22 +134,23 @@ async function handleCmd(interaction, cmd, args) {
       sendImage(interaction, cmd.title, startTime, img, extension, procMsg);
     } catch (e) {
       // If error, catch it and let the user know
-      console.log(e);
+      // console.log(e);
       // msg.channel.stopTyping();
       // procMsg.delete();
-      interaction.reply({
+      interaction.editReply({
+        content: `${process.env.MSG_UNVIBING} An error occurred`,
         embeds: [{
           title: "Error",
           description: `<@${interaction.member.id}> - ${
             imageUrl != undefined
               ? process.env.MSG_ERROR
               : process.env.MSG_NO_IMAGE
-          }`,
+          }\n${ "```"+e+"```" }`,
           color: Number(process.env.EMBED_COLOUR),
           timestamp: new Date(),
           author: {
             name: process.env.BOT_NAME,
-            icon_url: msg.client.user.displayAvatarURL(),
+            icon_url: interaction.client.user.displayAvatarURL(),
           },
         }],
       });

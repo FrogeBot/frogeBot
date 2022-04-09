@@ -2,7 +2,7 @@ require("dotenv").config();
 
 let { sendImage } = require("../../modules/utils.js");
 
-let { gmToBuffer } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
+let { gmToBuffer } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxGifFrames: process.env.MAX_GIF_FRAMES, maxImageSize: process.env.MAX_IMAGE_SIZE })
 let { canvasText } = require("@frogebot/canvas");
 
 var gm = require("gm");

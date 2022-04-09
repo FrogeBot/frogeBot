@@ -2,7 +2,7 @@ require("dotenv").config()
 
 let { findImage, sendImage, clamp } = require("../../modules/utils.js")
 
-let { execGM } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxImageSize: process.env.MAX_IMAGE_SIZE })
+let { execGM } = require("@frogebot/image")({ imageMagick: process.env.USE_IMAGEMAGICK, maxGifSize: process.env.MAX_GIF_SIZE, maxGifFrames: process.env.MAX_GIF_FRAMES, maxImageSize: process.env.MAX_IMAGE_SIZE })
 
 let procMsg
 let imageUrl
@@ -16,7 +16,7 @@ async function cmdFunc(msg, args, startTime) {
         let extension = imageUrl.split("?")[0].split(".")[imageUrl.split(".").length-1]; // Get extension of image
 
         let r = (args[0] && Number.isInteger(Number(args[0]))) ? Number(args[0]) : 10;
-        let img = await execGM(imageUrl, [ ["jpeg", [clamp(r, 0, 100)]] ]); // Execute image manipulation
+        let img = await execGM(imageUrl, [ ["jpeg", [clamp(r, 0, 100)]] ], msg); // Execute image manipulation
         
         sendImage(msg, "JPEG", startTime, img, ( extension == "gif" ? "gif" : "jpg" ), procMsg) // Send image
     } catch(e) {

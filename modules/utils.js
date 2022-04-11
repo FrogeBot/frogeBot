@@ -3,7 +3,7 @@ const {
   ApplicationCommandOptionTypes,
 } = require("../node_modules/discord.js/src/util/Constants.js");
 
-function findImage(msg) {
+function findImage(msg, useVideos = false) {
   return new Promise(async (resolve, reject) => {
     try {
       // if (msg.attachments.size > 0) {
@@ -20,10 +20,20 @@ function findImage(msg) {
       let attachmentMessages = messages
         .map((message) => {
           let attachmentURL = undefined;
-          if (message.attachments.first()) {
+          if (
+            message.attachments.first() &&
+            (message.attachments.first().contentType.startsWith("image") ||
+              (useVideos &&
+                message.attachments.first().contentType.startsWith("video")))
+          ) {
             attachmentURL = message.attachments.first().proxyURL; // If message has image attachment set as URL
           } else {
-            if (message.embeds[0] && message.embeds[0].type == "image") {
+            if (
+              (message.embeds[0] && message.embeds[0].type == "image") ||
+              (useVideos &&
+                message.embeds[0] &&
+                message.embeds[0].type == "video")
+            ) {
               attachmentURL = message.embeds[0].url; // If message has image embed set as URL
             }
             if (message.embeds[0] && message.embeds[0].type == "gifv") {
@@ -150,6 +160,75 @@ async function sendImage(
         attemptSendImageWeb(msg, cmdName, timeTaken, img, extension, procMsg); // If send fails, try with local web host
       });
   }
+}
+async function sendVideo(
+  msg,
+  cmdName,
+  startTime,
+  video,
+  extension,
+  procMsg,
+  forceWeb = false
+) {
+  if (procMsg) procMsg.edit(process.env.MSG_UPLOADING);
+  extension = extension.toLowerCase();
+  const attachment = new MessageAttachment(
+    Buffer.from(video),
+    "video." + extension
+  ); // Create attachment
+  let timeTaken = formatDuration(new Date().getTime() - startTime); // Time elapsed since command call
+
+  // if (forceWeb) {
+  // Skip Discord CDN entirely
+  // attemptSendVideoWeb(msg, cmdName, timeTaken, videoPath, extension, procMsg); // Send image via local web host
+  // } else {
+  // Send image on Discord
+  let embed = new MessageEmbed({
+    title: cmdName,
+    description: `<@${msg.member.id}> ${process.env.MSG_SUCCESS}`,
+    color: Number(process.env.EMBED_COLOUR),
+    timestamp: new Date(),
+    author: {
+      name: process.env.BOT_NAME,
+      icon_url: msg.client.user.displayAvatarURL(),
+    },
+    // video: {
+    //   url: "attachment://video." + extension,
+    // },
+    footer: {
+      text: `Took ${timeTaken}`,
+    },
+  });
+  msg
+    .followUp({ embeds: [embed], files: [attachment] })
+    .then(() => {
+      // msg.channel.stopTyping();
+      //if (procMsg) procMsg.delete();
+    })
+    .catch(async (err) => {
+      console.log(err);
+      // attemptSendVideoWeb(msg, cmdName, timeTaken, videoPath, extension, procMsg); // If send fails, try with local web host
+      msg
+        .editReply({
+          embeds: [
+            {
+              title: "Error",
+              description: `<@${msg.member.id}> - ${process.env.MSG_SEND_FAIL}`,
+              color: Number(process.env.EMBED_COLOUR),
+              timestamp: new Date(),
+              author: {
+                name: process.env.BOT_NAME,
+                icon_url: msg.client.user.displayAvatarURL(),
+              },
+            },
+          ],
+        })
+        .then(() => {
+          // msg.channel.stopTyping();
+          //if (procMsg) procMsg.delete();
+        });
+    });
+  // }
 }
 
 async function attemptSendImageWeb(
@@ -412,6 +491,7 @@ async function slashCommandInit(client, commands, scope, guildID = null) {
 module.exports = {
   findImage,
   sendImage,
+  sendVideo,
   formatDuration,
   clamp,
   slashCommands: {

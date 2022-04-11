@@ -12,7 +12,7 @@ let { exec, execGM, execGPU, getFormat } = require("@frogebot/image")({
   maxGifFrames: process.env.MAX_GIF_FRAMES,
   maxImageSize: process.env.MAX_IMAGE_SIZE,
 });
-let { findImage, sendImage } = require("./utils");
+let { findImage, sendImage, sendVideo } = require("./utils");
 
 const { parseMsg, isCmd } = require("./parse");
 
@@ -76,7 +76,7 @@ async function handleCmd(interaction, cmd, args) {
     });
   } else if (cmd.type == "image") {
     // If command is set as image type
-    let imageUrl = await findImage(interaction); // Find image in channel
+    let imageUrl = await findImage(interaction, true); // Find image in channel
     try {
       let procMsg = await interaction.reply({
         content: process.env.MSG_PROCESSING,
@@ -144,8 +144,13 @@ async function handleCmd(interaction, cmd, args) {
 
       let extension = await getFormat(imageUrl);
 
-      // Send image
-      sendImage(interaction, cmd.title, startTime, img, extension, procMsg);
+      if(typeof img == 'object' && img.type == 'video') {
+        // Send video
+        sendVideo(interaction, cmd.title, startTime, img.video, img.extension, procMsg);
+      } else {
+        // Send image
+        sendImage(interaction, cmd.title, startTime, img, extension, procMsg);
+      }
     } catch (e) {
       // If error, catch it and let the user know
       // console.log(e);

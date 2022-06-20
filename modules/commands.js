@@ -144,9 +144,16 @@ async function handleCmd(interaction, cmd, args) {
 
       let extension = await getFormat(imageUrl);
 
-      if(typeof img == 'object' && img.type == 'video') {
+      if (typeof img == "object" && img.type == "video") {
         // Send video
-        sendVideo(interaction, cmd.title, startTime, img.video, img.extension, procMsg);
+        sendVideo(
+          interaction,
+          cmd.title,
+          startTime,
+          img.video,
+          img.extension,
+          procMsg
+        );
       } else {
         // Send image
         sendImage(interaction, cmd.title, startTime, img, extension, procMsg);

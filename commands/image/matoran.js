@@ -43,7 +43,7 @@ async function cmdFunc(msg, args, startTime) {
           imageUrl != undefined
             ? process.env.MSG_ERROR
             : process.env.MSG_NO_IMAGE
-        }`,
+        }\n${"```" + e + "```"}`,
         color: Number(process.env.EMBED_COLOUR),
         timestamp: new Date(),
         author: {
